@@ -456,6 +456,7 @@
             </div>
             
             <form id="login-form">
+                {% csrf_token %}
                 <div class="form-group">
                     <label class="form-label" for="username" id="username-label">Usuario o Email</label>
                     <input type="text" id="username" class="form-input" placeholder="Ingresa tu usuario o email" required>
@@ -683,6 +684,7 @@ document.getElementById('login-form').addEventListener('submit', async function 
     try {
         const response = await fetch("/login/", {
             method: "POST",
+            credentials: "same-origin",
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRFToken": getCSRF()

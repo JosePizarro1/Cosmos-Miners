@@ -10,8 +10,9 @@ from django.db import transaction
 from django.views.decorators.csrf import csrf_protect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import ensure_csrf_cookie
 
-
+@ensure_csrf_cookie
 def login_page(request):
     return render(request, "game/login.html")
 

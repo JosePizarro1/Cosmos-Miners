@@ -1,8 +1,258 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <title>Home</title>
+  <meta charset="UTF-8" />
+  <title>Cosmos Miners</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Icons -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            space: "#05050f",
+            card: "rgba(20,30,60,0.75)",
+            accent: "#00e0ff",
+            pink: "#ff4d8d",
+            blueglow: "#0077ff"
+          }
+        }
+      }
+    }
+  </script>
 </head>
-<body>
+
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative">
+
+<!-- 🌠 Background -->
+<div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.15)_1px,_transparent_1px)] bg-[size:32px_32px] opacity-20"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-transparent to-pink-900/20"></div>
+
+<!-- 📱 HEADER -->
+<header class="relative z-10 px-5 py-5 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <i class="fas fa-rocket text-accent text-2xl"></i>
+    <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">
+      COSMOS
+    </span>
+  </div>
+
+<button onclick="toggleMenu()"
+        class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
+  ☰
+</button>
+
+</header>
+
+<!-- 🚀 HERO -->
+<section class="relative z-10 px-6 mt-10 text-center">
+  <h1 class="text-4xl font-black leading-tight mb-4 bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">
+    Explora el Universo
+  </h1>
+
+  <p class="text-gray-300 text-base mb-8">
+    Mina recursos, mejora tu nave y conquista planetas lejanos.
+  </p>
+
+  <button class="w-full max-w-sm mx-auto py-4 rounded-2xl text-lg font-bold
+                 bg-gradient-to-r from-accent to-blueglow
+                 shadow-lg shadow-blue-500/40
+                 active:scale-95 transition">
+    🎮 Jugar Ahora
+  </button>
+</section>
+
+<!-- 🧩 PLAYER STATS -->
+<section class="relative z-10 mt-10 px-6 grid grid-cols-3 gap-3 max-w-md mx-auto">
+  <div class="bg-card backdrop-blur-xl border border-white/10 rounded-xl py-4 text-center">
+    <p class="text-xs text-gray-400">Nivel</p>
+    <p class="text-xl font-bold text-accent">12</p>
+  </div>
+  <div class="bg-card backdrop-blur-xl border border-white/10 rounded-xl py-4 text-center">
+    <p class="text-xs text-gray-400">Energía</p>
+    <p class="text-xl font-bold text-pink">87%</p>
+  </div>
+  <div class="bg-card backdrop-blur-xl border border-white/10 rounded-xl py-4 text-center">
+    <p class="text-xs text-gray-400">Créditos</p>
+    <p class="text-xl font-bold text-yellow-400">2.4k</p>
+  </div>
+</section>
+
+<!-- 🎮 GAME MENU -->
+<section class="relative z-10 mt-12 px-6 grid gap-4 max-w-md mx-auto">
+
+  <div class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5">
+    <i class="fas fa-user-astronaut text-accent text-2xl"></i>
+    <div>
+      <h3 class="font-bold text-lg">Mineros</h3>
+      <p class="text-sm text-gray-300">Gestiona tu tripulación</p>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5">
+    <i class="fas fa-tools text-accent text-2xl"></i>
+    <div>
+      <h3 class="font-bold text-lg">Equipamiento</h3>
+      <p class="text-sm text-gray-300">Mejora tus herramientas</p>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5">
+    <i class="fas fa-globe text-accent text-2xl"></i>
+    <div>
+      <h3 class="font-bold text-lg">Planetas</h3>
+      <p class="text-sm text-gray-300">Explora nuevos mundos</p>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5">
+    <i class="fas fa-gem text-accent text-2xl"></i>
+    <div>
+      <h3 class="font-bold text-lg">Minerales</h3>
+      <p class="text-sm text-gray-300">Recursos raros</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- 🖥 DESKTOP EXTRAS -->
+<section class="hidden lg:block relative z-10 mt-24 px-20">
+  <div class="grid grid-cols-4 gap-8">
+    <div class="bg-card p-8 rounded-3xl text-center">🌍 Galaxy Map</div>
+    <div class="bg-card p-8 rounded-3xl text-center">🚀 Fleet</div>
+    <div class="bg-card p-8 rounded-3xl text-center">🛠 Upgrades</div>
+    <div class="bg-card p-8 rounded-3xl text-center">🏆 Rankings</div>
+  </div>
+</section>
+
+<!-- 🔻 FOOTER -->
+<footer class="relative z-10 mt-16 pb-10 text-center text-gray-400 text-xs">
+  © 2026 Cosmos Miners · Mobile First Game UI
+</footer>
+<!-- 🌌 OVERLAY -->
+<div id="menuOverlay"
+     class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-40"
+     onclick="toggleMenu()"></div>
+
+<!-- 📱 MOBILE MENU -->
+<aside id="mobileMenu"
+       class="fixed top-0 right-0 h-full w-72 bg-card backdrop-blur-xl
+              border-l border-white/10 z-50
+              translate-x-full transition-transform duration-300">
+
+  <div class="p-6 flex justify-between items-center border-b border-white/10">
+    <h3 class="font-bold text-lg text-accent">Menú</h3>
+<button onclick="toggleMenu()" class="text-gray-300 text-xl font-bold">
+  ✕
+</button>
+
+  </div>
+
+  <nav class="p-6 flex flex-col gap-5 text-sm">
+    <button class="flex items-center gap-3">
+      <i class="fas fa-user"></i> Perfil
+    </button>
+    <button class="flex items-center gap-3">
+      <i class="fas fa-cog"></i> Ajustes
+    </button>
+    <button class="flex items-center gap-3">
+      <i class="fas fa-globe"></i> Idioma
+    </button>
+    <button class="flex items-center gap-3">
+      <i class="fas fa-volume-up"></i> Sonido
+    </button>
+
+    <hr class="border-white/10">
+<button id="btnLogout" class="flex items-center gap-3 text-red-400">
+  <i class="fas fa-sign-out-alt"></i> Salir
+</button>
+
+  </nav>
+</aside>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<link
+  rel="stylesheet"
+  href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+/>
+
+<script>
+document.getElementById("btnLogout").addEventListener("click", () => {
+
+  // 📳 Vibración (solo si el dispositivo lo soporta)
+  if (navigator.vibrate) {
+    navigator.vibrate([100, 50, 100]);
+  }
+
+  Swal.fire({
+    title: "¿Cerrar sesión?",
+    text: "¿Estás seguro de que deseas salir?",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonText: "Sí, salir",
+    cancelButtonText: "Cancelar",
+    confirmButtonColor: "#ff4d8d",
+    cancelButtonColor: "#1a2f5e",
+    background: "#0c1a3a",
+    color: "#fff",
+    allowOutsideClick: false,
+    showClass: {
+      popup: 'animate__animated animate__shakeX'
+    },
+    hideClass: {
+      popup: 'animate__animated animate__fadeOut'
+    }
+  }).then((result) => {
+    if (result.isConfirmed) {
+
+      // 📳 Vibración final
+      if (navigator.vibrate) {
+        navigator.vibrate([200]);
+      }
+
+      // 👉 aquí tu lógica real de logout
+      // ejemplo:
+      // localStorage.clear();
+      // window.location.href = "/login";
+
+      Swal.fire({
+        icon: "success",
+        title: "Sesión cerrada",
+        showConfirmButton: false,
+        timer: 1200,
+        background: "#0c1a3a",
+        color: "#fff"
+      });
+    }
+  });
+});
+</script>
+
+<script>
+
+  function toggleMenu() {
+    const menu = document.getElementById("mobileMenu");
+    const overlay = document.getElementById("menuOverlay");
+
+    const isOpen = menu.classList.contains("translate-x-0");
+
+    if (isOpen) {
+      menu.classList.remove("translate-x-0");
+      menu.classList.add("translate-x-full");
+      overlay.classList.add("hidden");
+    } else {
+      menu.classList.remove("translate-x-full");
+      menu.classList.add("translate-x-0");
+      overlay.classList.remove("hidden");
+    }
+  }
+</script>
+
 </body>
 </html>
