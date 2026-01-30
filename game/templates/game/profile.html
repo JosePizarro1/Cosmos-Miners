@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Perfil · Cosmos Miners</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Icons -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            space: "#05050f",
+            card: "rgba(20,30,60,0.75)",
+            accent: "#00e0ff",
+            pink: "#ff4d8d",
+            blueglow: "#0077ff"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative">
+
+<!-- 🌠 Background -->
+<div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.15)_1px,_transparent_1px)] bg-[size:32px_32px] opacity-20"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-transparent to-pink-900/20"></div>
+
+<!-- Header -->
+<header class="relative z-10 px-5 py-5 flex items-center justify-between">
+  <div class="flex items-center gap-3">
+    <i class="fas fa-rocket text-accent text-2xl"></i>
+    <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">COSMOS</span>
+  </div>
+
+  <a href="/home/" class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
+    ✕ Volver
+  </a>
+</header>
+
+<!-- PROFILE HERO -->
+<section class="relative z-10 px-6 mt-8 mb-8 sm:mb-12 max-w-md mx-auto text-center">
+  <h1 class="text-3xl font-black leading-tight mb-1 bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">Mi Perfil</h1>
+</section>
+
+<!-- PROFILE CARD -->
+<main class="relative z-10 px-6 pb-12 max-w-md mx-auto">
+  <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-8 sm:p-6 min-h-[65vh] sm:min-h-0 flex flex-col">
+
+    <div class="flex items-center gap-6 mb-6">
+      <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blueglow to-pink flex items-center justify-center text-black font-bold text-2xl">
+        <i class="fas fa-user"></i>
+      </div>
+      <div>
+        <div class="text-sm text-gray-300">Usuario</div>
+        <div class="font-bold text-accent text-lg">{{ user.username }}</div>
+        <div class="text-xs text-gray-400">Miembro desde {{ user.date_joined|date:"Y" }}</div>
+      </div>
+    </div>
+
+    <form id="profileForm" class="space-y-4 flex flex-col flex-1">
+      {% csrf_token %}
+
+      <label class="block text-sm text-gray-300">
+        Usuario
+        <input name="username" value="{{ user.username }}" class="w-full mt-2 p-3 rounded bg-white/5 text-white" />
+      </label>
+
+      <label class="block text-sm text-gray-300">
+        Email
+        <input name="email" value="{{ user.email }}" type="email" class="w-full mt-2 p-3 rounded bg-white/5 text-white" />
+      </label>
+
+      <label class="block text-sm text-gray-300">
+        Wallet (Metamask / BSC)
+        <input name="wallet" value="{{ profile.wallet_metamask_bsc }}" class="w-full mt-2 p-3 rounded bg-white/5 text-white" />
+        <div class="wallet-hint"><i class="fas fa-info-circle text-accent"></i> Dirección pública de tu wallet</div>
+      </label>
+
+      <div class="flex justify-end gap-3 mt-auto">
+        <a href="/home/" class="px-4 py-2 rounded bg-white/5 text-gray-200">Cancelar</a>
+        <button id="btnSave" type="submit" class="px-4 py-2 rounded bg-accent text-black font-bold flex items-center gap-2">
+          <i class="fas fa-save"></i>
+          <span id="btnSaveText">Actualizar</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</main>
+
+<!-- COSMOS GOLD / RETIROS -->
+<section class="relative z-10 px-6 pb-12 max-w-md mx-auto">
+  <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <div>
+        <h3 class="font-bold text-lg">Cosmos GOLD</h3>
+        <p class="text-sm text-gray-300">Balance: <span id="cgBalance">{{ profile.cosmos_gold }}</span> GOLD</p>
+      </div>
+
+      <form id="withdrawForm" class="flex items-center gap-3">
+        <input name="amount" placeholder="0.00" inputmode="decimal" class="p-2 rounded bg-white/5 w-32 text-white" />
+        <button id="btnWithdraw" class="px-3 py-2 rounded bg-pink text-black font-bold">Retirar</button>
+      </form>
+    </div>
+
+    <div>
+      <h4 class="font-semibold text-sm text-gray-300 mb-2">Historial de retiros</h4>
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="text-gray-400 text-xs">
+            <tr>
+              <th>Usuario</th>
+              <th>Monto</th>
+              <th>Fecha / Hora</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="withdrawalsTable">
+            {% for w in withdrawals %}
+            <tr class="border-t border-white/5">
+              <td>{{ user.username }}</td>
+              <td>{{ w.amount }}</td>
+              <td>{{ w.created_at }}</td>
+              <td>
+                {% if w.status == 'pending' %}
+                  <span class="px-2 py-1 rounded bg-yellow-400 text-black text-xs">Pendiente</span>
+                {% elif w.status == 'accepted' %}
+                  <span class="px-2 py-1 rounded bg-green-400 text-black text-xs">Aceptado</span>
+                {% elif w.status == 'rejected' %}
+                  <span class="px-2 py-1 rounded bg-red-500 text-white text-xs">Rechazado</span>
+                {% else %}
+                  <span class="px-2 py-1 rounded bg-white/5 text-xs capitalize">{{ w.status }}</span>
+                {% endif %}
+              </td>
+              <td>
+                {% if user.is_staff and w.status == 'pending' %}
+                  <button data-id="{{ w.id }}" title="Procesar" class="admin-action px-3 py-1 rounded bg-white/5 text-gray-200 text-sm"><i class="fas fa-user-shield"></i></button>
+                {% endif %}
+              </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-gray-400 text-xs py-4">Sin solicitudes</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="relative z-10 mt-6 pb-10 text-center text-gray-400 text-xs">
+  © 2026 Cosmos Miners · Mobile First Game UI
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+// expose whether current user is staff for client-side logic
+window.IS_STAFF = {{ user.is_staff|yesno:"true,false" }};
+// expose current username for admin confirmation dialogs
+window.CURRENT_USER = "{{ user.username|escapejs }}";
+function getCookie(name) {
+  let v = document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
+  return v ? v.pop() : '';
+}
+
+const form = document.getElementById('profileForm');
+const btnSave = document.getElementById('btnSave');
+const btnSaveText = document.getElementById('btnSaveText');
+
+form?.addEventListener('submit', async (ev)=>{
+  ev.preventDefault();
+  const username = form.querySelector('[name="username"]').value.trim();
+  const email = form.querySelector('[name="email"]').value.trim();
+  const wallet = form.querySelector('[name="wallet"]').value.trim();
+  const csrftoken = getCookie('csrftoken');
+
+  btnSave.disabled = true;
+  const original = btnSaveText.textContent;
+  btnSaveText.textContent = 'Guardando...';
+
+  try {
+    const res = await fetch('/profile/update/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': csrftoken
+      },
+      body: JSON.stringify({ username, email, wallet })
+    });
+
+    const data = await res.json();
+    if (res.ok && data.success) {
+      Swal.fire({ icon: 'success', title: data.message, showConfirmButton: false, timer: 1200, toast: true, position: 'top-end' });
+      document.title = username + ' · Cosmos Miners';
+    } else {
+      Swal.fire({ icon: 'error', title: data.error || 'Error al guardar' });
+    }
+  } catch (e) {
+    console.error(e);
+    Swal.fire({ icon: 'error', title: 'Error de red' });
+  } finally {
+    btnSave.disabled = false;
+    btnSaveText.textContent = original;
+  }
+});
+
+// Edit button removed — handler not needed anymore
+
+// Withdrawals: create request
+const withdrawForm = document.getElementById('withdrawForm');
+const withdrawTable = document.getElementById('withdrawalsTable');
+const cgBalance = document.getElementById('cgBalance');
+
+withdrawForm?.addEventListener('submit', async (ev)=>{
+  ev.preventDefault();
+  const amtInput = withdrawForm.querySelector('[name="amount"]');
+  const raw = amtInput.value.trim();
+  const amount = parseFloat(raw);
+  const csrftoken = getCookie('csrftoken');
+
+  if (isNaN(amount) || amount <= 0) {
+    return Swal.fire({ icon: 'error', title: 'Cantidad inválida' });
+  }
+
+  // check front balance
+  const current = parseFloat(cgBalance.textContent);
+  if (amount > current) {
+    return Swal.fire({ icon: 'error', title: 'Fondos insuficientes' });
+  }
+
+  try {
+    const res = await fetch('/withdrawals/create/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+      body: JSON.stringify({ amount: amount })
+    });
+
+    const data = await res.json();
+    if (res.ok && data.success) {
+      // update balance and add row
+      cgBalance.textContent = (current - amount).toFixed(2);
+      const tr = document.createElement('tr');
+      tr.className = 'border-t border-white/5';
+      const created = new Date(data.created_at).toLocaleString();
+      function renderBadge(status){
+        if(status === 'pending') return `<span class="px-2 py-1 rounded bg-yellow-400 text-black text-xs">Pendiente</span>`;
+        if(status === 'accepted') return `<span class="px-2 py-1 rounded bg-green-400 text-black text-xs">Aceptado</span>`;
+        if(status === 'rejected') return `<span class="px-2 py-1 rounded bg-red-500 text-white text-xs">Rechazado</span>`;
+        return `<span class="px-2 py-1 rounded bg-white/5 text-xs capitalize">${status}</span>`;
+      }
+
+      const actionsHtml = (window.IS_STAFF && data.status === 'pending') ? `<button data-id="${data.id}" class="admin-action px-3 py-1 rounded bg-white/5 text-gray-200 text-sm"><i class="fas fa-user-shield"></i></button>` : '';
+      tr.innerHTML = `<td>{{ user.username }}</td><td>${parseFloat(data.amount).toFixed(2)}</td><td>${created}</td><td>${renderBadge(data.status)}</td><td>${actionsHtml}</td>`;
+      withdrawTable.prepend(tr);
+      amtInput.value = '';
+      Swal.fire({ icon: 'success', title: 'Solicitud creada', toast: true, position: 'top-end', timer: 1200, showConfirmButton: false });
+    } else {
+      Swal.fire({ icon: 'error', title: data.error || 'Error al crear' });
+    }
+  } catch (e) {
+    console.error(e);
+    Swal.fire({ icon: 'error', title: 'Error de red' });
+  }
+});
+
+// Staff: process (accept/reject) via admin icon
+withdrawTable?.addEventListener('click', async (ev)=>{
+  // admin icon handler
+  const adminBtn = ev.target.closest('.admin-action');
+  if (adminBtn) {
+    const id = adminBtn.dataset.id;
+    const row = adminBtn.closest('tr');
+    const amountCell = row.querySelector('td:nth-child(2)');
+    const amount = parseFloat(amountCell.textContent) || 0;
+
+    const choice = await Swal.fire({
+      title: 'Procesar solicitud',
+      html: `<div class="text-left">¿Deseas <strong>ACEPTAR</strong> o <strong>RECHAZAR</strong> esta solicitud?<br/><br/><strong>Operador:</strong> ${window.CURRENT_USER}<br/><strong>Monto:</strong> ${amount.toFixed(2)} GOLD</div>`,
+      showDenyButton: true,
+      showCancelButton: true,
+      confirmButtonText: 'Aceptar',
+      denyButtonText: 'Rechazar',
+      cancelButtonText: 'Cancelar',
+      background: '#0c1a3a',
+      color: '#fff'
+    });
+
+    let action = null;
+    if (choice.isConfirmed) action = 'accept';
+    else if (choice.isDenied) action = 'reject';
+    else return; // cancelled
+
+    const csrftoken = getCookie('csrftoken');
+
+    try {
+      const res = await fetch(`/withdrawals/process/${id}/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+        body: JSON.stringify({ action })
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        const statusCell = row.querySelector('td:nth-child(4)');
+        const actionsCell = adminBtn.closest('td');
+        statusCell.innerHTML = renderBadge(data.status);
+        actionsCell.innerHTML = '';
+
+        // if rejected, refund locally to balance (server already refunded)
+        if (action === 'reject') {
+          const bal = parseFloat(cgBalance.textContent) || 0;
+          cgBalance.textContent = (bal + amount).toFixed(2);
+        }
+
+        Swal.fire({ icon: 'success', title: 'Solicitud procesada', toast: true, position: 'top-end', timer: 1200, showConfirmButton: false });
+      } else {
+        Swal.fire({ icon: 'error', title: data.error || 'Error al procesar' });
+      }
+    } catch (e) {
+      console.error(e);
+      Swal.fire({ icon: 'error', title: 'Error de red' });
+    }
+
+    return; // admin handled
+  }
+
+  // backward compatibility: direct approve/reject buttons (if any)
+  const btn = ev.target.closest('.approve-btn, .reject-btn');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  const action = btn.dataset.action;
+  const csrftoken = getCookie('csrftoken');
+
+  try {
+    const res = await fetch(`/withdrawals/process/${id}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+      body: JSON.stringify({ action })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      // update row UI
+      const row = btn.closest('tr');
+      const statusCell = row.querySelector('td:nth-child(4)');
+      const actionsCell = btn.closest('td');
+      statusCell.innerHTML = renderBadge(data.status);
+      actionsCell.innerHTML = '';
+      Swal.fire({ icon: 'success', title: 'Solicitud procesada', toast: true, position: 'top-end', timer: 1200, showConfirmButton: false });
+    } else {
+      Swal.fire({ icon: 'error', title: data.error || 'Error al procesar' });
+    }
+  } catch (e) {
+    console.error(e);
+    Swal.fire({ icon: 'error', title: 'Error de red' });
+  }
+});
+
+</script>
+
+</body>
+</html>

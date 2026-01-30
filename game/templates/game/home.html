@@ -37,12 +37,12 @@
 
 <!-- 📱 HEADER -->
 <header class="relative z-10 px-5 py-5 flex items-center justify-between">
-  <div class="flex items-center gap-3">
+  <a href="/" class="flex items-center gap-3">
     <i class="fas fa-rocket text-accent text-2xl"></i>
     <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">
       COSMOS
     </span>
-  </div>
+  </a>
 
 <button onclick="toggleMenu()"
         class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
@@ -156,18 +156,16 @@
   </div>
 
   <nav class="p-6 flex flex-col gap-5 text-sm">
-    <button class="flex items-center gap-3">
+    <a href="/profile/" class="flex items-center gap-3">
       <i class="fas fa-user"></i> Perfil
-    </button>
+    </a>
     <button class="flex items-center gap-3">
       <i class="fas fa-cog"></i> Ajustes
     </button>
     <button class="flex items-center gap-3">
       <i class="fas fa-globe"></i> Idioma
     </button>
-    <button class="flex items-center gap-3">
-      <i class="fas fa-volume-up"></i> Sonido
-    </button>
+
 
     <hr class="border-white/10">
 <button id="btnLogout" class="flex items-center gap-3 text-red-400">
@@ -208,7 +206,7 @@ document.getElementById("btnLogout").addEventListener("click", () => {
     hideClass: {
       popup: 'animate__animated animate__fadeOut'
     }
-  }).then((result) => {
+  }).then(async (result) => {
     if (result.isConfirmed) {
 
       // 📳 Vibración final
@@ -216,19 +214,22 @@ document.getElementById("btnLogout").addEventListener("click", () => {
         navigator.vibrate([200]);
       }
 
-      // 👉 aquí tu lógica real de logout
-      // ejemplo:
-      // localStorage.clear();
-      // window.location.href = "/login";
+      // POST logout to server
+      const csrftoken = (document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)')||[])[2] || '';
+      try {
+        const res = await fetch('/logout/', { method: 'POST', headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' } });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          Swal.fire({ icon: 'success', title: 'Sesión cerrada', showConfirmButton: false, timer: 800, background: '#0c1a3a', color: '#fff' });
+          setTimeout(()=>{ window.location.href = '/'; }, 900);
+        } else {
+          Swal.fire({ icon: 'error', title: data.error || 'No se pudo cerrar sesión' });
+        }
+      } catch (e) {
+        console.error('Logout error', e);
+        Swal.fire({ icon: 'error', title: 'Error de red' });
+      }
 
-      Swal.fire({
-        icon: "success",
-        title: "Sesión cerrada",
-        showConfirmButton: false,
-        timer: 1200,
-        background: "#0c1a3a",
-        color: "#fff"
-      });
     }
   });
 });
@@ -253,6 +254,8 @@ document.getElementById("btnLogout").addEventListener("click", () => {
     }
   }
 </script>
+
+<!-- Perfil disponible como página completa: /profile/ -->
 
 </body>
 </html>
