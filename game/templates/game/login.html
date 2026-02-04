@@ -704,9 +704,7 @@ document.getElementById('login-form').addEventListener('submit', async function 
                 ? "Login exitoso. Entrando al juego..."
                 : "Login successful. Entering the game...";
 
-        setTimeout(() => {
-            window.location.href = "/home/";
-        }, 5000);
+        window.location.href = "/home/";
 
     } catch (err) {
         errorMessage.style.display = "flex";

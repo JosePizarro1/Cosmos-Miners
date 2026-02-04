@@ -30,6 +30,31 @@
 </head>
 
 <body class="min-h-screen bg-space text-white overflow-x-hidden relative">
+<style>
+  /* Scrollbar styling (WebKit/Blink) */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: rgba(12, 26, 58, 0.6);
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #00e0ff, #0077ff);
+    border-radius: 999px;
+    border: 2px solid rgba(12, 26, 58, 0.6);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #00c6ff, #0056cc);
+  }
+
+  /* Firefox */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #00c6ff rgba(12, 26, 58, 0.6);
+  }
+</style>
 
 <!-- 🌠 Background -->
 <div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.15)_1px,_transparent_1px)] bg-[size:32px_32px] opacity-20"></div>
@@ -48,13 +73,15 @@
 </header>
 
 <!-- PROFILE HERO -->
-<section class="relative z-10 px-6 mt-8 mb-8 sm:mb-12 max-w-md mx-auto text-center">
+<section class="relative z-10 px-6 mt-8 mb-8 sm:mb-12 max-w-5xl mx-auto text-center lg:text-left">
   <h1 class="text-3xl font-black leading-tight mb-1 bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">Mi Perfil</h1>
 </section>
 
-<!-- PROFILE CARD -->
-<main class="relative z-10 px-6 pb-12 max-w-md mx-auto">
-  <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-8 sm:p-6 min-h-[65vh] sm:min-h-0 flex flex-col">
+<!-- PROFILE + GOLD WRAP -->
+<div class="relative z-10 px-6 pb-12 max-w-5xl mx-auto grid gap-6 lg:grid-cols-[1.1fr_1fr]">
+  <!-- PROFILE CARD -->
+  <main class="w-full">
+    <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-8 sm:p-6 lg:p-10 min-h-[65vh] sm:min-h-0 flex flex-col">
 
     <div class="flex items-center gap-6 mb-6">
       <div class="w-20 h-20 rounded-full bg-gradient-to-br from-blueglow to-pink flex items-center justify-center text-black font-bold text-2xl">
@@ -67,7 +94,7 @@
       </div>
     </div>
 
-    <form id="profileForm" class="space-y-4 flex flex-col flex-1">
+    <form id="profileForm" class="space-y-4 flex flex-col flex-1 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4">
       {% csrf_token %}
 
       <label class="block text-sm text-gray-300">
@@ -80,13 +107,13 @@
         <input name="email" value="{{ user.email }}" type="email" class="w-full mt-2 p-3 rounded bg-white/5 text-white" />
       </label>
 
-      <label class="block text-sm text-gray-300">
+      <label class="block text-sm text-gray-300 lg:col-span-2">
         Wallet (Metamask / BSC)
         <input name="wallet" value="{{ profile.wallet_metamask_bsc }}" class="w-full mt-2 p-3 rounded bg-white/5 text-white" />
         <div class="wallet-hint"><i class="fas fa-info-circle text-accent"></i> Dirección pública de tu wallet</div>
       </label>
 
-      <div class="flex justify-end gap-3 mt-auto">
+      <div class="flex justify-end gap-3 mt-auto lg:col-span-2">
         <a href="/home/" class="px-4 py-2 rounded bg-white/5 text-gray-200">Cancelar</a>
         <button id="btnSave" type="submit" class="px-4 py-2 rounded bg-accent text-black font-bold flex items-center gap-2">
           <i class="fas fa-save"></i>
@@ -94,12 +121,12 @@
         </button>
       </div>
     </form>
-  </div>
-</main>
+    </div>
+  </main>
 
-<!-- COSMOS GOLD / RETIROS -->
-<section class="relative z-10 px-6 pb-12 max-w-md mx-auto">
-  <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6">
+  <!-- COSMOS GOLD / RETIROS -->
+  <section class="w-full">
+    <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6 lg:p-8">
     <div class="flex items-center justify-between mb-4">
       <div>
         <h3 class="font-bold text-lg">Cosmos GOLD</h3>
@@ -155,8 +182,9 @@
         </table>
       </div>
     </div>
-  </div>
-</section>
+    </div>
+  </section>
+</div>
 
 <footer class="relative z-10 mt-6 pb-10 text-center text-gray-400 text-xs">
   © 2026 Cosmos Miners · Mobile First Game UI

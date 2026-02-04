@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Retiros · Admin · Cosmos Miners</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Icons -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            space: "#05050f",
+            card: "rgba(20,30,60,0.75)",
+            accent: "#00e0ff",
+            pink: "#ff4d8d",
+            blueglow: "#0077ff"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative">
+
+<!-- Background -->
+<div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.15)_1px,_transparent_1px)] bg-[size:32px_32px] opacity-20"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-transparent to-pink-900/20"></div>
+
+<!-- Header -->
+<header class="relative z-10 px-6 py-6 flex items-center justify-between max-w-6xl mx-auto">
+  <div class="flex items-center gap-3">
+    <i class="fas fa-rocket text-accent text-2xl"></i>
+    <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">COSMOS</span>
+    <span class="text-xs text-gray-300 ml-2">ADMIN · RETIROS</span>
+  </div>
+
+  <a href="/home/" class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
+    Volver
+  </a>
+</header>
+
+<!-- Title -->
+<section class="relative z-10 px-6 mt-4 mb-6 max-w-6xl mx-auto">
+  <h1 class="text-3xl font-black leading-tight bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">
+    Panel de Retiros
+  </h1>
+  <p class="text-sm text-gray-300 mt-1">Gestiona solicitudes pendientes y revisa el historial completo.</p>
+</section>
+
+<!-- Table -->
+<main class="relative z-10 px-6 pb-12 max-w-6xl mx-auto">
+  <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6 lg:p-8">
+    <div class="overflow-x-auto">
+      <table class="w-full text-left text-sm">
+        <thead class="text-gray-400 text-xs">
+          <tr>
+            <th class="py-2">Usuario</th>
+            <th>Monto</th>
+            <th>Balance Antes</th>
+            <th>Balance Despues</th>
+            <th>Fecha / Hora</th>
+            <th>Estado</th>
+            <th>Procesado Por</th>
+            <th>Procesado</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="withdrawalsTable">
+          {% for w in withdrawals %}
+          <tr class="border-t border-white/5">
+            <td class="py-2">{{ w.user.username }}</td>
+            <td>{{ w.amount }}</td>
+            <td>{{ w.balance_before }}</td>
+            <td>{{ w.balance_after }}</td>
+            <td>{{ w.created_at }}</td>
+            <td>
+              {% if w.status == 'pending' %}
+                <span class="px-2 py-1 rounded bg-yellow-400 text-black text-xs">Pendiente</span>
+              {% elif w.status == 'accepted' %}
+                <span class="px-2 py-1 rounded bg-green-400 text-black text-xs">Aceptado</span>
+              {% elif w.status == 'rejected' %}
+                <span class="px-2 py-1 rounded bg-red-500 text-white text-xs">Rechazado</span>
+              {% else %}
+                <span class="px-2 py-1 rounded bg-white/5 text-xs capitalize">{{ w.status }}</span>
+              {% endif %}
+            </td>
+            <td>{{ w.processed_by.username|default:"-" }}</td>
+            <td>{{ w.processed_at|default:"-" }}</td>
+            <td>
+              {% if w.status == 'pending' %}
+                <button data-id="{{ w.id }}" data-amount="{{ w.amount }}" class="admin-action px-3 py-1 rounded bg-white/5 text-gray-200 text-sm" title="Procesar">
+                  <i class="fas fa-user-shield"></i>
+                </button>
+              {% endif %}
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="9" class="text-gray-400 text-xs py-4">Sin solicitudes</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<footer class="relative z-10 mt-6 pb-10 text-center text-gray-400 text-xs">
+  Â© 2026 Cosmos Miners Â· Admin
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function getCookie(name) {
+  let v = document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
+  return v ? v.pop() : '';
+}
+
+function renderBadge(status){
+  if(status === 'pending') return '<span class="px-2 py-1 rounded bg-yellow-400 text-black text-xs">Pendiente</span>';
+  if(status === 'accepted') return '<span class="px-2 py-1 rounded bg-green-400 text-black text-xs">Aceptado</span>';
+  if(status === 'rejected') return '<span class="px-2 py-1 rounded bg-red-500 text-white text-xs">Rechazado</span>';
+  return `<span class="px-2 py-1 rounded bg-white/5 text-xs capitalize">${status}</span>`;
+}
+
+const withdrawTable = document.getElementById('withdrawalsTable');
+
+withdrawTable?.addEventListener('click', async (ev)=>{
+  const adminBtn = ev.target.closest('.admin-action');
+  if (!adminBtn) return;
+
+  const id = adminBtn.dataset.id;
+  const amount = parseFloat(adminBtn.dataset.amount) || 0;
+
+  const choice = await Swal.fire({
+    title: 'Procesar solicitud',
+    html: `<div class="text-left">¿Deseas <strong>ACEPTAR</strong> o <strong>RECHAZAR</strong> esta solicitud?<br/><br/><strong>Monto:</strong> ${amount.toFixed(2)} GOLD</div>`,
+    showDenyButton: true,
+    showCancelButton: true,
+    confirmButtonText: 'Aceptar',
+    denyButtonText: 'Rechazar',
+    cancelButtonText: 'Cancelar',
+    background: '#0c1a3a',
+    color: '#fff'
+  });
+
+  let action = null;
+  if (choice.isConfirmed) action = 'accept';
+  else if (choice.isDenied) action = 'reject';
+  else return;
+
+  const csrftoken = getCookie('csrftoken');
+
+  try {
+    const res = await fetch(`/withdrawals/process/${id}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken },
+      body: JSON.stringify({ action })
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      const row = adminBtn.closest('tr');
+      const statusCell = row.querySelector('td:nth-child(6)');
+      const processedByCell = row.querySelector('td:nth-child(7)');
+      const processedAtCell = row.querySelector('td:nth-child(8)');
+      const actionsCell = adminBtn.closest('td');
+      statusCell.innerHTML = renderBadge(data.status);
+      processedByCell.textContent = data.processed_by || '-';
+      processedAtCell.textContent = data.processed_at || '-';
+      actionsCell.innerHTML = '';
+
+      Swal.fire({ icon: 'success', title: 'Solicitud procesada', toast: true, position: 'top-end', timer: 1200, showConfirmButton: false });
+    } else {
+      Swal.fire({ icon: 'error', title: data.error || 'Error al procesar' });
+    }
+  } catch (e) {
+    console.error(e);
+    Swal.fire({ icon: 'error', title: 'Error de red' });
+  }
+});
+</script>
+
+</body>
+</html>

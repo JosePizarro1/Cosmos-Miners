@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard · Cosmos Miners</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Icons -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            space: "#05050f",
+            card: "rgba(20,30,60,0.75)",
+            accent: "#00e0ff",
+            pink: "#ff4d8d",
+            blueglow: "#0077ff"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative">
+
+<!-- Background -->
+<div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.15)_1px,_transparent_1px)] bg-[size:32px_32px] opacity-20"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-transparent to-pink-900/20"></div>
+
+<!-- Header -->
+<header class="relative z-10 px-6 py-6 flex items-center justify-between max-w-6xl mx-auto">
+  <div class="flex items-center gap-3">
+    <i class="fas fa-rocket text-accent text-2xl"></i>
+    <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">COSMOS</span>
+    <span class="text-xs text-gray-300 ml-2">ADMIN · DASHBOARD</span>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <a href="/dashboard/miners/" class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
+      Miners
+    </a>
+    <a href="/withdrawals/admin/" class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
+      Retiros
+    </a>
+    <a href="/home/" class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
+     Volver
+    </a>
+  </div>
+</header>
+
+<!-- Title -->
+<section class="relative z-10 px-6 mt-4 mb-6 max-w-6xl mx-auto">
+  <h1 class="text-3xl font-black leading-tight bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">
+    Panel Administrativo
+  </h1>
+  <p class="text-sm text-gray-300 mt-1">Metricas clave y actividad reciente.</p>
+</section>
+
+<!-- Stats -->
+<main class="relative z-10 px-6 pb-12 max-w-6xl mx-auto">
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="bg-card border border-white/10 rounded-2xl p-5">
+      <div class="text-xs text-gray-400">Usuarios</div>
+      <div id="statUsers" class="text-2xl font-bold text-accent">--</div>
+    </div>
+    <div class="bg-card border border-white/10 rounded-2xl p-5">
+      <div class="text-xs text-gray-400">Perfiles</div>
+      <div id="statProfiles" class="text-2xl font-bold text-accent">--</div>
+    </div>
+    <div class="bg-card border border-white/10 rounded-2xl p-5">
+      <div class="text-xs text-gray-400">Mineros (Tipos)</div>
+      <div id="statMinerTypes" class="text-2xl font-bold text-accent">--</div>
+    </div>
+    <div class="bg-card border border-white/10 rounded-2xl p-5">
+      <div class="text-xs text-gray-400">Mineros (Usuarios)</div>
+      <div id="statUserMiners" class="text-2xl font-bold text-accent">--</div>
+    </div>
+  </div>
+
+  <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 mt-6">
+    <div class="bg-card border border-white/10 rounded-2xl p-5">
+      <div class="text-xs text-gray-400">Retiros Totales</div>
+      <div id="statWithdrawals" class="text-2xl font-bold text-pink">--</div>
+    </div>
+    <div class="bg-card border border-white/10 rounded-2xl p-5">
+      <div class="text-xs text-gray-400">Retiros Pendientes</div>
+      <div id="statPending" class="text-2xl font-bold text-yellow-300">--</div>
+    </div>
+    <div class="bg-card border border-white/10 rounded-2xl p-5">
+      <div class="text-xs text-gray-400">Cosmos GOLD (Total)</div>
+      <div id="statGold" class="text-2xl font-bold text-blue-300">--</div>
+    </div>
+  </div>
+
+  <!-- Recent Withdrawals -->
+  <section class="mt-10">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-bold text-lg">Retiros Recientes</h3>
+      <a href="/withdrawals/admin/" class="text-sm text-accent">Ver todo</a>
+    </div>
+    <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="text-gray-400 text-xs">
+            <tr>
+              <th class="py-2">Usuario</th>
+              <th>Monto</th>
+              <th>Estado</th>
+              <th>Fecha / Hora</th>
+            </tr>
+          </thead>
+          <tbody id="recentWithdrawals">
+            <tr><td colspan="4" class="text-gray-400 text-xs py-4">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="relative z-10 mt-6 pb-10 text-center text-gray-400 text-xs">
+  Â© 2026 Cosmos Miners Â· Admin
+</footer>
+
+<script>
+function renderBadge(status){
+  if(status === 'pending') return '<span class="px-2 py-1 rounded bg-yellow-400 text-black text-xs">Pendiente</span>';
+  if(status === 'accepted') return '<span class="px-2 py-1 rounded bg-green-400 text-black text-xs">Aceptado</span>';
+  if(status === 'rejected') return '<span class="px-2 py-1 rounded bg-red-500 text-white text-xs">Rechazado</span>';
+  return `<span class="px-2 py-1 rounded bg-white/5 text-xs capitalize">${status}</span>`;
+}
+
+async function loadDashboard() {
+  try {
+    const res = await fetch('/dashboard/admin/stats/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': (document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)')||[])[2] || '' }
+    });
+    const data = await res.json();
+    if (!res.ok || !data.success) throw new Error(data.error || 'Error');
+
+    const s = data.stats;
+    document.getElementById('statUsers').textContent = s.total_users;
+    document.getElementById('statProfiles').textContent = s.total_profiles;
+    document.getElementById('statMinerTypes').textContent = s.total_miner_types;
+    document.getElementById('statUserMiners').textContent = s.total_user_miners;
+    document.getElementById('statWithdrawals').textContent = s.total_withdrawals;
+    document.getElementById('statPending').textContent = s.pending_withdrawals;
+    document.getElementById('statGold').textContent = s.total_gold;
+
+    const tbody = document.getElementById('recentWithdrawals');
+    if (!data.recent_withdrawals.length) {
+      tbody.innerHTML = '<tr><td colspan="4" class="text-gray-400 text-xs py-4">Sin registros</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = data.recent_withdrawals.map(w => {
+      const created = new Date(w.created_at).toLocaleString();
+      return `<tr class="border-t border-white/5">
+        <td class="py-2">${w.user__username}</td>
+        <td>${parseFloat(w.amount).toFixed(2)}</td>
+        <td>${renderBadge(w.status)}</td>
+        <td>${created}</td>
+      </tr>`;
+    }).join('');
+  } catch (e) {
+    console.error(e);
+    const tbody = document.getElementById('recentWithdrawals');
+    tbody.innerHTML = '<tr><td colspan="4" class="text-red-300 text-xs py-4">Error al cargar</td></tr>';
+  }
+}
+
+window.addEventListener('DOMContentLoaded', loadDashboard);
+</script>
+
+</body>
+</html>

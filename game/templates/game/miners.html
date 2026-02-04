@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Mis Mineros · Cosmos Miners</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Icons -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            space: "#05050f",
+            card: "rgba(20,30,60,0.75)",
+            accent: "#00e0ff",
+            pink: "#ff4d8d",
+            blueglow: "#0077ff"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative">
+
+<!-- Background -->
+<div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.15)_1px,_transparent_1px)] bg-[size:32px_32px] opacity-20"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-transparent to-pink-900/20"></div>
+
+<!-- Header -->
+<header class="relative z-10 px-6 py-6 flex items-center justify-between max-w-6xl mx-auto">
+  <div class="flex items-center gap-3">
+    <i class="fas fa-user-astronaut text-accent text-2xl"></i>
+    <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">MIS MINEROS</span>
+  </div>
+
+  <a href="/home/" class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
+    ✕ Volver
+  </a>
+</header>
+
+<!-- Content -->
+<main class="relative z-10 px-6 pb-12 max-w-6xl mx-auto">
+  <section class="mb-6">
+    <h1 class="text-3xl font-black leading-tight bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">
+      Tripulación de {{ user.username }}
+    </h1>
+    <p class="text-sm text-gray-300 mt-1">Aquí ves los mineros que tienes asignados.</p>
+  </section>
+
+  <section class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {% for m in miners %}
+    <article class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl overflow-hidden hover:border-accent/30 transition">
+      <div class="relative">
+        {% if m.miner_type.image %}
+          <img src="{{ m.miner_type.image.url }}" alt="{{ m.miner_type.name }}" class="w-full h-44 sm:h-48 lg:h-56 object-cover" />
+        {% else %}
+          <div class="w-full h-44 sm:h-48 lg:h-56 bg-white/5 flex items-center justify-center text-accent">
+            <i class="fas fa-helmet-safety text-5xl"></i>
+          </div>
+        {% endif %}
+        <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/60 to-transparent"></div>
+        <div class="absolute left-4 bottom-3 right-4">
+          <div class="font-black text-xl truncate drop-shadow">{{ m.miner_type.name }}</div>
+        </div>
+      </div>
+
+      <div class="p-5">
+        <div class="flex items-center gap-2 flex-wrap">
+            {% if m.miner_type.rarity == 'common' %}
+              <span class="px-2 py-1 rounded bg-white/10 text-xs text-gray-200">Común</span>
+            {% elif m.miner_type.rarity == 'rare' %}
+              <span class="px-2 py-1 rounded bg-blue-400/20 text-xs text-blue-200 border border-blue-400/30">Raro</span>
+            {% elif m.miner_type.rarity == 'epic' %}
+              <span class="px-2 py-1 rounded bg-pink/20 text-xs text-pink-200 border border-pink/30">Épico</span>
+            {% elif m.miner_type.rarity == 'legendary' %}
+              <span class="px-2 py-1 rounded bg-yellow-400/20 text-xs text-yellow-200 border border-yellow-400/30">Legendario</span>
+            {% else %}
+              <span class="px-2 py-1 rounded bg-white/10 text-xs">{{ m.miner_type.get_rarity_display }}</span>
+            {% endif %}
+
+            {% if m.status == 'idle' %}
+              <span class="px-2 py-1 rounded bg-green-400/20 text-xs text-green-200 border border-green-400/30">Disponible</span>
+            {% elif m.status == 'traveling' %}
+              <span class="px-2 py-1 rounded bg-yellow-400/20 text-xs text-yellow-200 border border-yellow-400/30">Viajando</span>
+            {% else %}
+              <span class="px-2 py-1 rounded bg-white/10 text-xs">{{ m.get_status_display }}</span>
+            {% endif %}
+        </div>
+
+        <div class="mt-4 grid grid-cols-2 gap-3 text-sm">
+        <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
+          <div class="text-xs text-gray-400">Intentos</div>
+          <div class="font-bold text-accent">{{ m.miner_type.attempts }}</div>
+        </div>
+        <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
+          <div class="text-xs text-gray-400">Obtenido</div>
+          <div class="font-semibold text-gray-200">{{ m.obtained_at|date:"Y-m-d H:i" }}</div>
+        </div>
+      </div>
+      </div>
+    </article>
+    {% empty %}
+    <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-8 text-center sm:col-span-2 lg:col-span-3">
+      <div class="text-accent text-3xl mb-2"><i class="fas fa-user-astronaut"></i></div>
+      <div class="font-bold">Aún no tienes mineros</div>
+      <div class="text-sm text-gray-300 mt-1">Cuando compres o te asignen mineros, aparecerán aquí.</div>
+    </div>
+    {% endfor %}
+  </section>
+</main>
+
+<footer class="relative z-10 mt-6 pb-10 text-center text-gray-400 text-xs">
+  © 2026 Cosmos Miners · Mobile First Game UI
+</footer>
+
+</body>
+</html>

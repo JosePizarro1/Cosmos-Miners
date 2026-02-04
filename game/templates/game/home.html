@@ -31,9 +31,37 @@
 
 <body class="min-h-screen bg-space text-white overflow-x-hidden relative">
 
-<!-- 🌠 Background -->
-<div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.15)_1px,_transparent_1px)] bg-[size:32px_32px] opacity-20"></div>
-<div class="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-transparent to-pink-900/20"></div>
+<!-- 🌟 NUEVO FONDO MEJORADO -->
+<div class="fixed inset-0 z-0">
+  <!-- Base nebula -->
+  <div class="absolute inset-0 bg-gradient-to-b from-blue-950/80 via-indigo-950/60 to-purple-950/90"></div>
+  
+  <!-- Estrellas estáticas -->
+  <div class="absolute inset-0" id="stars"></div>
+  
+  <!-- Estrellas brillantes -->
+  <div class="absolute inset-0" id="twinklingStars"></div>
+  
+  <!-- Nebulosa animada -->
+  <div class="absolute inset-0 opacity-30">
+    <div class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-gradient-to-r from-blue-500/40 to-cyan-500/30 animate-pulse"></div>
+    <div class="absolute bottom-1/3 right-1/4 w-96 h-96 rounded-full bg-gradient-to-r from-purple-500/30 to-pink-500/20 animate-pulse" style="animation-delay: 1s;"></div>
+    <div class="absolute top-1/3 right-1/3 w-48 h-48 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-400/10 animate-pulse" style="animation-delay: 2s;"></div>
+  </div>
+  
+  <!-- Partículas animadas -->
+  <div class="absolute inset-0" id="particles"></div>
+  
+  <!-- Efecto de profundidad (gradiente radial) -->
+  <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,119,255,0.15)_0%,_rgba(0,119,255,0.05)_25%,_transparent_70%)]"></div>
+  
+  <!-- Galaxia espiral -->
+  <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-10">
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full border border-blue-500/20"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full border border-cyan-400/20"></div>
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full border border-white/10"></div>
+  </div>
+</div>
 
 <!-- 📱 HEADER -->
 <header class="relative z-10 px-5 py-5 flex items-center justify-between">
@@ -44,11 +72,10 @@
     </span>
   </a>
 
-<button onclick="toggleMenu()"
+  <button onclick="toggleMenu()"
         class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
-  ☰
-</button>
-
+    ☰
+  </button>
 </header>
 
 <!-- 🚀 HERO -->
@@ -64,8 +91,9 @@
   <button class="w-full max-w-sm mx-auto py-4 rounded-2xl text-lg font-bold
                  bg-gradient-to-r from-accent to-blueglow
                  shadow-lg shadow-blue-500/40
-                 active:scale-95 transition">
-    🎮 Jugar Ahora
+                 active:scale-95 transition relative overflow-hidden group">
+    <span class="relative z-10">🎮 Jugar Ahora</span>
+    <div class="absolute inset-0 bg-gradient-to-r from-blueglow to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
   </button>
 </section>
 
@@ -88,32 +116,32 @@
 <!-- 🎮 GAME MENU -->
 <section class="relative z-10 mt-12 px-6 grid gap-4 max-w-md mx-auto">
 
-  <div class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5">
-    <i class="fas fa-user-astronaut text-accent text-2xl"></i>
+  <a href="/miners/" class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5 hover:border-accent/40 hover:bg-white/5 transition cursor-pointer group">
+    <i class="fas fa-user-astronaut text-accent text-2xl group-hover:scale-110 transition-transform"></i>
     <div>
       <h3 class="font-bold text-lg">Mineros</h3>
       <p class="text-sm text-gray-300">Gestiona tu tripulación</p>
     </div>
-  </div>
+  </a>
 
-  <div class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5">
-    <i class="fas fa-tools text-accent text-2xl"></i>
+  <div class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5 group hover:border-accent/40 hover:bg-white/5 transition cursor-pointer">
+    <i class="fas fa-tools text-accent text-2xl group-hover:scale-110 transition-transform"></i>
     <div>
       <h3 class="font-bold text-lg">Equipamiento</h3>
       <p class="text-sm text-gray-300">Mejora tus herramientas</p>
     </div>
   </div>
 
-  <div class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5">
-    <i class="fas fa-globe text-accent text-2xl"></i>
+  <div class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5 group hover:border-accent/40 hover:bg-white/5 transition cursor-pointer">
+    <i class="fas fa-globe text-accent text-2xl group-hover:scale-110 transition-transform"></i>
     <div>
       <h3 class="font-bold text-lg">Planetas</h3>
       <p class="text-sm text-gray-300">Explora nuevos mundos</p>
     </div>
   </div>
 
-  <div class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5">
-    <i class="fas fa-gem text-accent text-2xl"></i>
+  <div class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5 group hover:border-accent/40 hover:bg-white/5 transition cursor-pointer">
+    <i class="fas fa-gem text-accent text-2xl group-hover:scale-110 transition-transform"></i>
     <div>
       <h3 class="font-bold text-lg">Minerales</h3>
       <p class="text-sm text-gray-300">Recursos raros</p>
@@ -125,10 +153,10 @@
 <!-- 🖥 DESKTOP EXTRAS -->
 <section class="hidden lg:block relative z-10 mt-24 px-20">
   <div class="grid grid-cols-4 gap-8">
-    <div class="bg-card p-8 rounded-3xl text-center">🌍 Galaxy Map</div>
-    <div class="bg-card p-8 rounded-3xl text-center">🚀 Fleet</div>
-    <div class="bg-card p-8 rounded-3xl text-center">🛠 Upgrades</div>
-    <div class="bg-card p-8 rounded-3xl text-center">🏆 Rankings</div>
+    <div class="bg-card p-8 rounded-3xl text-center backdrop-blur-xl border border-white/10 hover:border-accent/40 transition">🌍 Galaxy Map</div>
+    <div class="bg-card p-8 rounded-3xl text-center backdrop-blur-xl border border-white/10 hover:border-accent/40 transition">🚀 Fleet</div>
+    <div class="bg-card p-8 rounded-3xl text-center backdrop-blur-xl border border-white/10 hover:border-accent/40 transition">🛠 Upgrades</div>
+    <div class="bg-card p-8 rounded-3xl text-center backdrop-blur-xl border border-white/10 hover:border-accent/40 transition">🏆 Rankings</div>
   </div>
 </section>
 
@@ -136,6 +164,7 @@
 <footer class="relative z-10 mt-16 pb-10 text-center text-gray-400 text-xs">
   © 2026 Cosmos Miners · Mobile First Game UI
 </footer>
+
 <!-- 🌌 OVERLAY -->
 <div id="menuOverlay"
      class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-40"
@@ -149,16 +178,23 @@
 
   <div class="p-6 flex justify-between items-center border-b border-white/10">
     <h3 class="font-bold text-lg text-accent">Menú</h3>
-<button onclick="toggleMenu()" class="text-gray-300 text-xl font-bold">
-  ✕
-</button>
-
+    <button onclick="toggleMenu()" class="text-gray-300 text-xl font-bold">
+      ✕
+    </button>
   </div>
 
   <nav class="p-6 flex flex-col gap-5 text-sm">
     <a href="/profile/" class="flex items-center gap-3">
       <i class="fas fa-user"></i> Perfil
     </a>
+    {% if user.is_staff %}
+    <a href="/dashboard/admin/" class="flex items-center gap-3 text-accent">
+      <i class="fas fa-gauge-high"></i> Dashboard Admin
+    </a>
+    <a href="/withdrawals/admin/" class="flex items-center gap-3 text-accent">
+      <i class="fas fa-user-shield"></i> Retiros (Admin)
+    </a>
+    {% endif %}
     <button class="flex items-center gap-3">
       <i class="fas fa-cog"></i> Ajustes
     </button>
@@ -166,24 +202,133 @@
       <i class="fas fa-globe"></i> Idioma
     </button>
 
-
     <hr class="border-white/10">
-<button id="btnLogout" class="flex items-center gap-3 text-red-400">
-  <i class="fas fa-sign-out-alt"></i> Salir
-</button>
-
+    <button id="btnLogout" class="flex items-center gap-3 text-red-400">
+      <i class="fas fa-sign-out-alt"></i> Salir
+    </button>
   </nav>
 </aside>
+
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link
-  rel="stylesheet"
-  href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
-/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+
+<script>
+  // Crear estrellas estáticas
+  const starsContainer = document.getElementById('stars');
+  for (let i = 0; i < 200; i++) {
+    const star = document.createElement('div');
+    star.className = 'absolute rounded-full bg-white';
+    star.style.width = `${Math.random() * 2 + 1}px`;
+    star.style.height = star.style.width;
+    star.style.left = `${Math.random() * 100}%`;
+    star.style.top = `${Math.random() * 100}%`;
+    star.style.opacity = Math.random() * 0.7 + 0.3;
+    starsContainer.appendChild(star);
+  }
+
+  // Crear estrellas parpadeantes
+  const twinklingContainer = document.getElementById('twinklingStars');
+  for (let i = 0; i < 50; i++) {
+    const star = document.createElement('div');
+    star.className = 'absolute rounded-full bg-white';
+    star.style.width = `${Math.random() * 3 + 1}px`;
+    star.style.height = star.style.width;
+    star.style.left = `${Math.random() * 100}%`;
+    star.style.top = `${Math.random() * 100}%`;
+    star.style.opacity = Math.random() * 0.8 + 0.2;
+    star.style.animation = `twinkle ${Math.random() * 3 + 2}s infinite alternate`;
+    twinklingContainer.appendChild(star);
+  }
+
+  // Crear partículas flotantes
+  const particlesContainer = document.getElementById('particles');
+  for (let i = 0; i < 30; i++) {
+    const particle = document.createElement('div');
+    particle.className = 'absolute rounded-full';
+    particle.style.width = `${Math.random() * 4 + 1}px`;
+    particle.style.height = particle.style.width;
+    particle.style.left = `${Math.random() * 100}%`;
+    particle.style.top = `${Math.random() * 100}%`;
+    particle.style.backgroundColor = i % 3 === 0 ? '#00e0ff' : i % 3 === 1 ? '#ff4d8d' : '#ffffff';
+    particle.style.opacity = Math.random() * 0.4 + 0.1;
+    particle.style.animation = `float ${Math.random() * 20 + 10}s linear infinite`;
+    particle.style.animationDelay = `${Math.random() * 5}s`;
+    particlesContainer.appendChild(particle);
+  }
+
+  // Agregar estilos CSS para las animaciones
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes twinkle {
+      0%, 100% { opacity: 0.2; }
+      50% { opacity: 1; }
+    }
+    
+    @keyframes float {
+      0% { 
+        transform: translateY(0) translateX(0);
+        opacity: 0.1;
+      }
+      25% {
+        transform: translateY(-20px) translateX(10px);
+        opacity: 0.4;
+      }
+      50% {
+        transform: translateY(-40px) translateX(0);
+        opacity: 0.2;
+      }
+      75% {
+        transform: translateY(-20px) translateX(-10px);
+        opacity: 0.4;
+      }
+      100% { 
+        transform: translateY(0) translateX(0);
+        opacity: 0.1;
+      }
+    }
+    
+    /* Efecto de brillo sutil para algunos elementos */
+    .glow-effect {
+      position: relative;
+    }
+    
+    .glow-effect::after {
+      content: '';
+      position: absolute;
+      top: -2px;
+      left: -2px;
+      right: -2px;
+      bottom: -2px;
+      background: linear-gradient(45deg, #00e0ff, #ff4d8d, #0077ff);
+      border-radius: inherit;
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    .glow-effect:hover::after {
+      opacity: 0.4;
+    }
+    
+    /* Efecto de respiración para el título */
+    @keyframes breathing {
+      0%, 100% { opacity: 0.8; }
+      50% { opacity: 1; }
+    }
+    
+    .breathing {
+      animation: breathing 3s ease-in-out infinite;
+    }
+  `;
+  document.head.appendChild(style);
+
+  // Agregar clase de respiración al título principal
+  document.querySelector('h1').classList.add('breathing');
+</script>
 
 <script>
 document.getElementById("btnLogout").addEventListener("click", () => {
-
-  // 📳 Vibración (solo si el dispositivo lo soporta)
   if (navigator.vibrate) {
     navigator.vibrate([100, 50, 100]);
   }
@@ -208,13 +353,10 @@ document.getElementById("btnLogout").addEventListener("click", () => {
     }
   }).then(async (result) => {
     if (result.isConfirmed) {
-
-      // 📳 Vibración final
       if (navigator.vibrate) {
         navigator.vibrate([200]);
       }
 
-      // POST logout to server
       const csrftoken = (document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)')||[])[2] || '';
       try {
         const res = await fetch('/logout/', { method: 'POST', headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' } });
@@ -229,14 +371,12 @@ document.getElementById("btnLogout").addEventListener("click", () => {
         console.error('Logout error', e);
         Swal.fire({ icon: 'error', title: 'Error de red' });
       }
-
     }
   });
 });
 </script>
 
 <script>
-
   function toggleMenu() {
     const menu = document.getElementById("mobileMenu");
     const overlay = document.getElementById("menuOverlay");
@@ -254,8 +394,6 @@ document.getElementById("btnLogout").addEventListener("click", () => {
     }
   }
 </script>
-
-<!-- Perfil disponible como página completa: /profile/ -->
 
 </body>
 </html>

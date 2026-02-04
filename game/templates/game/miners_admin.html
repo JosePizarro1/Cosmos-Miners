@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Miners · Cosmos Miners</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Icons -->
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    option {
+  background-color: #0c1a3a;
+}
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            space: "#05050f",
+            card: "rgba(20,30,60,0.75)",
+            accent: "#00e0ff",
+            pink: "#ff4d8d",
+            blueglow: "#0077ff"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative">
+
+<!-- Background -->
+<div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.15)_1px,_transparent_1px)] bg-[size:32px_32px] opacity-20"></div>
+<div class="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-transparent to-pink-900/20"></div>
+
+<!-- Header -->
+<header class="relative z-10 px-6 py-6 flex items-center justify-between max-w-6xl mx-auto">
+  <div class="flex items-center gap-3">
+    <i class="fas fa-rocket text-accent text-2xl"></i>
+    <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">COSMOS</span>
+    <span class="text-xs text-gray-300 ml-2">ADMIN · MINERS</span>
+  </div>
+
+  <div class="flex items-center gap-3">
+    <a href="/dashboard/admin/" class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
+      Dashboard
+    </a>
+    <a href="/home/" class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
+      Volver
+    </a>
+  </div>
+</header>
+
+<!-- Title -->
+<section class="relative z-10 px-6 mt-4 mb-6 max-w-6xl mx-auto">
+  <h1 class="text-3xl font-black leading-tight bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">
+    CRUD de Mineros
+  </h1>
+  <p class="text-sm text-gray-300 mt-1">Administra tipos de mineros y asignaciones a usuarios.</p>
+</section>
+
+<main class="relative z-10 px-6 pb-12 max-w-6xl mx-auto space-y-8">
+  <!-- Stats -->
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div class="bg-card border border-white/10 rounded-2xl p-5">
+      <div class="text-xs text-gray-400">Tipos de Minero</div>
+      <div id="statMinerTypes" class="text-2xl font-bold text-accent">--</div>
+    </div>
+    <div class="bg-card border border-white/10 rounded-2xl p-5">
+      <div class="text-xs text-gray-400">Mineros Asignados</div>
+      <div id="statUserMiners" class="text-2xl font-bold text-pink">--</div>
+    </div>
+  </div>
+
+  <!-- Miner Types -->
+  <section>
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-bold text-lg">Tipos de Minero</h3>
+      <button id="btnOpenMinerTypeModal" class="px-4 py-2 rounded bg-accent text-black font-bold text-sm">
+        + Crear Tipo
+      </button>
+    </div>
+    <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="text-gray-400 text-xs">
+            <tr>
+              <th class="py-2">Imagen</th>
+              <th>Nombre</th>
+              <th>Rareza</th>
+              <th>Intentos</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="minerTypesTable">
+            <tr><td colspan="6" class="text-gray-400 text-xs py-4">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- User Miners -->
+  <section>
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-bold text-lg">Asignaciones</h3>
+      <button id="btnOpenUserMinerModal" class="px-4 py-2 rounded bg-pink text-black font-bold text-sm">
+        + Asignar Minero
+      </button>
+    </div>
+    <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="text-gray-400 text-xs">
+            <tr>
+              <th class="py-2">Usuario</th>
+              <th>Miner Type</th>
+              <th>Estado</th>
+              <th>Fecha / Hora</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="userMinersTable">
+            <tr><td colspan="5" class="text-gray-400 text-xs py-4">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+</main>
+<!-- Modal MinerType -->
+<div id="minerTypeModal" class="fixed inset-0 hidden items-center justify-center z-50">
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative bg-card border border-white/10 rounded-3xl p-6 w-[92%] max-w-lg">
+    <div class="flex items-center justify-between mb-4">
+      <h4 id="minerTypeModalTitle" class="font-bold text-lg">Crear Tipo</h4>
+      <button id="closeMinerTypeModal" class="text-gray-300 text-xl">X</button>
+    </div>
+
+    <form id="minerTypeForm" class="space-y-4">
+      <input type="hidden" name="id" />
+      <div>
+        <label class="text-sm text-gray-300">Nombre</label>
+        <input name="name" class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors" />
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="text-sm text-gray-300">Rareza</label>
+          <select
+            name="rarity"
+            class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>')] bg-no-repeat bg-[right_1rem_center] bg-[length:1rem] pr-10">
+            <option value="common" selected>Común</option>
+            <option value="rare">Raro</option>
+            <option value="epic">Épico</option>
+            <option value="legendary">Legendario</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="text-sm text-gray-300">Intentos</label>
+          <input name="attempts" type="number" min="1" class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors" />
+        </div>
+      </div>
+
+      <div>
+        <label class="text-sm text-gray-300">Imagen</label>
+        <input id="imageInput" name="image" type="file" accept="image/*" class="w-full mt-2 p-2 rounded bg-white/5 text-white border border-white/10" />
+        <div id="imagePreview" class="mt-3 h-24 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center text-xs text-gray-400">
+          Sin imagen
+        </div>
+      </div>
+
+      <label class="flex items-center gap-2 text-sm text-gray-300">
+        <input name="is_active" type="checkbox" class="accent-cyan-400" />
+        Activo
+      </label>
+
+      <div class="flex justify-end gap-3">
+        <button type="button" id="cancelMinerType" class="px-4 py-2 rounded bg-white/5 text-gray-200">Cancelar</button>
+        <button type="submit" class="px-4 py-2 rounded bg-accent text-black font-bold">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal UserMiner -->
+<div id="userMinerModal" class="fixed inset-0 hidden items-center justify-center z-50">
+  <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+  <div class="relative bg-card border border-white/10 rounded-3xl p-6 w-[92%] max-w-lg">
+    <div class="flex items-center justify-between mb-4">
+      <h4 class="font-bold text-lg">Asignar Minero</h4>
+      <button id="closeUserMinerModal" class="text-gray-300 text-xl">âœ•</button>
+    </div>
+    <form id="userMinerForm" class="space-y-4">
+      <div>
+        <label class="text-sm text-gray-300">Usuario</label>
+        <select name="user_id" id="userSelect" class="w-full mt-2 p-3 rounded bg-white/5 text-white"></select>
+      </div>
+      <div>
+        <label class="text-sm text-gray-300">Miner Type</label>
+        <select name="miner_type_id" id="minerTypeSelect" class="w-full mt-2 p-3 rounded bg-white/5 text-white"></select>
+      </div>
+      <div>
+        <label class="text-sm text-gray-300">Estado</label>
+        <select name="status" class="w-full mt-2 p-3 rounded bg-white/5 text-white">
+          <option value="idle">Disponible</option>
+          <option value="traveling">Viajando</option>
+        </select>
+      </div>
+      <div class="flex justify-end gap-3">
+        <button type="button" id="cancelUserMiner" class="px-4 py-2 rounded bg-white/5 text-gray-200">Cancelar</button>
+        <button type="submit" class="px-4 py-2 rounded bg-pink text-black font-bold">Asignar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+function getCookie(name) {
+  let v = document.cookie.match('(^|;)\\s*'+name+'\\s*=\\s*([^;]+)');
+  return v ? v.pop() : '';
+}
+
+const csrftoken = getCookie('csrftoken');
+const minerTypesTable = document.getElementById('minerTypesTable');
+const userMinersTable = document.getElementById('userMinersTable');
+const minerTypeSelect = document.getElementById('minerTypeSelect');
+const userSelect = document.getElementById('userSelect');
+
+const minerTypeModal = document.getElementById('minerTypeModal');
+const userMinerModal = document.getElementById('userMinerModal');
+
+const minerTypeForm = document.getElementById('minerTypeForm');
+const userMinerForm = document.getElementById('userMinerForm');
+
+const minerTypeModalTitle = document.getElementById('minerTypeModalTitle');
+
+function openModal(el){ el.classList.remove('hidden'); el.classList.add('flex'); }
+function closeModal(el){ el.classList.add('hidden'); el.classList.remove('flex'); }
+
+document.getElementById('btnOpenMinerTypeModal').addEventListener('click', () => {
+  minerTypeForm.reset();
+  minerTypeForm.querySelector('[name="id"]').value = '';
+  minerTypeModalTitle.textContent = 'Crear Tipo';
+  imagePreview.innerHTML = 'Sin imagen';
+  openModal(minerTypeModal);
+});
+document.getElementById('closeMinerTypeModal').addEventListener('click', () => closeModal(minerTypeModal));
+document.getElementById('cancelMinerType').addEventListener('click', () => closeModal(minerTypeModal));
+
+document.getElementById('btnOpenUserMinerModal').addEventListener('click', () => openModal(userMinerModal));
+document.getElementById('closeUserMinerModal').addEventListener('click', () => closeModal(userMinerModal));
+document.getElementById('cancelUserMiner').addEventListener('click', () => closeModal(userMinerModal));
+
+function renderMinerTypeRow(mt){
+  const badge = mt.is_active
+    ? '<span class="px-2 py-1 rounded bg-green-400 text-black text-xs">Activo</span>'
+    : '<span class="px-2 py-1 rounded bg-gray-500 text-white text-xs">Inactivo</span>';
+  const img = mt.image_url ? `<img src="${mt.image_url}" class="w-10 h-10 rounded object-cover"/>` : '<div class="w-10 h-10 rounded bg-white/5"></div>';
+  return `<tr class="border-t border-white/5">
+    <td class="py-2">${img}</td>
+    <td>${mt.name}</td>
+    <td>${mt.rarity_label}</td>
+    <td>${mt.attempts}</td>
+    <td>${badge}</td>
+    <td class="text-right space-x-2">
+      <button data-id="${mt.id}" class="edit-miner-type px-3 py-1 rounded bg-white/5 text-gray-200 text-sm"><i class="fas fa-pen"></i></button>
+      <button data-id="${mt.id}" class="toggle-miner-type px-3 py-1 rounded bg-white/5 text-gray-200 text-sm"><i class="fas fa-power-off"></i></button>
+    </td>
+  </tr>`;
+}
+
+function renderUserMinerRow(um){
+  return `<tr class="border-t border-white/5">
+    <td class="py-2">${um.username}</td>
+    <td>${um.miner_type_name}</td>
+    <td>${um.status_label}</td>
+    <td>${new Date(um.obtained_at).toLocaleString()}</td>
+    <td class="text-right">
+      <button data-id="${um.id}" class="delete-user-miner px-3 py-1 rounded bg-white/5 text-red-300 text-sm"><i class="fas fa-trash"></i></button>
+    </td>
+  </tr>`;
+}
+
+async function loadStats(){
+  const res = await fetch('/dashboard/miners/stats/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+  });
+  const data = await res.json();
+  if (res.ok && data.success) {
+    document.getElementById('statMinerTypes').textContent = data.stats.total_miner_types;
+    document.getElementById('statUserMiners').textContent = data.stats.total_user_miners;
+    userSelect.innerHTML = data.users.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+  }
+}
+
+async function loadMinerTypes(){
+  const res = await fetch('/dashboard/miner-types/list/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+  });
+  const data = await res.json();
+  if (res.ok && data.success) {
+    minerTypesTable.innerHTML = data.items.map(renderMinerTypeRow).join('') || '<tr><td colspan="6" class="text-gray-400 text-xs py-4">Sin registros</td></tr>';
+    minerTypeSelect.innerHTML = data.items.map(mt => `<option value="${mt.id}">${mt.name}</option>`).join('');
+  }
+}
+
+async function loadUserMiners(){
+  const res = await fetch('/dashboard/user-miners/list/', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+  });
+  const data = await res.json();
+  if (res.ok && data.success) {
+    userMinersTable.innerHTML = data.items.map(renderUserMinerRow).join('') || '<tr><td colspan="5" class="text-gray-400 text-xs py-4">Sin registros</td></tr>';
+  }
+}
+
+minerTypeForm.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const fd = new FormData(minerTypeForm);
+  const id = fd.get('id');
+  const url = id ? `/dashboard/miner-types/update/${id}/` : '/dashboard/miner-types/create/';
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: { 'X-CSRFToken': csrftoken },
+    body: fd
+  });
+  const data = await res.json();
+  if (res.ok && data.success) {
+    closeModal(minerTypeModal);
+    await loadMinerTypes();
+    await loadStats();
+    Swal.fire({ icon: 'success', title: 'Guardado', toast: true, position: 'top-end', timer: 1200, showConfirmButton: false });
+  } else {
+    Swal.fire({ icon: 'error', title: data.error || 'Error' });
+  }
+});
+
+userMinerForm.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  const fd = new FormData(userMinerForm);
+  const res = await fetch('/dashboard/user-miners/create/', {
+    method: 'POST',
+    headers: { 'X-CSRFToken': csrftoken },
+    body: fd
+  });
+  const data = await res.json();
+  if (res.ok && data.success) {
+    closeModal(userMinerModal);
+    await loadUserMiners();
+    await loadStats();
+    Swal.fire({ icon: 'success', title: 'Asignado', toast: true, position: 'top-end', timer: 1200, showConfirmButton: false });
+  } else {
+    Swal.fire({ icon: 'error', title: data.error || 'Error' });
+  }
+});
+
+minerTypesTable.addEventListener('click', async (ev) => {
+  const editBtn = ev.target.closest('.edit-miner-type');
+  const toggleBtn = ev.target.closest('.toggle-miner-type');
+  if (editBtn) {
+    const id = editBtn.dataset.id;
+    const res = await fetch('/dashboard/miner-types/list/', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+    });
+    const data = await res.json();
+    const mt = data.items.find(i => String(i.id) === String(id));
+    if (!mt) return;
+    minerTypeForm.reset();
+    minerTypeForm.querySelector('[name="id"]').value = mt.id;
+    minerTypeForm.querySelector('[name="name"]').value = mt.name;
+    minerTypeForm.querySelector('[name="rarity"]').value = mt.rarity;
+    minerTypeForm.querySelector('[name="attempts"]').value = mt.attempts;
+    minerTypeForm.querySelector('[name="is_active"]').checked = mt.is_active;
+    minerTypeModalTitle.textContent = 'Editar Tipo';
+    if (mt.image_url) {
+      imagePreview.innerHTML = `<img src="${mt.image_url}" class="w-full h-full object-cover" />`;
+    } else {
+      imagePreview.innerHTML = 'Sin imagen';
+    }
+    openModal(minerTypeModal);
+  }
+  if (toggleBtn) {
+    const id = toggleBtn.dataset.id;
+    const res = await fetch(`/dashboard/miner-types/toggle/${id}/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+    });
+    const data = await res.json();
+    if (res.ok && data.success) {
+      await loadMinerTypes();
+      Swal.fire({ icon: 'success', title: 'Actualizado', toast: true, position: 'top-end', timer: 1000, showConfirmButton: false });
+    } else {
+      Swal.fire({ icon: 'error', title: data.error || 'Error' });
+    }
+  }
+});
+
+userMinersTable.addEventListener('click', async (ev) => {
+  const delBtn = ev.target.closest('.delete-user-miner');
+  if (!delBtn) return;
+  const id = delBtn.dataset.id;
+  const confirm = await Swal.fire({
+    title: 'Eliminar asignación',
+    text: '¿Seguro que deseas retirar este minero?',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Sí, retirar',
+    cancelButtonText: 'Cancelar',
+    background: '#0c1a3a',
+    color: '#fff'
+  });
+  if (!confirm.isConfirmed) return;
+  const res = await fetch(`/dashboard/user-miners/delete/${id}/`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+  });
+  const data = await res.json();
+  if (res.ok && data.success) {
+    await loadUserMiners();
+    await loadStats();
+    Swal.fire({ icon: 'success', title: 'Retirado', toast: true, position: 'top-end', timer: 1000, showConfirmButton: false });
+  } else {
+    Swal.fire({ icon: 'error', title: data.error || 'Error' });
+  }
+});
+
+const imageInput = document.getElementById('imageInput');
+const imagePreview = document.getElementById('imagePreview');
+imageInput.addEventListener('change', () => {
+  const file = imageInput.files[0];
+  if (!file) {
+    imagePreview.innerHTML = 'Sin imagen';
+    return;
+  }
+  const url = URL.createObjectURL(file);
+  imagePreview.innerHTML = `<img src="${url}" class="w-full h-full object-cover" />`;
+});
+
+window.addEventListener('DOMContentLoaded', async () => {
+  await loadStats();
+  await loadMinerTypes();
+  await loadUserMiners();
+});
+</script>
+
+</body>
+</html>
