@@ -723,6 +723,7 @@ def logout_view(request):
         return JsonResponse({"error": "Error interno"}, status=500)
 
 
+
 @login_required
 def miners_view(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)

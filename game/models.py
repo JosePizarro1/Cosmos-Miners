@@ -183,3 +183,70 @@ class UserTransport(models.Model):
 
     def __str__(self):
         return f"{self.transport_type.name} - {self.owner.user.username}"
+
+
+class ToolRarity(models.TextChoices):
+    COMMON = "common", "Común"
+    RARE = "rare", "Raro"
+    EPIC = "epic", "Épico"
+    LEGENDARY = "legendary", "Legendario"
+
+class ToolType(models.Model):
+    name = models.CharField(max_length=100)
+
+    image = models.ImageField(
+        upload_to="tools/",
+        null=True,
+        blank=True
+    )
+
+    rarity = models.CharField(
+        max_length=20,
+        choices=ToolRarity.choices
+    )
+
+    production_multiplier = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        help_text="Multiplicador de producción. Ej: 1.20 = +20%"
+    )
+
+    success_bonus = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0.00"),
+        help_text="Bonus adicional de probabilidad de éxito (%)"
+    )
+
+    is_active = models.BooleanField(default=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.name} ({self.get_rarity_display()})"
+class ToolStatus(models.TextChoices):
+    IDLE = "idle", "Disponible"
+    TRAVELING = "traveling", "En uso"
+class UserTool(models.Model):
+    owner = models.ForeignKey(
+        Profile,
+        on_delete=models.CASCADE,
+        related_name="tools"
+    )
+
+    tool_type = models.ForeignKey(
+        ToolType,
+        on_delete=models.PROTECT,
+        related_name="user_tools"
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=ToolStatus.choices,
+        default=ToolStatus.IDLE
+    )
+
+    obtained_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.tool_type.name} - {self.owner.user.username}"

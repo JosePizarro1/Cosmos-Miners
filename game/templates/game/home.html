@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8" />
   <title>Cosmos Miners</title>
@@ -9,8 +10,7 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <!-- Icons -->
-  <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
   <script>
     tailwind.config = {
@@ -31,235 +31,249 @@
 
 <body class="min-h-screen bg-space text-white overflow-x-hidden relative">
 
-<!-- 🌟 NUEVO FONDO MEJORADO -->
-<div class="fixed inset-0 z-0">
-  <!-- Base nebula -->
-  <div class="absolute inset-0 bg-gradient-to-b from-blue-950/80 via-indigo-950/60 to-purple-950/90"></div>
-  
-  <!-- Estrellas estáticas -->
-  <div class="absolute inset-0" id="stars"></div>
-  
-  <!-- Estrellas brillantes -->
-  <div class="absolute inset-0" id="twinklingStars"></div>
-  
-  <!-- Nebulosa animada -->
-  <div class="absolute inset-0 opacity-30">
-    <div class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-gradient-to-r from-blue-500/40 to-cyan-500/30 animate-pulse"></div>
-    <div class="absolute bottom-1/3 right-1/4 w-96 h-96 rounded-full bg-gradient-to-r from-purple-500/30 to-pink-500/20 animate-pulse" style="animation-delay: 1s;"></div>
-    <div class="absolute top-1/3 right-1/3 w-48 h-48 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-400/10 animate-pulse" style="animation-delay: 2s;"></div>
-  </div>
-  
-  <!-- Partículas animadas -->
-  <div class="absolute inset-0" id="particles"></div>
-  
-  <!-- Efecto de profundidad (gradiente radial) -->
-  <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,119,255,0.15)_0%,_rgba(0,119,255,0.05)_25%,_transparent_70%)]"></div>
-  
-  <!-- Galaxia espiral -->
-  <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-10">
-    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full border border-blue-500/20"></div>
-    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full border border-cyan-400/20"></div>
-    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full border border-white/10"></div>
-  </div>
-</div>
+  <!-- 🌟 NUEVO FONDO MEJORADO -->
+  <div class="fixed inset-0 z-0">
+    <!-- Base nebula -->
+    <div class="absolute inset-0 bg-gradient-to-b from-blue-950/80 via-indigo-950/60 to-purple-950/90"></div>
 
-<!-- 📱 HEADER -->
-<header class="relative z-10 px-5 py-5 flex items-center justify-between">
-  <a href="/" class="flex items-center gap-3">
-    <i class="fas fa-rocket text-accent text-2xl"></i>
-    <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">
-      COSMOS
-    </span>
-  </a>
+    <!-- Estrellas estáticas -->
+    <div class="absolute inset-0" id="stars"></div>
 
-  <button onclick="toggleMenu()"
-        class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
-    ☰
-  </button>
-</header>
+    <!-- Estrellas brillantes -->
+    <div class="absolute inset-0" id="twinklingStars"></div>
 
-<!-- 🚀 HERO -->
-<section class="relative z-10 px-6 mt-10 text-center">
-  <h1 class="text-4xl font-black leading-tight mb-4 bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">
-    Explora el Universo
-  </h1>
-
-  <p class="text-gray-300 text-base mb-8">
-    Mina recursos, mejora tu nave y conquista planetas lejanos.
-  </p>
-
-  <button class="w-full max-w-sm mx-auto py-4 rounded-2xl text-lg font-bold
-                 bg-gradient-to-r from-accent to-blueglow
-                 shadow-lg shadow-blue-500/40
-                 active:scale-95 transition relative overflow-hidden group">
-    <span class="relative z-10">🎮 Jugar Ahora</span>
-    <div class="absolute inset-0 bg-gradient-to-r from-blueglow to-accent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-  </button>
-</section>
-
-<!-- 🧩 PLAYER STATS -->
-<section class="relative z-10 mt-10 px-6 grid grid-cols-3 gap-3 max-w-md mx-auto">
-  <div class="bg-card backdrop-blur-xl border border-white/10 rounded-xl py-4 text-center">
-    <p class="text-xs text-gray-400">Nivel</p>
-    <p class="text-xl font-bold text-accent">12</p>
-  </div>
-  <div class="bg-card backdrop-blur-xl border border-white/10 rounded-xl py-4 text-center">
-    <p class="text-xs text-gray-400">Energía</p>
-    <p class="text-xl font-bold text-pink">87%</p>
-  </div>
-  <div class="bg-card backdrop-blur-xl border border-white/10 rounded-xl py-4 text-center">
-    <p class="text-xs text-gray-400">Créditos</p>
-    <p class="text-xl font-bold text-yellow-400">2.4k</p>
-  </div>
-</section>
-
-<!-- 🎮 GAME MENU -->
-<section class="relative z-10 mt-12 px-6 grid gap-4 max-w-md mx-auto">
-
-  <a href="/miners/" class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5 hover:border-accent/40 hover:bg-white/5 transition cursor-pointer group">
-    <i class="fas fa-user-astronaut text-accent text-2xl group-hover:scale-110 transition-transform"></i>
-    <div>
-      <h3 class="font-bold text-lg">Mineros</h3>
-      <p class="text-sm text-gray-300">Gestiona tu tripulación</p>
+    <!-- Nebulosa animada -->
+    <div class="absolute inset-0 opacity-30">
+      <div
+        class="absolute top-1/4 left-1/4 w-64 h-64 rounded-full bg-gradient-to-r from-blue-500/40 to-cyan-500/30 animate-pulse">
+      </div>
+      <div
+        class="absolute bottom-1/3 right-1/4 w-96 h-96 rounded-full bg-gradient-to-r from-purple-500/30 to-pink-500/20 animate-pulse"
+        style="animation-delay: 1s;"></div>
+      <div
+        class="absolute top-1/3 right-1/3 w-48 h-48 rounded-full bg-gradient-to-r from-cyan-400/20 to-blue-400/10 animate-pulse"
+        style="animation-delay: 2s;"></div>
     </div>
-  </a>
 
-  <div class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5 group hover:border-accent/40 hover:bg-white/5 transition cursor-pointer">
-    <i class="fas fa-tools text-accent text-2xl group-hover:scale-110 transition-transform"></i>
-    <div>
-      <h3 class="font-bold text-lg">Equipamiento</h3>
-      <p class="text-sm text-gray-300">Mejora tus herramientas</p>
+    <!-- Partículas animadas -->
+    <div class="absolute inset-0" id="particles"></div>
+
+    <!-- Efecto de profundidad (gradiente radial) -->
+    <div
+      class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(0,119,255,0.15)_0%,_rgba(0,119,255,0.05)_25%,_transparent_70%)]">
+    </div>
+
+    <!-- Galaxia espiral -->
+    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-full opacity-10">
+      <div
+        class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 rounded-full border border-blue-500/20">
+      </div>
+      <div
+        class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 rounded-full border border-cyan-400/20">
+      </div>
+      <div
+        class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-32 h-32 rounded-full border border-white/10">
+      </div>
     </div>
   </div>
 
-  <div class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5 group hover:border-accent/40 hover:bg-white/5 transition cursor-pointer">
-    <i class="fas fa-globe text-accent text-2xl group-hover:scale-110 transition-transform"></i>
-    <div>
-      <h3 class="font-bold text-lg">Planetas</h3>
-      <p class="text-sm text-gray-300">Explora nuevos mundos</p>
+  <!-- 📱 HEADER -->
+  <header class="relative z-10 px-5 py-5 flex items-center justify-between">
+    <a href="/" class="flex items-center gap-3">
+      <i class="fas fa-rocket text-accent text-2xl"></i>
+      <span
+        class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">
+        COSMOS
+      </span>
+    </a>
+
+    <button onclick="toggleMenu()"
+      class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
+      ☰
+    </button>
+  </header>
+
+  <!-- 🚀 HERO -->
+  <section class="relative z-10 px-6 mt-10 text-center">
+    <h1
+      class="text-4xl font-black leading-tight mb-4 bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">
+      Explora el Universo
+    </h1>
+
+    <p class="text-gray-300 text-base mb-8">
+      Mina recursos, mejora tu nave y conquista planetas lejanos.
+    </p>
+
+
+  </section>
+
+
+
+  <!-- 🎮 GAME MENU -->
+  <section class="relative z-10 mt-12 px-6 grid gap-4 max-w-md mx-auto">
+
+    <a href="/miners/"
+      class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5 hover:border-accent/40 hover:bg-white/5 transition cursor-pointer group">
+      <i class="fas fa-user-astronaut text-accent text-2xl group-hover:scale-110 transition-transform"></i>
+      <div>
+        <h3 class="font-bold text-lg">Mineros</h3>
+        <p class="text-sm text-gray-300">Gestiona tu tripulación</p>
+      </div>
+    </a>
+
+    <a href="/transports/"
+      class="flex items-center gap-4 bg-card backdrop-blur-xl border border-pink/20 rounded-2xl p-5 hover:border-pink/40 hover:bg-white/5 transition cursor-pointer group">
+      <i class="fas fa-shuttle-space text-pink text-2xl group-hover:scale-110 transition-transform"></i>
+      <div>
+        <h3 class="font-bold text-lg">Transportes</h3>
+        <p class="text-sm text-gray-300">Gestiona tu flota</p>
+      </div>
+    </a>
+
+    <a href="/tools/"
+      class="flex items-center gap-4 bg-card backdrop-blur-xl border border-yellow-400/20 rounded-2xl p-5 hover:border-yellow-400/40 hover:bg-white/5 transition cursor-pointer group">
+      <i class="fas fa-screwdriver-wrench text-yellow-400 text-2xl group-hover:scale-110 transition-transform"></i>
+      <div>
+        <h3 class="font-bold text-lg">Herramientas</h3>
+        <p class="text-sm text-gray-300">Gestiona tus herramientas</p>
+      </div>
+    </a>
+
+    <div
+      class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5 group hover:border-accent/40 hover:bg-white/5 transition cursor-pointer">
+      <i class="fas fa-globe text-accent text-2xl group-hover:scale-110 transition-transform"></i>
+      <div>
+        <h3 class="font-bold text-lg">Planetas</h3>
+        <p class="text-sm text-gray-300">Explora nuevos mundos</p>
+      </div>
     </div>
-  </div>
 
-  <div class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5 group hover:border-accent/40 hover:bg-white/5 transition cursor-pointer">
-    <i class="fas fa-gem text-accent text-2xl group-hover:scale-110 transition-transform"></i>
-    <div>
-      <h3 class="font-bold text-lg">Minerales</h3>
-      <p class="text-sm text-gray-300">Recursos raros</p>
+    <div
+      class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5 group hover:border-accent/40 hover:bg-white/5 transition cursor-pointer">
+      <i class="fas fa-gem text-accent text-2xl group-hover:scale-110 transition-transform"></i>
+      <div>
+        <h3 class="font-bold text-lg">Minerales</h3>
+        <p class="text-sm text-gray-300">Recursos raros</p>
+      </div>
     </div>
-  </div>
 
-</section>
+  </section>
 
-<!-- 🖥 DESKTOP EXTRAS -->
-<section class="hidden lg:block relative z-10 mt-24 px-20">
-  <div class="grid grid-cols-4 gap-8">
-    <div class="bg-card p-8 rounded-3xl text-center backdrop-blur-xl border border-white/10 hover:border-accent/40 transition">🌍 Galaxy Map</div>
-    <div class="bg-card p-8 rounded-3xl text-center backdrop-blur-xl border border-white/10 hover:border-accent/40 transition">🚀 Fleet</div>
-    <div class="bg-card p-8 rounded-3xl text-center backdrop-blur-xl border border-white/10 hover:border-accent/40 transition">🛠 Upgrades</div>
-    <div class="bg-card p-8 rounded-3xl text-center backdrop-blur-xl border border-white/10 hover:border-accent/40 transition">🏆 Rankings</div>
-  </div>
-</section>
+  <!-- 🖥 DESKTOP EXTRAS -->
+  <section class="hidden lg:block relative z-10 mt-24 px-20">
+    <div class="grid grid-cols-4 gap-8">
+      <div
+        class="bg-card p-8 rounded-3xl text-center backdrop-blur-xl border border-white/10 hover:border-accent/40 transition">
+        🌍 Galaxy Map</div>
+      <div
+        class="bg-card p-8 rounded-3xl text-center backdrop-blur-xl border border-white/10 hover:border-accent/40 transition">
+        🚀 Fleet</div>
+      <div
+        class="bg-card p-8 rounded-3xl text-center backdrop-blur-xl border border-white/10 hover:border-accent/40 transition">
+        🛠 Upgrades</div>
+      <div
+        class="bg-card p-8 rounded-3xl text-center backdrop-blur-xl border border-white/10 hover:border-accent/40 transition">
+        🏆 Rankings</div>
+    </div>
+  </section>
 
-<!-- 🔻 FOOTER -->
-<footer class="relative z-10 mt-16 pb-10 text-center text-gray-400 text-xs">
-  © 2026 Cosmos Miners · Mobile First Game UI
-</footer>
+  <!-- 🔻 FOOTER -->
+  <footer class="relative z-10 mt-16 pb-10 text-center text-gray-400 text-xs">
+    © 2026 Cosmos Miners · Mobile First Game UI
+  </footer>
 
-<!-- 🌌 OVERLAY -->
-<div id="menuOverlay"
-     class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-40"
-     onclick="toggleMenu()"></div>
+  <!-- 🌌 OVERLAY -->
+  <div id="menuOverlay" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-40" onclick="toggleMenu()"></div>
 
-<!-- 📱 MOBILE MENU -->
-<aside id="mobileMenu"
-       class="fixed top-0 right-0 h-full w-72 bg-card backdrop-blur-xl
+  <!-- 📱 MOBILE MENU -->
+  <aside id="mobileMenu" class="fixed top-0 right-0 h-full w-72 bg-card backdrop-blur-xl
               border-l border-white/10 z-50
               translate-x-full transition-transform duration-300">
 
-  <div class="p-6 flex justify-between items-center border-b border-white/10">
-    <h3 class="font-bold text-lg text-accent">Menú</h3>
-    <button onclick="toggleMenu()" class="text-gray-300 text-xl font-bold">
-      ✕
-    </button>
-  </div>
+    <div class="p-6 flex justify-between items-center border-b border-white/10">
+      <h3 class="font-bold text-lg text-accent">Menú</h3>
+      <button onclick="toggleMenu()" class="text-gray-300 text-xl font-bold">
+        ✕
+      </button>
+    </div>
 
-  <nav class="p-6 flex flex-col gap-5 text-sm">
-    <a href="/profile/" class="flex items-center gap-3">
-      <i class="fas fa-user"></i> Perfil
-    </a>
-    {% if user.is_staff %}
-    <a href="/dashboard/admin/" class="flex items-center gap-3 text-accent">
-      <i class="fas fa-gauge-high"></i> Dashboard Admin
-    </a>
-    <a href="/withdrawals/admin/" class="flex items-center gap-3 text-accent">
-      <i class="fas fa-user-shield"></i> Retiros (Admin)
-    </a>
-    {% endif %}
-    <button class="flex items-center gap-3">
-      <i class="fas fa-cog"></i> Ajustes
-    </button>
-    <button class="flex items-center gap-3">
-      <i class="fas fa-globe"></i> Idioma
-    </button>
+    <nav class="p-6 flex flex-col gap-5 text-sm">
+      <a href="/profile/" class="flex items-center gap-3">
+        <i class="fas fa-user"></i> Perfil
+      </a>
+      {% if user.is_staff %}
+      <a href="/dashboard/admin/" class="flex items-center gap-3 text-accent">
+        <i class="fas fa-gauge-high"></i> Dashboard Admin
+      </a>
+      <a href="/withdrawals/admin/" class="flex items-center gap-3 text-accent">
+        <i class="fas fa-user-shield"></i> Retiros (Admin)
+      </a>
+      {% endif %}
+      <button class="flex items-center gap-3">
+        <i class="fas fa-cog"></i> Ajustes
+      </button>
+      <button class="flex items-center gap-3">
+        <i class="fas fa-globe"></i> Idioma
+      </button>
 
-    <hr class="border-white/10">
-    <button id="btnLogout" class="flex items-center gap-3 text-red-400">
-      <i class="fas fa-sign-out-alt"></i> Salir
-    </button>
-  </nav>
-</aside>
+      <hr class="border-white/10">
+      <button id="btnLogout" class="flex items-center gap-3 text-red-400">
+        <i class="fas fa-sign-out-alt"></i> Salir
+      </button>
+    </nav>
+  </aside>
 
-<!-- Scripts -->
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
 
-<script>
-  // Crear estrellas estáticas
-  const starsContainer = document.getElementById('stars');
-  for (let i = 0; i < 200; i++) {
-    const star = document.createElement('div');
-    star.className = 'absolute rounded-full bg-white';
-    star.style.width = `${Math.random() * 2 + 1}px`;
-    star.style.height = star.style.width;
-    star.style.left = `${Math.random() * 100}%`;
-    star.style.top = `${Math.random() * 100}%`;
-    star.style.opacity = Math.random() * 0.7 + 0.3;
-    starsContainer.appendChild(star);
-  }
+  <script>
+    // Crear estrellas estáticas
+    const starsContainer = document.getElementById('stars');
+    for (let i = 0; i < 200; i++) {
+      const star = document.createElement('div');
+      star.className = 'absolute rounded-full bg-white';
+      star.style.width = `${Math.random() * 2 + 1}px`;
+      star.style.height = star.style.width;
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.opacity = Math.random() * 0.7 + 0.3;
+      starsContainer.appendChild(star);
+    }
 
-  // Crear estrellas parpadeantes
-  const twinklingContainer = document.getElementById('twinklingStars');
-  for (let i = 0; i < 50; i++) {
-    const star = document.createElement('div');
-    star.className = 'absolute rounded-full bg-white';
-    star.style.width = `${Math.random() * 3 + 1}px`;
-    star.style.height = star.style.width;
-    star.style.left = `${Math.random() * 100}%`;
-    star.style.top = `${Math.random() * 100}%`;
-    star.style.opacity = Math.random() * 0.8 + 0.2;
-    star.style.animation = `twinkle ${Math.random() * 3 + 2}s infinite alternate`;
-    twinklingContainer.appendChild(star);
-  }
+    // Crear estrellas parpadeantes
+    const twinklingContainer = document.getElementById('twinklingStars');
+    for (let i = 0; i < 50; i++) {
+      const star = document.createElement('div');
+      star.className = 'absolute rounded-full bg-white';
+      star.style.width = `${Math.random() * 3 + 1}px`;
+      star.style.height = star.style.width;
+      star.style.left = `${Math.random() * 100}%`;
+      star.style.top = `${Math.random() * 100}%`;
+      star.style.opacity = Math.random() * 0.8 + 0.2;
+      star.style.animation = `twinkle ${Math.random() * 3 + 2}s infinite alternate`;
+      twinklingContainer.appendChild(star);
+    }
 
-  // Crear partículas flotantes
-  const particlesContainer = document.getElementById('particles');
-  for (let i = 0; i < 30; i++) {
-    const particle = document.createElement('div');
-    particle.className = 'absolute rounded-full';
-    particle.style.width = `${Math.random() * 4 + 1}px`;
-    particle.style.height = particle.style.width;
-    particle.style.left = `${Math.random() * 100}%`;
-    particle.style.top = `${Math.random() * 100}%`;
-    particle.style.backgroundColor = i % 3 === 0 ? '#00e0ff' : i % 3 === 1 ? '#ff4d8d' : '#ffffff';
-    particle.style.opacity = Math.random() * 0.4 + 0.1;
-    particle.style.animation = `float ${Math.random() * 20 + 10}s linear infinite`;
-    particle.style.animationDelay = `${Math.random() * 5}s`;
-    particlesContainer.appendChild(particle);
-  }
+    // Crear partículas flotantes
+    const particlesContainer = document.getElementById('particles');
+    for (let i = 0; i < 30; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'absolute rounded-full';
+      particle.style.width = `${Math.random() * 4 + 1}px`;
+      particle.style.height = particle.style.width;
+      particle.style.left = `${Math.random() * 100}%`;
+      particle.style.top = `${Math.random() * 100}%`;
+      particle.style.backgroundColor = i % 3 === 0 ? '#00e0ff' : i % 3 === 1 ? '#ff4d8d' : '#ffffff';
+      particle.style.opacity = Math.random() * 0.4 + 0.1;
+      particle.style.animation = `float ${Math.random() * 20 + 10}s linear infinite`;
+      particle.style.animationDelay = `${Math.random() * 5}s`;
+      particlesContainer.appendChild(particle);
+    }
 
-  // Agregar estilos CSS para las animaciones
-  const style = document.createElement('style');
-  style.textContent = `
+    // Agregar estilos CSS para las animaciones
+    const style = document.createElement('style');
+    style.textContent = `
     @keyframes twinkle {
       0%, 100% { opacity: 0.2; }
       50% { opacity: 1; }
@@ -321,79 +335,80 @@
       animation: breathing 3s ease-in-out infinite;
     }
   `;
-  document.head.appendChild(style);
+    document.head.appendChild(style);
 
-  // Agregar clase de respiración al título principal
-  document.querySelector('h1').classList.add('breathing');
-</script>
+    // Agregar clase de respiración al título principal
+    document.querySelector('h1').classList.add('breathing');
+  </script>
 
-<script>
-document.getElementById("btnLogout").addEventListener("click", () => {
-  if (navigator.vibrate) {
-    navigator.vibrate([100, 50, 100]);
-  }
-
-  Swal.fire({
-    title: "¿Cerrar sesión?",
-    text: "¿Estás seguro de que deseas salir?",
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonText: "Sí, salir",
-    cancelButtonText: "Cancelar",
-    confirmButtonColor: "#ff4d8d",
-    cancelButtonColor: "#1a2f5e",
-    background: "#0c1a3a",
-    color: "#fff",
-    allowOutsideClick: false,
-    showClass: {
-      popup: 'animate__animated animate__shakeX'
-    },
-    hideClass: {
-      popup: 'animate__animated animate__fadeOut'
-    }
-  }).then(async (result) => {
-    if (result.isConfirmed) {
+  <script>
+    document.getElementById("btnLogout").addEventListener("click", () => {
       if (navigator.vibrate) {
-        navigator.vibrate([200]);
+        navigator.vibrate([100, 50, 100]);
       }
 
-      const csrftoken = (document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)')||[])[2] || '';
-      try {
-        const res = await fetch('/logout/', { method: 'POST', headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' } });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          Swal.fire({ icon: 'success', title: 'Sesión cerrada', showConfirmButton: false, timer: 800, background: '#0c1a3a', color: '#fff' });
-          setTimeout(()=>{ window.location.href = '/'; }, 900);
-        } else {
-          Swal.fire({ icon: 'error', title: data.error || 'No se pudo cerrar sesión' });
+      Swal.fire({
+        title: "¿Cerrar sesión?",
+        text: "¿Estás seguro de que deseas salir?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonText: "Sí, salir",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#ff4d8d",
+        cancelButtonColor: "#1a2f5e",
+        background: "#0c1a3a",
+        color: "#fff",
+        allowOutsideClick: false,
+        showClass: {
+          popup: 'animate__animated animate__shakeX'
+        },
+        hideClass: {
+          popup: 'animate__animated animate__fadeOut'
         }
-      } catch (e) {
-        console.error('Logout error', e);
-        Swal.fire({ icon: 'error', title: 'Error de red' });
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          if (navigator.vibrate) {
+            navigator.vibrate([200]);
+          }
+
+          const csrftoken = (document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)') || [])[2] || '';
+          try {
+            const res = await fetch('/logout/', { method: 'POST', headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' } });
+            const data = await res.json();
+            if (res.ok && data.success) {
+              Swal.fire({ icon: 'success', title: 'Sesión cerrada', showConfirmButton: false, timer: 800, background: '#0c1a3a', color: '#fff' });
+              setTimeout(() => { window.location.href = '/'; }, 900);
+            } else {
+              Swal.fire({ icon: 'error', title: data.error || 'No se pudo cerrar sesión' });
+            }
+          } catch (e) {
+            console.error('Logout error', e);
+            Swal.fire({ icon: 'error', title: 'Error de red' });
+          }
+        }
+      });
+    });
+  </script>
+
+  <script>
+    function toggleMenu() {
+      const menu = document.getElementById("mobileMenu");
+      const overlay = document.getElementById("menuOverlay");
+
+      const isOpen = menu.classList.contains("translate-x-0");
+
+      if (isOpen) {
+        menu.classList.remove("translate-x-0");
+        menu.classList.add("translate-x-full");
+        overlay.classList.add("hidden");
+      } else {
+        menu.classList.remove("translate-x-full");
+        menu.classList.add("translate-x-0");
+        overlay.classList.remove("hidden");
       }
     }
-  });
-});
-</script>
-
-<script>
-  function toggleMenu() {
-    const menu = document.getElementById("mobileMenu");
-    const overlay = document.getElementById("menuOverlay");
-
-    const isOpen = menu.classList.contains("translate-x-0");
-
-    if (isOpen) {
-      menu.classList.remove("translate-x-0");
-      menu.classList.add("translate-x-full");
-      overlay.classList.add("hidden");
-    } else {
-      menu.classList.remove("translate-x-full");
-      menu.classList.add("translate-x-0");
-      overlay.classList.remove("hidden");
-    }
-  }
-</script>
+  </script>
 
 </body>
+
 </html>

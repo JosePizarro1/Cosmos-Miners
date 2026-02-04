@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Transports · Cosmos Transports</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    option {
+      background-color: #0c1a3a;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            space: "#05050f",
+            card: "rgba(20,30,60,0.75)",
+            accent: "#00e0ff",
+            pink: "#ff4d8d",
+            blueglow: "#0077ff"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative">
+
+  <!-- Background -->
+  <div
+    class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.15)_1px,_transparent_1px)] bg-[size:32px_32px] opacity-20">
+  </div>
+  <div class="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-transparent to-pink-900/20"></div>
+
+  <!-- Header -->
+  <header class="relative z-10 px-6 py-6 flex items-center justify-between max-w-6xl mx-auto">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-rocket text-accent text-2xl"></i>
+      <span
+        class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">COSMOS</span>
+      <span class="text-xs text-gray-300 ml-2">ADMIN · TRANSPORTS</span>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="/dashboard/admin/"
+        class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
+        Dashboard
+      </a>
+      <a href="/home/"
+        class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
+        Volver
+      </a>
+    </div>
+  </header>
+
+  <!-- Title -->
+  <section class="relative z-10 px-6 mt-4 mb-6 max-w-6xl mx-auto">
+    <h1 class="text-3xl font-black leading-tight bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">
+      CRUD de Transportes
+    </h1>
+    <p class="text-sm text-gray-300 mt-1">Administra tipos de transportes y asignaciones a usuarios.</p>
+  </section>
+
+  <main class="relative z-10 px-6 pb-12 max-w-6xl mx-auto space-y-8">
+    <!-- Stats -->
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="bg-card border border-white/10 rounded-2xl p-5">
+        <div class="text-xs text-gray-400">Tipos de Transporte</div>
+        <div id="statTransportTypes" class="text-2xl font-bold text-accent">--</div>
+      </div>
+      <div class="bg-card border border-white/10 rounded-2xl p-5">
+        <div class="text-xs text-gray-400">Transportes Asignados</div>
+        <div id="statUserTransports" class="text-2xl font-bold text-pink">--</div>
+      </div>
+    </div>
+
+    <!-- Transport Types -->
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-lg">Tipos de Transporte</h3>
+        <button id="btnOpenTransportTypeModal" class="px-4 py-2 rounded bg-accent text-black font-bold text-sm">
+          + Crear Tipo
+        </button>
+      </div>
+      <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="text-gray-400 text-xs">
+              <tr>
+                <th class="py-2">Imagen</th>
+                <th>Nombre</th>
+                <th>Rareza</th>
+                <th>Capacidad</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="transportTypesTable">
+              <tr>
+                <td colspan="6" class="text-gray-400 text-xs py-4">Cargando...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- User Transports -->
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-lg">Asignaciones</h3>
+        <button id="btnOpenUserTransportModal" class="px-4 py-2 rounded bg-pink text-black font-bold text-sm">
+          + Asignar Transporte
+        </button>
+      </div>
+      <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="text-gray-400 text-xs">
+              <tr>
+                <th class="py-2">Usuario</th>
+                <th>Transport Type</th>
+                <th>Estado</th>
+                <th>Fecha / Hora</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="userTransportsTable">
+              <tr>
+                <td colspan="5" class="text-gray-400 text-xs py-4">Cargando...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+  <!-- Modal TransportType -->
+  <div id="transportTypeModal" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div class="relative bg-card border border-white/10 rounded-3xl p-6 w-[92%] max-w-lg">
+      <div class="flex items-center justify-between mb-4">
+        <h4 id="transportTypeModalTitle" class="font-bold text-lg">Crear Tipo</h4>
+        <button id="closeTransportTypeModal" class="text-gray-300 text-xl">X</button>
+      </div>
+
+      <form id="transportTypeForm" class="space-y-4">
+        <input type="hidden" name="id" />
+        <div>
+          <label class="text-sm text-gray-300">Nombre</label>
+          <input name="name"
+            class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="text-sm text-gray-300">Rareza</label>
+            <select name="rarity"
+              class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,<svg xmlns="
+              http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline></svg>')] bg-no-repeat bg-[right_1rem_center]
+              bg-[length:1rem] pr-10">
+              <option value="common" selected>Común</option>
+              <option value="rare">Raro</option>
+              <option value="epic">Épico</option>
+              <option value="legendary">Legendario</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-sm text-gray-300">Capacidad</label>
+            <input name="capacity" type="number" min="1"
+              class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors" />
+          </div>
+        </div>
+
+        <div>
+          <label class="text-sm text-gray-300">Velocidad</label>
+          <input name="speed" type="number" min="1"
+            class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors" />
+        </div>
+
+        <div>
+          <label class="text-sm text-gray-300">Imagen</label>
+          <input id="imageInput" name="image" type="file" accept="image/*"
+            class="w-full mt-2 p-2 rounded bg-white/5 text-white border border-white/10" />
+          <div id="imagePreview"
+            class="mt-3 h-24 rounded-xl overflow-hidden bg-white/5 border border-white/10 flex items-center justify-center text-xs text-gray-400">
+            Sin imagen
+          </div>
+        </div>
+
+        <label class="flex items-center gap-2 text-sm text-gray-300">
+          <input name="is_active" type="checkbox" class="accent-cyan-400" />
+          Activo
+        </label>
+
+        <div class="flex justify-end gap-3">
+          <button type="button" id="cancelTransportType"
+            class="px-4 py-2 rounded bg-white/5 text-gray-200">Cancelar</button>
+          <button type="submit" class="px-4 py-2 rounded bg-accent text-black font-bold">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal UserTransport -->
+  <div id="userTransportModal" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div class="relative bg-card border border-white/10 rounded-3xl p-6 w-[92%] max-w-lg">
+      <div class="flex items-center justify-between mb-4">
+        <h4 class="font-bold text-lg">Asignar Transporte</h4>
+        <button id="closeUserTransportModal" class="text-gray-300 text-xl">âœ•</button>
+      </div>
+      <form id="userTransportForm" class="space-y-4">
+        <div>
+          <label class="text-sm text-gray-300">Usuario</label>
+          <select name="user_id" id="userSelect" class="w-full mt-2 p-3 rounded bg-white/5 text-white"></select>
+        </div>
+        <div>
+          <label class="text-sm text-gray-300">Transport Type</label>
+          <select name="transport_type_id" id="transportTypeSelect"
+            class="w-full mt-2 p-3 rounded bg-white/5 text-white"></select>
+        </div>
+        <div>
+          <label class="text-sm text-gray-300">Estado</label>
+          <select name="status" class="w-full mt-2 p-3 rounded bg-white/5 text-white">
+            <option value="idle">Disponible</option>
+            <option value="traveling">Viajando</option>
+          </select>
+        </div>
+        <div class="flex justify-end gap-3">
+          <button type="button" id="cancelUserTransport"
+            class="px-4 py-2 rounded bg-white/5 text-gray-200">Cancelar</button>
+          <button type="submit" class="px-4 py-2 rounded bg-pink text-black font-bold">Asignar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    function getCookie(name) {
+      let v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+      return v ? v.pop() : '';
+    }
+
+    const csrftoken = getCookie('csrftoken');
+    const transportTypesTable = document.getElementById('transportTypesTable');
+    const userTransportsTable = document.getElementById('userTransportsTable');
+    const transportTypeSelect = document.getElementById('transportTypeSelect');
+    const userSelect = document.getElementById('userSelect');
+
+    const transportTypeModal = document.getElementById('transportTypeModal');
+    const userTransportModal = document.getElementById('userTransportModal');
+
+    const transportTypeForm = document.getElementById('transportTypeForm');
+    const userTransportForm = document.getElementById('userTransportForm');
+
+    const transportTypeModalTitle = document.getElementById('transportTypeModalTitle');
+
+    function openModal(el) { el.classList.remove('hidden'); el.classList.add('flex'); }
+    function closeModal(el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+
+    document.getElementById('btnOpenTransportTypeModal').addEventListener('click', () => {
+      transportTypeForm.reset();
+      transportTypeForm.querySelector('[name="id"]').value = '';
+      transportTypeModalTitle.textContent = 'Crear Tipo';
+      imagePreview.innerHTML = 'Sin imagen';
+      openModal(transportTypeModal);
+    });
+    document.getElementById('closeTransportTypeModal').addEventListener('click', () => closeModal(transportTypeModal));
+    document.getElementById('cancelTransportType').addEventListener('click', () => closeModal(transportTypeModal));
+
+    document.getElementById('btnOpenUserTransportModal').addEventListener('click', () => openModal(userTransportModal));
+    document.getElementById('closeUserTransportModal').addEventListener('click', () => closeModal(userTransportModal));
+    document.getElementById('cancelUserTransport').addEventListener('click', () => closeModal(userTransportModal));
+
+    function renderTransportTypeRow(mt) {
+      const badge = mt.is_active
+        ? '<span class="px-2 py-1 rounded bg-green-400 text-black text-xs">Activo</span>'
+        : '<span class="px-2 py-1 rounded bg-gray-500 text-white text-xs">Inactivo</span>';
+      const img = mt.image_url ? `<img src="${mt.image_url}" class="w-10 h-10 rounded object-cover"/>` : '<div class="w-10 h-10 rounded bg-white/5"></div>';
+      return `<tr class="border-t border-white/5">
+    <td class="py-2">${img}</td>
+    <td>${mt.name}</td>
+    <td>${mt.rarity_label}</td>
+    <td>${mt.capacity}</td>
+    <td>${badge}</td>
+    <td class="text-right space-x-2">
+      <button data-id="${mt.id}" class="edit-transport-type px-3 py-1 rounded bg-white/5 text-gray-200 text-sm"><i class="fas fa-pen"></i></button>
+      <button data-id="${mt.id}" class="toggle-transport-type px-3 py-1 rounded bg-white/5 text-gray-200 text-sm"><i class="fas fa-power-off"></i></button>
+    </td>
+  </tr>`;
+    }
+
+    function renderUserTransportRow(um) {
+      return `<tr class="border-t border-white/5">
+    <td class="py-2">${um.username}</td>
+    <td>${um.transport_type_name}</td>
+    <td>${um.status_label}</td>
+    <td>${new Date(um.obtained_at).toLocaleString()}</td>
+    <td class="text-right">
+      <button data-id="${um.id}" class="delete-user-transport px-3 py-1 rounded bg-white/5 text-red-300 text-sm"><i class="fas fa-trash"></i></button>
+    </td>
+  </tr>`;
+    }
+
+    async function loadStats() {
+      const res = await fetch('/dashboard/transports/stats/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        document.getElementById('statTransportTypes').textContent = data.stats.total_transport_types;
+        document.getElementById('statUserTransports').textContent = data.stats.total_user_transports;
+        userSelect.innerHTML = data.users.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+      }
+    }
+
+    async function loadTransportTypes() {
+      const res = await fetch('/dashboard/transport-types/list/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        transportTypesTable.innerHTML = data.items.map(renderTransportTypeRow).join('') || '<tr><td colspan="6" class="text-gray-400 text-xs py-4">Sin registros</td></tr>';
+        transportTypeSelect.innerHTML = data.items.map(mt => `<option value="${mt.id}">${mt.name}</option>`).join('');
+      }
+    }
+
+    async function loadUserTransports() {
+      const res = await fetch('/dashboard/user-transports/list/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        userTransportsTable.innerHTML = data.items.map(renderUserTransportRow).join('') || '<tr><td colspan="5" class="text-gray-400 text-xs py-4">Sin registros</td></tr>';
+      }
+    }
+
+    transportTypeForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const fd = new FormData(transportTypeForm);
+      const id = fd.get('id');
+      const url = id ? `/dashboard/transport-types/update/${id}/` : '/dashboard/transport-types/create/';
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrftoken },
+        body: fd
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        closeModal(transportTypeModal);
+        await loadTransportTypes();
+        await loadStats();
+        Swal.fire({ icon: 'success', title: 'Guardado', toast: true, position: 'top-end', timer: 1200, showConfirmButton: false });
+      } else {
+        Swal.fire({ icon: 'error', title: data.error || 'Error' });
+      }
+    });
+
+    userTransportForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const fd = new FormData(userTransportForm);
+      const res = await fetch('/dashboard/user-transports/create/', {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrftoken },
+        body: fd
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        closeModal(userTransportModal);
+        await loadUserTransports();
+        await loadStats();
+        Swal.fire({ icon: 'success', title: 'Asignado', toast: true, position: 'top-end', timer: 1200, showConfirmButton: false });
+      } else {
+        Swal.fire({ icon: 'error', title: data.error || 'Error' });
+      }
+    });
+
+    transportTypesTable.addEventListener('click', async (ev) => {
+      const editBtn = ev.target.closest('.edit-transport-type');
+      const toggleBtn = ev.target.closest('.toggle-transport-type');
+      if (editBtn) {
+        const id = editBtn.dataset.id;
+        const res = await fetch('/dashboard/transport-types/list/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+        });
+        const data = await res.json();
+        const mt = data.items.find(i => String(i.id) === String(id));
+        if (!mt) return;
+        transportTypeForm.reset();
+        transportTypeForm.querySelector('[name="id"]').value = mt.id;
+        transportTypeForm.querySelector('[name="name"]').value = mt.name;
+        transportTypeForm.querySelector('[name="rarity"]').value = mt.rarity;
+        transportTypeForm.querySelector('[name="capacity"]').value = mt.capacity;
+        transportTypeForm.querySelector('[name="speed"]').value = mt.speed;
+        transportTypeForm.querySelector('[name="is_active"]').checked = mt.is_active;
+        transportTypeModalTitle.textContent = 'Editar Tipo';
+        if (mt.image_url) {
+          imagePreview.innerHTML = `<img src="${mt.image_url}" class="w-full h-full object-cover" />`;
+        } else {
+          imagePreview.innerHTML = 'Sin imagen';
+        }
+        openModal(transportTypeModal);
+      }
+      if (toggleBtn) {
+        const id = toggleBtn.dataset.id;
+        const res = await fetch(`/dashboard/transport-types/toggle/${id}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          await loadTransportTypes();
+          Swal.fire({ icon: 'success', title: 'Actualizado', toast: true, position: 'top-end', timer: 1000, showConfirmButton: false });
+        } else {
+          Swal.fire({ icon: 'error', title: data.error || 'Error' });
+        }
+      }
+    });
+
+    userTransportsTable.addEventListener('click', async (ev) => {
+      const delBtn = ev.target.closest('.delete-user-transport');
+      if (!delBtn) return;
+      const id = delBtn.dataset.id;
+      const confirm = await Swal.fire({
+        title: 'Eliminar asignación',
+        text: '¿Seguro que deseas retirar este transporte?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí, retirar',
+        cancelButtonText: 'Cancelar',
+        background: '#0c1a3a',
+        color: '#fff'
+      });
+      if (!confirm.isConfirmed) return;
+      const res = await fetch(`/dashboard/user-transports/delete/${id}/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        await loadUserTransports();
+        await loadStats();
+        Swal.fire({ icon: 'success', title: 'Retirado', toast: true, position: 'top-end', timer: 1000, showConfirmButton: false });
+      } else {
+        Swal.fire({ icon: 'error', title: data.error || 'Error' });
+      }
+    });
+
+    const imageInput = document.getElementById('imageInput');
+    const imagePreview = document.getElementById('imagePreview');
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files[0];
+      if (!file) {
+        imagePreview.innerHTML = 'Sin imagen';
+        return;
+      }
+      const url = URL.createObjectURL(file);
+      imagePreview.innerHTML = `<img src="${url}" class="w-full h-full object-cover" />`;
+    });
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadStats();
+      await loadTransportTypes();
+      await loadUserTransports();
+    });
+  </script>
+
+</body>
+
+</html>
