@@ -139,6 +139,15 @@
       </div>
     </a>
 
+    <a href="/chests/"
+      class="flex items-center gap-4 bg-card backdrop-blur-xl border border-pink/20 rounded-2xl p-5 hover:border-pink/40 hover:bg-white/5 transition cursor-pointer group">
+      <i class="fas fa-box-open text-pink text-2xl group-hover:scale-110 transition-transform"></i>
+      <div>
+        <h3 class="font-bold text-lg">Cofres</h3>
+        <p class="text-sm text-gray-300">Compra y abre cofres</p>
+      </div>
+    </a>
+
     <div
       class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5 group hover:border-accent/40 hover:bg-white/5 transition cursor-pointer">
       <i class="fas fa-globe text-accent text-2xl group-hover:scale-110 transition-transform"></i>
@@ -406,6 +415,44 @@
         menu.classList.add("translate-x-0");
         overlay.classList.remove("hidden");
       }
+    }
+
+    function showChestInfo(name, desc, rewardsStr) {
+      if (!rewardsStr) {
+        Swal.fire({ title: name, text: desc, background: '#0a0a20', color: '#fff' });
+        return;
+      }
+      const rewards = rewardsStr.split('|').map(r => {
+        const parts = r.split(' (');
+        const itemName = parts[0];
+        const prob = parts.length > 1 ? parts[1].replace(')', '') : '';
+        return `
+          <div class="flex items-center justify-between bg-white/5 p-3 rounded-xl border border-white/5 mb-2">
+            <span class="text-sm font-bold">${itemName}</span>
+            <span class="text-accent font-mono text-xs font-black">${prob}</span>
+          </div>
+        `;
+      }).join('');
+
+      Swal.fire({
+        title: `<span class="text-accent">${name}</span>`,
+        html: `
+          <div class="text-left">
+            <p class="text-gray-400 text-sm mb-4">${desc}</p>
+            <p class="text-[10px] uppercase font-bold text-gray-500 mb-2">Posibles Premios:</p>
+            <div class="max-h-60 overflow-y-auto pr-2 custom-scrollbar">
+              ${rewards}
+            </div>
+          </div>
+        `,
+        background: '#0a0a20',
+        color: '#fff',
+        confirmButtonText: 'Cerrar',
+        confirmButtonColor: '#00e0ff',
+        customClass: {
+          popup: 'rounded-3xl border border-white/10'
+        }
+      });
     }
   </script>
 

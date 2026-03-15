@@ -3,9 +3,10 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from game.views import login_view, login_page, register, register_view, home_view, profile_view, profile_update, create_withdrawal, process_withdrawal, withdrawals_admin_view, admin_dashboard_view, admin_dashboard_stats, miners_admin_view, miners_admin_stats, miner_types_list, miner_type_create, miner_type_update, miner_type_toggle, user_miners_list, user_miner_create, user_miner_delete, miners_view, logout_view
+from game.views import login_view, login_page, register, register_view, home_view, chests_public_view, buy_chest, open_chest, profile_view, profile_update, create_withdrawal, process_withdrawal, withdrawals_admin_view, admin_dashboard_view, admin_dashboard_stats, miners_admin_view, miners_admin_stats, miner_types_list, miner_type_create, miner_type_update, miner_type_toggle, user_miners_list, user_miner_create, user_miner_delete, miners_view, logout_view
 from game.views_transports import transports_admin_view, transports_admin_stats, transport_types_list, transport_type_create, transport_type_update, transport_type_toggle, user_transports_list, user_transport_create, user_transport_delete, transports_view
 from game.views_tools import tools_admin_view, tools_admin_stats, tool_types_list, tool_type_create, tool_type_update, tool_type_toggle, user_tools_list, user_tool_create, user_tool_delete, tools_view
+from game.views_chests import chests_admin_view, chests_list, chest_create, chest_update, chest_delete, chest_toggle, chest_dependencies
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", login_page, name="login_page"),
@@ -13,6 +14,9 @@ urlpatterns = [
     path("register/view/", register_view, name="register_view"),  # HTML
     path("home/", home_view, name="home"),
     path("login/", login_view, name="login_api"),
+    path("chests/", chests_public_view, name="chests_public"),
+    path("chests/buy/<int:chest_id>/", buy_chest, name="buy_chest"),
+    path("chests/open/<int:user_chest_id>/", open_chest, name="open_chest"),
     path("miners/", miners_view, name="miners_view"),
     path("profile/", profile_view, name="profile_view"),
     path("profile/update/", profile_update, name="profile_update"),
@@ -51,6 +55,15 @@ urlpatterns = [
     path("dashboard/user-tools/create/", user_tool_create, name="user_tool_create"),
     path("dashboard/user-tools/delete/<int:pk>/", user_tool_delete, name="user_tool_delete"),
     path("logout/", logout_view, name="logout"),
+
+    # Chests Admin
+    path("dashboard/chests/", chests_admin_view, name="chests_admin"),
+    path("dashboard/chests/list/", chests_list, name="chests_list_api"),
+    path("dashboard/chests/create/", chest_create, name="chest_create_api"),
+    path("dashboard/chests/update/<int:pk>/", chest_update, name="chest_update_api"),
+    path("dashboard/chests/delete/<int:pk>/", chest_delete, name="chest_delete_api"),
+    path("dashboard/chests/toggle/<int:pk>/", chest_toggle, name="chest_toggle_api"),
+    path("dashboard/chests/dependencies/", chest_dependencies, name="chest_dependencies_api"),
 
 ]
 

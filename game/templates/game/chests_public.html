@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Cofres | Cosmos Miners</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            space: "#05050f",
+            card: "rgba(20,30,60,0.75)",
+            accent: "#00e0ff",
+            pink: "#ff4d8d",
+            blueglow: "#0077ff"
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #00e0ff;
+      border-radius: 10px;
+    }
+
+    .swal2-popup {
+      background: #0a0a20 !important;
+      color: white !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 24px !important;
+    }
+
+    .swal2-title {
+      color: white !important;
+    }
+
+    .swal2-confirm {
+      background: #00e0ff !important;
+      color: #000 !important;
+      border-radius: 12px !important;
+      font-weight: bold !important;
+    }
+
+    @keyframes float {
+      0%,
+      100% {
+        transform: translateY(0);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .animate-float {
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .tab-active {
+      background: rgba(0, 224, 255, 0.1);
+      border-color: #00e0ff;
+      color: #00e0ff;
+    }
+  </style>
+</head>
+
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative pb-20">
+  <div class="fixed inset-0 z-0 opacity-40">
+    <div
+      class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.1)_1px,_transparent_1px)] bg-[size:32px_32px]">
+    </div>
+  </div>
+
+  <header class="relative z-10 px-6 py-6 border-b border-white/5 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto flex items-center justify-between">
+      <a href="/home/" class="flex items-center gap-3 group">
+        <div
+          class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-accent group-hover:bg-accent/10 transition-all">
+          <i class="fas fa-arrow-left text-gray-400 group-hover:text-accent"></i>
+        </div>
+        <span
+          class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent uppercase tracking-tighter">Cosmos
+          Store</span>
+      </a>
+
+      <div class="flex items-center gap-4 bg-white/5 border border-white/10 px-4 py-2 rounded-2xl">
+        <div class="text-right">
+          <p class="text-[8px] uppercase text-gray-500 font-bold">Saldo Personal</p>
+          <p id="userGold" class="text-xs font-mono font-black text-accent">{{ profile.cosmos_gold }} GOLD</p>
+        </div>
+        <i class="fas fa-coins text-yellow-400"></i>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10 max-w-7xl mx-auto px-6 mt-12">
+    <div class="text-center mb-10">
+      <h1
+        class="text-5xl font-black mb-4 bg-gradient-to-r from-accent via-white to-pink bg-clip-text text-transparent uppercase tracking-tight">
+        Cofres Estelares</h1>
+
+      <div class="flex items-center justify-center gap-3 mt-8">
+        <button onclick="switchTab('store')" id="tab-store"
+          class="px-8 py-3 rounded-2xl border border-white/10 font-black text-xs uppercase tracking-widest transition-all tab-active">
+          Tienda
+        </button>
+        <button onclick="switchTab('inventory')" id="tab-inventory"
+          class="px-8 py-3 rounded-2xl border border-white/10 font-black text-xs uppercase tracking-widest transition-all relative">
+          Inventario
+          {% if user_chests|length > 0 %}
+          <span
+            class="absolute -top-2 -right-2 w-5 h-5 bg-pink rounded-full text-[10px] flex items-center justify-center border-2 border-[#05050f] font-bold">
+            {{ user_chests|length }}
+          </span>
+          {% endif %}
+        </button>
+      </div>
+    </div>
+
+    <!-- TIENDA -->
+    <section id="section-store" class="tab-content">
+      {% if chests %}
+      <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {% for c in chests %}
+        <div
+          class="glass-card rounded-[32px] p-8 group hover:border-accent/40 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden flex flex-col h-full">
+          <div
+            class="absolute -top-24 -right-24 w-48 h-48 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/15 transition-colors">
+          </div>
+
+          <div class="relative z-10 flex flex-col h-full">
+            <div class="flex justify-between items-start mb-6">
+              <span
+                class="text-[10px] font-black bg-accent/10 border border-accent/20 px-3 py-1 rounded-full text-accent uppercase tracking-tighter">
+                {{ c.category.name }}
+              </span>
+              <button
+                class="btn-info w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-500 hover:text-accent hover:bg-white/10 transition-all"
+                data-name="{{ c.name }}" data-desc="{{ c.description }}"
+                data-rewards="{% for r in c.rewards.all %}{{ r.item_name }} ({{ r.display_probability }}%){% if not forloop.last %}|{% endif %}{% endfor %}">
+                <i class="fas fa-eye text-sm pointer-events-none"></i>
+              </button>
+            </div>
+
+            <div class="mb-8 flex-1 flex flex-col items-center">
+              <div class="relative">
+                <div class="absolute inset-0 bg-accent/20 rounded-full blur-2xl group-hover:blur-3xl transition-all">
+                </div>
+                {% if c.image %}
+                <img src="{{ c.image.url }}" alt="{{ c.name }}"
+                  class="relative w-40 h-40 object-contain animate-float group-hover:scale-110 transition-transform duration-700">
+                {% else %}
+                <div
+                  class="relative w-40 h-40 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                  <i class="fas fa-box-open text-6xl text-accent/20"></i>
+                </div>
+                {% endif %}
+              </div>
+
+              <h3
+                class="mt-8 font-black text-2xl group-hover:text-accent transition-colors text-center uppercase tracking-tight">{{ c.name }}</h3>
+              <p class="mt-3 text-xs text-gray-400 text-center line-clamp-2">{{ c.description }}</p>
+            </div>
+
+            <div class="mt-auto pt-6 border-t border-white/5 text-center">
+              <div class="flex items-center justify-center gap-2 mb-4">
+                <span class="text-2xl font-mono font-black text-accent">{{ c.price }}</span>
+                <span class="text-[10px] text-gray-500 uppercase font-bold">GOLD</span>
+              </div>
+
+              <button
+                class="btn-buy w-full py-4 rounded-2xl bg-gradient-to-r from-accent to-blueglow text-black font-black uppercase text-[10px] tracking-widest hover:brightness-110 active:scale-[0.98] transition-all"
+                data-id="{{ c.id }}" data-name="{{ c.name }}" data-price="{{ c.price }}">
+                Comprar Cofre
+              </button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="glass-card rounded-[40px] p-20 text-center max-w-2xl mx-auto">
+        <div
+          class="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 text-gray-600">
+          <i class="fas fa-store-slash text-3xl"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-2 uppercase">Mercado Cerrado</h3>
+        <p class="text-gray-500 text-sm">No hay cofres disponibles en este momento.</p>
+      </div>
+      {% endif %}
+    </section>
+
+    <!-- INVENTARIO -->
+    <section id="section-inventory" class="tab-content hidden">
+      {% if user_chests %}
+      <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {% for uc in user_chests %}
+        <div
+          class="glass-card rounded-[32px] p-8 group hover:border-pink/40 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden flex flex-col h-full border-pink/10">
+          <div
+            class="absolute -top-24 -right-24 w-48 h-48 bg-pink/5 rounded-full blur-3xl group-hover:bg-pink/15 transition-colors">
+          </div>
+
+          <div class="relative z-10 flex flex-col h-full text-center">
+            <div class="flex justify-between items-start mb-6">
+              <span class="text-[10px] font-black bg-pink/10 border border-pink/20 px-3 py-1 rounded-full text-pink uppercase tracking-tighter">
+                {{ uc.chest.category.name }}
+              </span>
+              <span class="text-[9px] text-gray-500 font-mono">#{{ uc.id }}</span>
+            </div>
+
+            <div class="mb-8 flex-1 flex flex-col items-center">
+              <div class="relative">
+                <div class="absolute inset-0 bg-pink/20 rounded-full blur-2xl group-hover:blur-3xl transition-all">
+                </div>
+                {% if uc.chest.image %}
+                <img src="{{ uc.chest.image.url }}" alt="{{ uc.chest.name }}"
+                  class="relative w-32 h-32 object-contain animate-float group-hover:scale-105 transition-transform duration-700">
+                {% else %}
+                <div
+                  class="relative w-32 h-32 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                  <i class="fas fa-box text-5xl text-pink/20"></i>
+                </div>
+                {% endif %}
+              </div>
+
+              <h3 class="mt-6 font-black text-xl group-hover:text-pink transition-colors uppercase tracking-tight">{{ uc.chest.name }}</h3>
+              <p class="mt-2 text-[10px] text-gray-500">Adquirido el {{ uc.obtained_at|date:"d/m/Y" }}</p>
+            </div>
+
+            <div class="mt-auto pt-4">
+              <button
+                class="btn-open w-full py-4 rounded-2xl bg-gradient-to-r from-pink to-purple-600 text-white font-black uppercase text-[10px] tracking-widest hover:brightness-110 active:scale-[0.98] transition-all"
+                data-id="{{ uc.id }}" data-name="{{ uc.chest.name }}">
+                Abrir Cofre
+              </button>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div
+        class="glass-card rounded-[40px] p-20 text-center max-w-2xl mx-auto border-dashed border-white/10 bg-transparent">
+        <div
+          class="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6 border border-white/10 text-gray-700">
+          <i class="fas fa-box-open text-3xl"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-2 uppercase text-gray-400">Sin Cargamento</h3>
+        <p class="text-gray-500 text-sm">Tu inventario de cofres está vacío.</p>
+        <button onclick="switchTab('store')"
+          class="mt-6 text-accent text-xs font-black uppercase tracking-widest hover:underline">Ir a la Tienda</button>
+      </div>
+      {% endif %}
+    </section>
+  </main>
+
+  <script>
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      document.querySelectorAll('button[id^="tab-"]').forEach(b => b.classList.remove('tab-active'));
+
+      document.getElementById(`section-${tab}`).classList.remove('hidden');
+      document.getElementById(`tab-${tab}`).classList.add('tab-active');
+    }
+
+    // Global Event Listeners
+    document.addEventListener('click', e => {
+      if (e.target.classList.contains('btn-buy')) {
+        const btn = e.target;
+        handlePurchase(btn.dataset.id, btn.dataset.name, btn.dataset.price);
+      } else if (e.target.classList.contains('btn-info')) {
+        const btn = e.target;
+        showChestRewards(btn.dataset.name, btn.dataset.desc, btn.dataset.rewards);
+      } else if (e.target.classList.contains('btn-open')) {
+        const btn = e.target;
+        handleOpenChest(btn.dataset.id, btn.dataset.name);
+      }
+    });
+
+    async function handlePurchase(id, name, price) {
+      const result = await Swal.fire({
+        title: '¿Confirmar Compra?',
+        html: `¿Estás seguro de comprar <b class="text-accent">${name}</b> por <b class="text-accent font-mono">${price} GOLD</b>?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'CONFIRMAR',
+        cancelButtonText: 'CANCELAR',
+        reverseButtons: true
+      });
+
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Procesando...',
+          allowOutsideClick: false,
+          didOpen: () => Swal.showLoading()
+        });
+
+        try {
+          const response = await fetch(`/chests/buy/${id}/`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': getCookie('csrftoken')
+            }
+          });
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            await Swal.fire({
+              icon: 'success',
+              title: '¡Cofre Adquirido!',
+              text: `El cofre ${name} ahora está en tu inventario.`,
+              confirmButtonText: 'IR AL INVENTARIO'
+            });
+            location.reload();
+          } else {
+            Swal.fire('Error', data.error || 'Fondos insuficientes o error de sistema', 'error');
+          }
+        } catch (err) {
+          Swal.fire('Error', 'Error de conexión', 'error');
+        }
+      }
+    }
+
+    async function handleOpenChest(userChestId, name) {
+      const result = await Swal.fire({
+        title: '¿Abrir Cofre?',
+        text: `¿Deseas abrir tu ${name} ahora?`,
+        icon: 'info',
+        showCancelButton: true,
+        confirmButtonText: 'SÍ, ABRIR',
+        cancelButtonText: 'LUEGO',
+        reverseButtons: true
+      });
+
+      if (result.isConfirmed) {
+        Swal.fire({
+          title: 'Abriendo cofre...',
+          html: '<i class="fas fa-box-open fa-bounce text-6xl text-pink mt-6"></i>',
+          showConfirmButton: false,
+          allowOutsideClick: false
+        });
+
+        try {
+          const response = await fetch(`/chests/open/${userChestId}/`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': getCookie('csrftoken')
+            }
+          });
+          const data = await response.json();
+
+          if (data.success) {
+            // Animación de revelación
+            setTimeout(() => {
+              const rewardsHtml = data.rewards.map(r => `
+                <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 mb-2">
+                  <div class="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center text-accent text-xl">
+                    <i class="fas ${r.type === 'Miner' ? 'fa-user-ninja' : r.type === 'Transport' ? 'fa-truck' : 'fa-tools'}"></i>
+                  </div>
+                  <div class="text-left">
+                    <p class="text-[10px] uppercase text-gray-500 font-bold">${r.type}</p>
+                    <p class="text-sm font-black uppercase text-accent">${r.name}</p>
+                  </div>
+                </div>
+              `).join('');
+
+              Swal.fire({
+                title: '<span class="text-pink font-black uppercase italic tracking-tighter text-3xl">¡BOTÍN ENCONTRADO!</span>',
+                html: `<div class="mt-6">${rewardsHtml}</div>`,
+                confirmButtonText: '¡EXCELENTE!',
+                didClose: () => location.reload()
+              });
+            }, 1200);
+          } else {
+            Swal.fire('Error', data.error || 'No se pudo abrir el cofre', 'error');
+          }
+        } catch (err) {
+          Swal.fire('Error', 'Error de red', 'error');
+        }
+      }
+    }
+
+    function showChestRewards(name, desc, rewardsStr) {
+      if (!rewardsStr) {
+        Swal.fire({
+          title: name,
+          text: desc
+        });
+        return;
+      }
+      const rewards = rewardsStr.split('|').map(r => {
+        const parts = r.split(' (');
+        const itemName = parts[0];
+        const prob = parts.length > 1 ? parts[1].replace(')', '') : '';
+        return `
+          <div class="flex items-center justify-between bg-white/5 p-4 rounded-2xl border border-white/5 mb-3">
+            <div class="flex items-center gap-3">
+              <div class="w-1.5 h-1.5 rounded-full bg-accent shadow-[0_0_8px_#00e0ff]"></div>
+              <span class="text-xs font-bold">${itemName}</span>
+            </div>
+            <span class="text-accent font-mono text-xs font-black">${prob}</span>
+          </div>
+        `;
+      }).join('');
+
+      Swal.fire({
+        title: `<span class="text-accent text-3xl font-black uppercase tracking-tighter">${name}</span>`,
+        html: `
+          <div class="text-left mt-4 px-2">
+            <p class="text-gray-400 text-xs mb-6 leading-relaxed">${desc}</p>
+            <div class="flex items-center justify-between mb-3">
+              <p class="text-[9px] uppercase font-black text-gray-500 tracking-widest">Premios Posibles</p>
+              <p class="text-[9px] uppercase font-black text-gray-500 tracking-widest">Suerte</p>
+            </div>
+            <div class="max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+              ${rewards}
+            </div>
+          </div>
+        `,
+        width: '460px',
+        confirmButtonText: 'CERRAR',
+      });
+    }
+  </script>
+</body>
+
+</html>

@@ -1,4 +1,6 @@
 from django.conf import settings
+from .models_cofres import *
+
 from django.db import models
 from django.utils import timezone
 from decimal import Decimal
