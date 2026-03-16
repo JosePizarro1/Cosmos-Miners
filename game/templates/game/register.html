@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -19,38 +20,45 @@
             --transition: all 0.3s ease;
             --space-bg: #000010;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
-        
+
         body {
             background-color: var(--space-bg);
             color: var(--text-color);
             min-height: 100vh;
             overflow-x: hidden;
-            background-image: 
+            background-image:
                 radial-gradient(ellipse at 20% 20%, rgba(0, 100, 255, 0.15) 0%, transparent 40%),
                 radial-gradient(ellipse at 80% 80%, rgba(255, 0, 150, 0.1) 0%, transparent 40%),
                 url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="10" cy="10" r="0.5" fill="white" opacity="0.7"/><circle cx="50" cy="30" r="0.8" fill="white" opacity="0.5"/><circle cx="80" cy="60" r="0.6" fill="white" opacity="0.6"/><circle cx="30" cy="70" r="0.4" fill="white" opacity="0.8"/><circle cx="90" cy="20" r="0.7" fill="white" opacity="0.4"/></svg>');
         }
-        
+
         /* Animación de estrellas */
         @keyframes twinkle {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
+
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 1;
+            }
         }
-        
+
         .star {
             position: absolute;
             background-color: white;
             border-radius: 50%;
             animation: twinkle 3s infinite;
         }
-        
+
         .container {
             max-width: 1200px;
             margin: 0 auto;
@@ -61,7 +69,7 @@
             align-items: center;
             justify-content: center;
         }
-        
+
         /* Header con selector de idioma */
         .header {
             width: 100%;
@@ -76,32 +84,33 @@
             padding: 20px;
             z-index: 10;
         }
-        
+
         .logo {
             display: flex;
             align-items: center;
             gap: 15px;
         }
-        
+
         .logo-icon {
             color: var(--accent-color);
             font-size: 2.5rem;
         }
-        
+
         .logo-text {
             font-size: 1.8rem;
             font-weight: 700;
             background: linear-gradient(to right, #00c6ff, #0072ff);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             letter-spacing: 1px;
         }
-        
+
         .language-selector {
             display: flex;
             gap: 10px;
         }
-        
+
         .lang-btn {
             background-color: var(--card-bg);
             border: 1px solid rgba(0, 198, 255, 0.3);
@@ -112,16 +121,16 @@
             transition: var(--transition);
             font-weight: 600;
         }
-        
+
         .lang-btn.active {
             background-color: var(--accent-color);
             color: var(--primary-color);
         }
-        
+
         .lang-btn:hover {
             background-color: rgba(0, 198, 255, 0.2);
         }
-        
+
         /* Register Container */
         .register-container {
             width: 100%;
@@ -134,25 +143,25 @@
             backdrop-filter: blur(10px);
             margin-top: 80px;
         }
-        
+
         .form-title {
             font-size: 1.8rem;
             margin-bottom: 25px;
             text-align: center;
             color: var(--accent-color);
         }
-        
+
         .form-group {
             margin-bottom: 20px;
         }
-        
+
         .form-label {
             display: block;
             margin-bottom: 8px;
             color: var(--text-secondary);
             font-weight: 600;
         }
-        
+
         .form-input {
             width: 100%;
             padding: 14px;
@@ -163,17 +172,17 @@
             font-size: 1rem;
             transition: var(--transition);
         }
-        
+
         .form-input:focus {
             outline: none;
             border-color: var(--accent-color);
             box-shadow: 0 0 0 2px rgba(0, 198, 255, 0.2);
         }
-        
+
         .password-container {
             position: relative;
         }
-        
+
         .toggle-password {
             position: absolute;
             right: 15px;
@@ -186,7 +195,7 @@
             font-size: 1.1rem;
             z-index: 2;
         }
-        
+
         .register-btn {
             width: 100%;
             padding: 16px;
@@ -204,34 +213,34 @@
             align-items: center;
             gap: 10px;
         }
-        
+
         .register-btn:hover:not(:disabled) {
             background: linear-gradient(to right, #00a8e8, #0056cc);
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0, 114, 255, 0.4);
         }
-        
+
         .register-btn:disabled {
             opacity: 0.6;
             cursor: not-allowed;
         }
-        
+
         .login-link {
             text-align: center;
             color: var(--text-secondary);
             margin-top: 20px;
         }
-        
+
         .login-link a {
             color: var(--accent-color);
             text-decoration: none;
             font-weight: 600;
         }
-        
+
         .login-link a:hover {
             text-decoration: underline;
         }
-        
+
         .error-message {
             background-color: rgba(255, 77, 141, 0.1);
             border: 1px solid rgba(255, 77, 141, 0.3);
@@ -243,7 +252,7 @@
             align-items: center;
             gap: 10px;
         }
-        
+
         .success-message {
             background-color: rgba(0, 198, 255, 0.1);
             border: 1px solid rgba(0, 198, 255, 0.3);
@@ -255,7 +264,7 @@
             align-items: center;
             gap: 10px;
         }
-        
+
         /* Footer */
         .footer {
             text-align: center;
@@ -265,7 +274,7 @@
             margin-top: 40px;
             width: 100%;
         }
-        
+
         /* Responsive */
         @media (max-width: 768px) {
             .header {
@@ -273,31 +282,39 @@
                 gap: 20px;
                 position: relative;
             }
-            
+
             .register-container {
                 padding: 30px 20px;
                 margin-top: 40px;
             }
         }
-        
+
         /* Animación de carga */
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+            }
+
+            100% {
+                transform: scale(1);
+            }
         }
-        
+
         .loading {
             animation: pulse 1.5s infinite;
         }
-        
+
         /* Efectos especiales */
         .space-object {
             position: absolute;
             z-index: -1;
             opacity: 0.1;
         }
-        
+
         .planet {
             width: 150px;
             height: 150px;
@@ -308,7 +325,7 @@
             top: 10%;
             right: 5%;
         }
-        
+
         .asteroid {
             width: 60px;
             height: 60px;
@@ -320,7 +337,7 @@
             transform: rotate(45deg);
             opacity: 0.1;
         }
-        
+
         .wallet-hint {
             font-size: 0.85rem;
             color: var(--text-secondary);
@@ -329,20 +346,21 @@
             align-items: center;
             gap: 5px;
         }
-        
+
         .wallet-hint i {
             color: var(--accent-color);
         }
     </style>
 </head>
+
 <body>
     <!-- Estrellas animadas -->
     <div id="stars-container"></div>
-    
+
     <!-- Objetos espaciales decorativos -->
     <div class="space-object planet"></div>
     <div class="space-object asteroid"></div>
-    
+
     <!-- Header -->
     <header class="header">
         <div class="logo">
@@ -351,81 +369,84 @@
             </div>
             <div class="logo-text">COSMOS MINERS</div>
         </div>
-        
+
         <div class="language-selector">
             <button class="lang-btn active" id="lang-es">ES</button>
             <button class="lang-btn" id="lang-en">EN</button>
         </div>
     </header>
-    
+
     <!-- Contenido principal -->
     <div class="container">
         <!-- Register Form -->
         <section class="register-container">
             <h2 class="form-title" id="register-title">Crear Cuenta</h2>
-            
+
             <div class="error-message" id="error-message">
                 <i class="fas fa-exclamation-circle"></i> <span id="error-text"></span>
             </div>
-            
+
             <div class="success-message" id="success-message">
                 <i class="fas fa-check-circle"></i> <span id="success-text"></span>
             </div>
-            
+
             <form id="register-form">
                 {% csrf_token %}
-                
+
                 <div class="form-group">
                     <label class="form-label" for="username" id="username-label">Usuario</label>
-                    <input type="text" id="username" class="form-input" placeholder="Ingresa tu nombre de usuario" required>
+                    <input type="text" id="username" class="form-input" placeholder="Ingresa tu nombre de usuario"
+                        required>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label" for="email" id="email-label">Email</label>
                     <input type="email" id="email" class="form-input" placeholder="Ingresa tu email" required>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label" for="wallet" id="wallet-label">Wallet Metamask BSC</label>
-                    <input type="text" id="wallet" class="form-input" placeholder="0x..." required>
+                    <input type="text" id="wallet" class="form-input" placeholder="Ingresa tu wallet">
                     <div class="wallet-hint">
                         <i class="fas fa-info-circle"></i>
                         <span id="wallet-hint-text">Introduce tu dirección de wallet de Binance Smart Chain</span>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label" for="password" id="password-label">Contraseña</label>
                     <div class="password-container">
-                        <input type="password" id="password" class="form-input" placeholder="Ingresa tu contraseña" required>
+                        <input type="password" id="password" class="form-input" placeholder="Ingresa tu contraseña"
+                            required>
                         <button type="button" class="toggle-password" id="toggle-password">
                             <i class="far fa-eye"></i>
                         </button>
                     </div>
                 </div>
-                
+
                 <div class="form-group">
                     <label class="form-label" for="password2" id="password2-label">Confirmar Contraseña</label>
                     <div class="password-container">
-                        <input type="password" id="password2" class="form-input" placeholder="Confirma tu contraseña" required>
+                        <input type="password" id="password2" class="form-input" placeholder="Confirma tu contraseña"
+                            required>
                         <button type="button" class="toggle-password" id="toggle-password2">
                             <i class="far fa-eye"></i>
                         </button>
                     </div>
                 </div>
-                
+
                 <button type="submit" class="register-btn" id="register-button">
                     <span id="register-text">Registrarse</span>
                     <i class="fas fa-user-astronaut"></i>
                 </button>
             </form>
-            
+
             <div class="login-link">
                 <span id="login-text">¿Ya tienes una cuenta?</span>
                 <a href="/" id="login-link">Inicia sesión aquí</a>
             </div>
         </section>
-        
+
         <!-- Footer -->
         <footer class="footer">
             <p>&copy; 2023 Cosmos Miners. Todos los derechos reservados.</p>
@@ -438,11 +459,11 @@
         function createStars() {
             const starsContainer = document.getElementById('stars-container');
             const starCount = 150;
-            
+
             for (let i = 0; i < starCount; i++) {
                 const star = document.createElement('div');
                 star.classList.add('star');
-                
+
                 const size = Math.random() * 3 + 1;
                 star.style.width = `${size}px`;
                 star.style.height = `${size}px`;
@@ -450,11 +471,11 @@
                 star.style.top = `${Math.random() * 100}%`;
                 star.style.animationDelay = `${Math.random() * 5}s`;
                 star.style.opacity = Math.random() * 0.7 + 0.3;
-                
+
                 starsContainer.appendChild(star);
             }
         }
-        
+
         // Traducciones
         const translations = {
             es: {
@@ -510,13 +531,13 @@
                 validWallet: "Please enter a valid wallet address"
             }
         };
-        
+
         // Cambiar idioma
         let currentLang = 'es';
-        
+
         function changeLanguage(lang) {
             currentLang = lang;
-            
+
             // Actualizar textos
             document.getElementById('register-title').textContent = translations[lang].registerTitle;
             document.getElementById('username-label').textContent = translations[lang].usernameLabel;
@@ -530,39 +551,39 @@
             document.getElementById('error-text').textContent = translations[lang].errorText;
             document.getElementById('success-text').textContent = translations[lang].successText;
             document.getElementById('wallet-hint-text').textContent = translations[lang].walletHint;
-            
+
             // Actualizar placeholders
             document.getElementById('username').placeholder = translations[lang].usernamePlaceholder;
             document.getElementById('email').placeholder = translations[lang].emailPlaceholder;
             document.getElementById('wallet').placeholder = translations[lang].walletPlaceholder;
             document.getElementById('password').placeholder = translations[lang].passwordPlaceholder;
             document.getElementById('password2').placeholder = translations[lang].password2Placeholder;
-            
+
             // Actualizar botones de idioma
             document.getElementById('lang-es').classList.toggle('active', lang === 'es');
             document.getElementById('lang-en').classList.toggle('active', lang === 'en');
         }
-        
+
         // Función para obtener el token CSRF
         function getCSRF() {
             const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
             return csrfInput ? csrfInput.value : '';
         }
-        
+
         // Validar dirección de wallet
         function isValidWallet(wallet) {
-            return /^0x[a-fA-F0-9]{40}$/.test(wallet);
+            return true;
         }
-        
+
         // Validar email
         function isValidEmail(email) {
             return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
         }
-        
+
         // Manejo del formulario de registro
-        document.getElementById('register-form').addEventListener('submit', async function(e) {
+        document.getElementById('register-form').addEventListener('submit', async function (e) {
             e.preventDefault();
-            
+
             const username = document.getElementById('username').value;
             const email = document.getElementById('email').value;
             const wallet = document.getElementById('wallet').value;
@@ -571,42 +592,36 @@
             const registerBtn = document.getElementById('register-button');
             const errorMessage = document.getElementById('error-message');
             const successMessage = document.getElementById('success-message');
-            
+
             // Ocultar mensajes anteriores
             errorMessage.style.display = 'none';
             successMessage.style.display = 'none';
-            
+
             // Validación del lado del cliente
             if (!username || !email || !wallet || !password || !password2) {
                 errorMessage.textContent = translations[currentLang].fillAllFields;
                 errorMessage.style.display = 'flex';
                 return;
             }
-            
+
             if (!isValidEmail(email)) {
                 errorMessage.textContent = translations[currentLang].validEmail;
                 errorMessage.style.display = 'flex';
                 return;
             }
-            
-            if (!isValidWallet(wallet)) {
-                errorMessage.textContent = translations[currentLang].validWallet;
-                errorMessage.style.display = 'flex';
-                return;
-            }
-            
+
             if (password !== password2) {
                 errorMessage.textContent = translations[currentLang].passwordsNotMatch;
                 errorMessage.style.display = 'flex';
                 return;
             }
-            
+
             // Mostrar estado de carga
             const originalText = registerBtn.innerHTML;
             registerBtn.innerHTML = `<span>${translations[currentLang].loadingText}</span> <i class="fas fa-spinner fa-spin"></i>`;
             registerBtn.classList.add('loading');
             registerBtn.disabled = true;
-            
+
             try {
                 const payload = {
                     username: username,
@@ -615,66 +630,66 @@
                     password: password,
                     password2: password2
                 };
-                            
-            try {
-                const payload = {
-                    username,
-                    email,
-                    wallet,
-                    password,
-                    password2
-                };
 
-                const response = await fetch("/register/", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRFToken": getCSRF()
-                    },
-                    body: JSON.stringify(payload)
-                });
+                try {
+                    const payload = {
+                        username,
+                        email,
+                        wallet,
+                        password,
+                        password2
+                    };
 
-                const data = await response.json();
+                    const response = await fetch("/register/", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRFToken": getCSRF()
+                        },
+                        body: JSON.stringify(payload)
+                    });
 
-                if (!response.ok) {
-                    throw new Error(data.error || translations[currentLang].registerError);
+                    const data = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(data.error || translations[currentLang].registerError);
+                    }
+
+                    successMessage.querySelector("#success-text").textContent =
+                        translations[currentLang].registerSuccess;
+                    successMessage.style.display = "flex";
+
+                    setTimeout(() => {
+                        window.location.href = "/";
+                    }, 1500);
+
+                } catch (error) {
+                    errorMessage.querySelector("#error-text").textContent = error.message;
+                    errorMessage.style.display = "flex";
+
+                    registerBtn.innerHTML = originalText;
+                    registerBtn.classList.remove("loading");
+                    registerBtn.disabled = false;
                 }
 
-                successMessage.querySelector("#success-text").textContent =
-                    translations[currentLang].registerSuccess;
-                successMessage.style.display = "flex";
 
-                setTimeout(() => {
-                    window.location.href = "/";
-                }, 1500);
-
-            } catch (error) {
-                errorMessage.querySelector("#error-text").textContent = error.message;
-                errorMessage.style.display = "flex";
-
-                registerBtn.innerHTML = originalText;
-                registerBtn.classList.remove("loading");
-                registerBtn.disabled = false;
-            }
-
-                
             } catch (error) {
                 errorMessage.textContent = error.message || translations[currentLang].registerError;
                 errorMessage.style.display = 'flex';
-                
+
                 // Restaurar botón
                 registerBtn.innerHTML = originalText;
                 registerBtn.classList.remove('loading');
                 registerBtn.disabled = false;
             }
         });
-        
+
         // Mostrar/ocultar contraseña
         function setupPasswordToggle(buttonId, inputId) {
-            document.getElementById(buttonId).addEventListener('click', function() {
+            document.getElementById(buttonId).addEventListener('click', function () {
                 const passwordInput = document.getElementById(inputId);
                 const icon = this.querySelector('i');
-                
+
                 if (passwordInput.type === 'password') {
                     passwordInput.type = 'text';
                     icon.classList.remove('fa-eye');
@@ -686,15 +701,15 @@
                 }
             });
         }
-        
+
         // Configurar toggles de contraseña
         setupPasswordToggle('toggle-password', 'password');
         setupPasswordToggle('toggle-password2', 'password2');
-        
+
         // Cambiar idioma al hacer clic en los botones
         document.getElementById('lang-es').addEventListener('click', () => changeLanguage('es'));
         document.getElementById('lang-en').addEventListener('click', () => changeLanguage('en'));
-        
+
         // Inicializar
         window.addEventListener('DOMContentLoaded', () => {
             createStars();
@@ -702,4 +717,5 @@
         });
     </script>
 </body>
+
 </html>

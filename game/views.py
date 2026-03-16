@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 from django.db import transaction
-from .models import Profile, WithdrawalRequest, MinerType, UserMiner, Chest, UserChest, UserTransport, UserTool
+from .models import Profile, WithdrawalRequest, MinerType, UserMiner, Chest, UserChest, UserTransport, UserTool, Season
 import random
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -91,7 +91,7 @@ def register(request):
         password2 = data.get("password2")
         wallet = data.get("wallet", "").strip()
 
-        if not all([username, email, password, password2, wallet]):
+        if not all([username, email, password, password2]):
             return JsonResponse({"error": "Campos incompletos"}, status=400)
 
         if password != password2:
@@ -103,12 +103,18 @@ def register(request):
         if User.objects.filter(email=email).exists():
             return JsonResponse({"error": "Email ya registrado"}, status=400)
 
-        if Profile.objects.filter(wallet_metamask_bsc=wallet).exists():
+        # Handle optional wallet and unique constraint
+        wallet_to_save = wallet if wallet else None
+        if wallet_to_save and Profile.objects.filter(wallet_metamask_bsc=wallet_to_save).exists():
             return JsonResponse({"error": "Wallet ya registrada"}, status=400)
 
         with transaction.atomic():
             user = User.objects.create_user(username=username, email=email, password=password)
-            Profile.objects.create(user=user, wallet_metamask_bsc=wallet)
+            # El Profile se crea automáticamente por el signal post_save en models.py
+            # Así que lo recuperamos y actualizamos la wallet.
+            profile, _ = Profile.objects.get_or_create(user=user)
+            profile.wallet_metamask_bsc = wallet_to_save
+            profile.save()
 
         return JsonResponse({"success": True}, status=201)
     except json.JSONDecodeError:
@@ -133,7 +139,7 @@ def profile_update(request):
         email = data.get("email", "").strip()
         wallet = data.get("wallet", "").strip()
 
-        if not all([username, email, wallet]):
+        if not all([username, email]):
             return JsonResponse({"error": "Campos incompletos"}, status=400)
 
         user = request.user
@@ -141,7 +147,10 @@ def profile_update(request):
             return JsonResponse({"error": "Usuario ya existe"}, status=400)
         if User.objects.filter(email=email).exclude(id=user.id).exists():
             return JsonResponse({"error": "Email ya registrado"}, status=400)
-        if Profile.objects.filter(wallet_metamask_bsc=wallet).exclude(user=user).exists():
+        
+        # Handle optional wallet and unique constraint
+        wallet_to_save = wallet if wallet else None
+        if wallet_to_save and Profile.objects.filter(wallet_metamask_bsc=wallet_to_save).exclude(user=user).exists():
             return JsonResponse({"error": "Wallet ya registrada"}, status=400)
 
         with transaction.atomic():
@@ -149,7 +158,7 @@ def profile_update(request):
             user.email = email
             user.save()
             profile = user.profile
-            profile.wallet_metamask_bsc = wallet
+            profile.wallet_metamask_bsc = wallet_to_save
             profile.save()
 
         return JsonResponse({"success": True, "message": "Perfil actualizado"})
@@ -492,3 +501,8 @@ def open_chest(request, user_chest_id):
         return JsonResponse({"error": "Cofre no encontrado o ya abierto"}, status=404)
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+
+@login_required
+def rankings_view(request):
+    seasons = Season.objects.all().order_by('-start_date')
+    return render(request, "game/rankings.html", {"seasons": seasons})

@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rankings | Cosmos Miners</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        space: "#05050f",
+                        card: "rgba(20,30,60,0.75)",
+                        accent: "#00e0ff",
+                        pink: "#ff4d8d",
+                        blueglow: "#0077ff"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .status-active { background: rgba(34, 197, 94, 0.1); color: #22c55e; border: 1px solid rgba(34, 197, 94, 0.2); }
+        .status-upcoming { background: rgba(0, 224, 255, 0.1); color: #00e0ff; border: 1px solid rgba(0, 224, 255, 0.2); }
+        .status-finished { background: rgba(156, 163, 175, 0.1); color: #9ca3af; border: 1px solid rgba(156, 163, 175, 0.2); }
+        .item-slot { aspect-ratio: 1; background: rgba(255, 255, 255, 0.02); border: 2px dashed rgba(255, 255, 255, 0.1); border-radius: 20px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.3s; }
+        .item-slot:hover { border-color: rgba(0, 224, 255, 0.3); background: rgba(0, 224, 255, 0.05); }
+        .item-slot.selected { border-style: solid; border-color: #00e0ff; background: rgba(0, 224, 255, 0.1); }
+        .custom-scrollbar::-webkit-scrollbar { width: 5px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0, 224, 255, 0.2); border-radius: 10px; }
+    </style>
+</head>
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative pb-20">
+    <div class="fixed inset-0 z-0 text-gray-500/5 pointer-events-none select-none overflow-hidden">
+        <div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.05)_1px,_transparent_1px)] bg-[size:32px_32px]"></div>
+    </div>
+
+    <header class="relative z-10 px-6 py-6 backdrop-blur-md border-b border-white/5">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <a href="/home/" class="flex items-center gap-3 group">
+                <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-accent group-hover:bg-accent/10 transition-all">
+                    <i class="fas fa-arrow-left text-gray-400 group-hover:text-accent"></i>
+                </div>
+                <span class="font-black tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent uppercase">RANKINGS</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="relative z-10 max-w-4xl mx-auto px-6 mt-12">
+        <div class="text-center mb-12">
+            <h1 class="text-5xl font-black mb-4 uppercase tracking-tighter italic">Selecciona la Temporada</h1>
+            <p class="text-gray-400 text-sm">Compite con otros mineros y gana recompensas exclusivas en cada ciclo estelar.</p>
+        </div>
+        <div id="seasonsList" class="space-y-4">
+            <div class="text-center py-20 text-gray-500 animate-pulse uppercase font-black italic tracking-widest text-[10px]">Estableciendo conexión orbital...</div>
+        </div>
+    </main>
+
+    <!-- Modal: Selección de Niveles -->
+    <div id="levelsModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/90 backdrop-blur-md hidden p-6">
+        <div class="bg-[#0a0a20] border border-white/10 w-full max-w-3xl rounded-[40px] p-8 relative max-h-[90vh] flex flex-col">
+            <button onclick="closeLevelsModal()" class="absolute top-8 right-8 text-gray-500 hover:text-white"><i class="fas fa-times text-xl"></i></button>
+            <h2 class="text-3xl font-black mb-2 uppercase tracking-tight italic">Niveles Disponibles</h2>
+            <p class="text-gray-400 text-xs mb-8">Selecciona un nivel para ver los requisitos específicos de esta clasificación.</p>
+            <div id="levelsGrid" class="grid gap-4 md:grid-cols-2 overflow-y-auto pr-2 custom-scrollbar flex-1"></div>
+        </div>
+    </div>
+
+    <!-- Modal: Ingreso al Nivel (Selección de Items) -->
+    <div id="entryModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/95 backdrop-blur-xl hidden p-4 overflow-y-auto">
+        <div class="bg-[#0a0a20] border border-white/10 w-full max-w-4xl rounded-[50px] p-10 relative">
+            <button onclick="closeEntryModal()" class="absolute top-10 right-10 text-gray-500 hover:text-white"><i class="fas fa-times text-2xl"></i></button>
+            <div class="text-center mb-10">
+                <span id="entryLevelName" class="text-accent text-[10px] font-black uppercase tracking-[0.2em] mb-2 block">Nivel</span>
+                <h2 class="text-4xl font-black uppercase tracking-tight italic">Preparar Despegue</h2>
+                <p class="text-gray-500 text-xs mt-2">Asigna los recursos requeridos para entrar en este rango estelar.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Miner -->
+                <div class="space-y-4">
+                    <h4 class="text-center text-[10px] font-black uppercase text-gray-500 tracking-widest">Minero</h4>
+                    <div id="slot-miner" onclick="openItemPicker('miner')" class="item-slot relative overflow-hidden group">
+                        <div id="miner-placeholder" class="text-center"><i class="fas fa-user-astronaut text-3xl text-gray-700 group-hover:text-accent"></i></div>
+                        <img id="miner-preview" class="absolute inset-0 w-full h-full object-contain p-4 hidden">
+                        <div id="miner-req-badge" class="absolute top-2 right-2 hidden"><span class="bg-accent/20 text-accent text-[8px] px-2 py-0.5 rounded-full font-black">REQ</span></div>
+                    </div>
+                </div>
+                <!-- Transport -->
+                <div class="space-y-4">
+                    <h4 class="text-center text-[10px] font-black uppercase text-gray-500 tracking-widest">Transporte</h4>
+                    <div id="slot-transport" onclick="openItemPicker('transport')" class="item-slot relative overflow-hidden group">
+                        <div id="transport-placeholder" class="text-center"><i class="fas fa-shuttle-space text-3xl text-gray-700 group-hover:text-pink"></i></div>
+                        <img id="transport-preview" class="absolute inset-0 w-full h-full object-contain p-4 hidden">
+                        <div id="transport-req-badge" class="absolute top-2 right-2 hidden"><span class="bg-pink/20 text-pink text-[8px] px-2 py-0.5 rounded-full font-black">REQ</span></div>
+                    </div>
+                </div>
+                <!-- Tool -->
+                <div class="space-y-4">
+                    <h4 class="text-center text-[10px] font-black uppercase text-gray-500 tracking-widest">Herramienta</h4>
+                    <div id="slot-tool" onclick="openItemPicker('tool')" class="item-slot relative overflow-hidden group">
+                        <div id="tool-placeholder" class="text-center"><i class="fas fa-screwdriver-wrench text-3xl text-gray-700 group-hover:text-yellow-400"></i></div>
+                        <img id="tool-preview" class="absolute inset-0 w-full h-full object-contain p-4 hidden">
+                        <div id="tool-req-badge" class="absolute top-2 right-2 hidden"><span class="bg-yellow-400/20 text-yellow-400 text-[8px] px-2 py-0.5 rounded-full font-black">REQ</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-12 bg-white/5 rounded-3xl p-6 border border-white/5 flex items-start gap-4">
+                <div class="w-10 h-10 rounded-xl bg-pink/10 flex items-center justify-center text-pink shrink-0"><i class="fas fa-lock"></i></div>
+                <div>
+                    <h5 class="text-xs font-black uppercase tracking-tight mb-1">Inhabilitación de Recursos</h5>
+                    <p id="lockDurationText" class="text-[10px] text-gray-500"></p>
+                </div>
+            </div>
+            <button onclick="submitEntry()" id="btnSubmitEntry" class="w-full mt-8 py-5 rounded-2xl bg-accent text-black font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110">Ingresar al Nivel</button>
+        </div>
+    </div>
+
+    <!-- Modal: Picker -->
+    <div id="pickerModal" class="fixed inset-0 z-[80] flex items-center justify-center bg-black/90 backdrop-blur-md hidden p-4">
+        <div class="bg-[#0a0a20] border border-white/10 w-full max-w-2xl rounded-3xl p-8 relative flex flex-col max-h-[80vh]">
+            <button onclick="closePickerModal()" class="absolute top-6 right-6 text-gray-500 hover:text-white"><i class="fas fa-times"></i></button>
+            <h3 id="pickerTitle" class="text-2xl font-black mb-6 uppercase tracking-tight italic">Selector</h3>
+            <div id="pickerGrid" class="grid gap-3 grid-cols-2 sm:grid-cols-3 overflow-y-auto pr-2 custom-scrollbar"></div>
+        </div>
+    </div>
+
+    <script>
+        let availableItems = { miners: [], transports: [], tools: [] };
+        let selectedItems = { miner: null, transport: null, tool: null };
+        let currentLevel = null;
+        let currentSeason = null;
+
+        const reqIcons = { 'miner_attempts': 'fas fa-user-astronaut text-accent', 'transport_speed': 'fas fa-shuttle-space text-pink', 'tool_multiplier': 'fas fa-screwdriver-wrench text-yellow-500' };
+
+        function renderSeasonStatus(s) {
+            if (s.user_entry) {
+                return `<span class="bg-blueglow/20 text-blueglow px-3 py-1 rounded-full flex items-center gap-2">
+                            <i class="fas fa-check-circle"></i>
+                            RANGO: ${s.user_entry.level_name}
+                        </span>`;
+            }
+            if (s.status === 'active') {
+                return `<span class="text-green-500 font-black flex items-center gap-2">
+                            <span class="relative flex h-2 w-2">
+                                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+                            </span>
+                            COMPETICIÓN ACTIVA
+                        </span>`;
+            }
+            if (s.status === 'upcoming') {
+                return `<span class="text-accent flex flex-col gap-1">
+                            <span class="flex items-center gap-2"><i class="fas fa-clock"></i> LANZAMIENTO EN:</span>
+                            <span id="timer-${s.id}" class="text-lg font-black tracking-widest tabular-nums">--:--:--</span>
+                        </span>`;
+            }
+            return `<span class="text-gray-500 flex items-center gap-2"><i class="fas fa-flag-checkered"></i> TEMPORADA FINALIZADA</span>`;
+        }
+
+        function renderSeasonAction(s) {
+            if (s.status === 'active') {
+                if (s.user_entry) {
+                    return `<button class="px-8 py-3 rounded-xl bg-blueglow/10 border border-blueglow/30 text-blueglow font-black text-[10px] uppercase tracking-widest cursor-default">REGISTRADO</button>`;
+                }
+                return `<button onclick="openLevelsModal(${s.id})" class="px-10 py-4 rounded-2xl bg-accent text-black font-black text-[11px] uppercase tracking-[0.2em] hover:scale-105 hover:shadow-[0_0_30px_rgba(0,224,255,0.3)] transition-all">Participar</button>`;
+            }
+            if (s.status === 'upcoming') {
+                return `<button class="px-8 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-400 font-black text-[10px] uppercase tracking-widest cursor-default italic">Próximamente</button>`;
+            }
+            return `<button class="px-8 py-3 rounded-xl bg-white/5 border border-white/10 text-gray-600 font-black text-[10px] uppercase tracking-widest cursor-default">Cerrado</button>`;
+        }
+
+        function formatDate(dateStr) {
+            return new Date(dateStr).toLocaleString('es-ES', { 
+                day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' 
+            });
+        }
+
+        async function loadRankings() {
+            const res = await fetch('/rankings/list/');
+            const data = await res.json();
+            const list = document.getElementById('seasonsList');
+            if (!data.items.length) {
+                list.innerHTML = '<div class="glass-card rounded-[40px] p-20 text-center"><h3 class="text-xl font-black uppercase">No hay rankings activos</h3></div>';
+                return;
+            }
+            
+            list.innerHTML = data.items.map(s => `
+                <div class="glass-card rounded-[32px] p-8 transition-all border border-white/5 ${s.status === 'active' ? 'border-accent/20 bg-accent/5' : 'opacity-80'} hover:border-white/10">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                        <div class="flex items-center gap-6">
+                            <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-2xl bg-white/5 border border-white/10 ${s.status==='active'?'text-accent shadow-[0_0_15px_rgba(0,224,255,0.2)]':'text-gray-600'}">
+                                <i class="${s.status==='active'?'fas fa-medal':(s.status==='upcoming'?'fas fa-rocket animate-bounce':'fas fa-box-archive')}"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-2xl font-black uppercase tracking-tight italic mb-1">${s.name}</h3>
+                                <div class="flex flex-col gap-2">
+                                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">
+                                        <i class="fas fa-calendar-alt mr-1"></i> ${formatDate(s.start_date)} — ${formatDate(s.end_date)}
+                                    </p>
+                                    <div class="text-[10px] font-black uppercase tracking-[0.1em]">
+                                        ${renderSeasonStatus(s)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex flex-col md:items-end gap-3">
+                            ${renderSeasonAction(s)}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Start timers for upcoming seasons
+            data.items.filter(s => s.status === 'upcoming').forEach(s => {
+                const timerEl = document.getElementById(`timer-${s.id}`);
+                if (timerEl) startCountdown(timerEl, s.start_date);
+            });
+        }
+
+        function startCountdown(element, startDate) {
+            const targetDate = new Date(startDate).getTime();
+            
+            const x = setInterval(function() {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                if (distance < 0) {
+                    clearInterval(x);
+                    element.innerHTML = "INICIADO";
+                    loadRankings(); // Refresh list to show active
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                element.innerHTML = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            }, 1000);
+        }
+
+        async function openLevelsModal(seasonId) {
+            currentSeason = seasonId;
+            const res = await fetch(`/rankings/levels/${seasonId}/`);
+            const data = await res.json();
+            const grid = document.getElementById('levelsGrid');
+            grid.innerHTML = data.items.map(l => `
+                <div class="bg-white/5 border border-white/5 p-6 rounded-[30px] hover:border-accent/20 transition-all flex flex-col justify-between group">
+                    <div>
+                        <h4 class="text-xl font-black uppercase mb-4 italic">${l.name}</h4>
+                        <div class="space-y-2 mb-6">
+                            ${l.requirements.map(r => `<p class="text-[10px] text-gray-400 font-bold uppercase flex items-center gap-2"><i class="${reqIcons[r.type]} w-4"></i> ${r.type_display}: ${r.value}</p>`).join(l.requirements.length?'':'<p class="text-[10px] text-gray-500 italic">Sin requisitos</p>')}
+                        </div>
+                    </div>
+                    <button onclick="openEntryModal(${JSON.stringify(l).replace(/"/g, '&quot;')})" class="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest group-hover:bg-accent group-hover:text-black transition-all">Ingresar</button>
+                </div>
+            `).join('');
+            document.getElementById('levelsModal').classList.remove('hidden');
+        }
+
+        async function openEntryModal(level) {
+            currentLevel = level;
+            selectedItems = { miner: null, transport: null, tool: null };
+            document.getElementById('entryLevelName').innerText = level.name;
+            document.getElementById('lockDurationText').innerText = `Items bloqueados por ${level.lock_duration_days} días tras el ingreso.`;
+            
+            ['miner', 'transport', 'tool'].forEach(type => {
+                const reqFound = level.requirements.some(r => r.type.startsWith(type));
+                document.getElementById(`${type}-req-badge`).classList.toggle('hidden', !reqFound);
+                document.getElementById(`slot-${type}`).classList.remove('selected');
+                document.getElementById(`${type}-placeholder`).classList.remove('hidden');
+                document.getElementById(`${type}-preview`).classList.add('hidden');
+            });
+
+            document.getElementById('levelsModal').classList.add('hidden');
+            document.getElementById('entryModal').classList.remove('hidden');
+            const res = await fetch('/rankings/available-items/');
+            availableItems = await res.json();
+        }
+
+        function openItemPicker(type) {
+            const grid = document.getElementById('pickerGrid');
+            document.getElementById('pickerTitle').innerText = `Selección de ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+            const list = availableItems[type + 's'];
+            
+            grid.innerHTML = list.map(item => {
+                let meetAll = true;
+                currentLevel.requirements.filter(r => r.type.startsWith(type)).forEach(r => {
+                    if (r.type === 'miner_attempts' && item.attempts < parseFloat(r.value)) meetAll = false;
+                    if (r.type === 'transport_speed' && item.speed < parseFloat(r.value)) meetAll = false;
+                    if (r.type === 'tool_multiplier' && parseFloat(item.multiplier) < parseFloat(r.value)) meetAll = false;
+                });
+                return `
+                    <div onclick="${meetAll?`selectItem('${type}',${JSON.stringify(item).replace(/"/g,'&quot;')})`:''}" class="bg-white/5 border border-white/5 rounded-2xl p-4 text-center group transition-all ${meetAll?'cursor-pointer hover:border-accent':'opacity-30 grayscale'}">
+                        <img src="${item.image||''}" class="w-16 h-16 object-contain mx-auto mb-2">
+                        <p class="text-[9px] font-black uppercase truncate">${item.name}</p>
+                        <p class="text-[8px] font-black text-gray-500">${type==='miner'?item.attempts+' Att':(type==='transport'?item.speed+'% Vel':'x'+item.multiplier)}</p>
+                        ${!meetAll?'<span class="text-[7px] text-pink font-black uppercase mt-1 block">No apto</span>':''}
+                    </div>
+                `;
+            }).join(list.length?'':'<div class="col-span-full py-10 text-center text-gray-600">No hay items disponibles</div>');
+            document.getElementById('pickerModal').classList.remove('hidden');
+        }
+
+        function selectItem(type, item) {
+            selectedItems[type] = item;
+            document.getElementById(`slot-${type}`).classList.add('selected');
+            document.getElementById(`${type}-placeholder`).classList.add('hidden');
+            const img = document.getElementById(`${type}-preview`);
+            img.src = item.image;
+            img.classList.remove('hidden');
+            document.getElementById('pickerModal').classList.add('hidden');
+        }
+
+        async function submitEntry() {
+            // Validate required fields based on level reqs
+            for (const r of currentLevel.requirements) {
+                const type = r.type.split('_')[0];
+                if (!selectedItems[type]) return Swal.fire({ icon: 'error', title: 'Falta Recurso', text: `Este nivel requiere un ${type}.`, background: '#0a0a20', color: '#fff' });
+            }
+            const btn = document.getElementById('btnSubmitEntry');
+            btn.disabled = true; btn.innerText = 'PROCESANDO...';
+            const res = await fetch('/rankings/enter/', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+                body: JSON.stringify({ level_id: currentLevel.id, miner_id: selectedItems.miner?.id, transport_id: selectedItems.transport?.id, tool_id: selectedItems.tool?.id })
+            });
+            const data = await res.json();
+            if (data.success) { Swal.fire({ icon: 'success', title: 'REGISTRADO', background: '#0a0a20', color: '#fff' }); document.getElementById('entryModal').classList.add('hidden'); loadRankings(); }
+            else { Swal.fire({ icon: 'error', title: 'ERROR', text: data.error, background: '#0a0a20', color: '#fff' }); }
+            btn.disabled = false; btn.innerText = 'Ingresar al Nivel';
+        }
+
+        function closeLevelsModal() { document.getElementById('levelsModal').classList.add('hidden'); }
+        function closeEntryModal() { document.getElementById('entryModal').classList.add('hidden'); }
+        function closePickerModal() { document.getElementById('pickerModal').classList.add('hidden'); }
+        window.onload = loadRankings;
+    </script>
+</body>
+</html>

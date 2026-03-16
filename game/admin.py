@@ -1,7 +1,7 @@
 from django.contrib import admin
 from .models import (
     Profile, WithdrawalRequest, Chest, ChestCategory, ChestReward, UserChest,
-    MinerType, TransportType, ToolType
+    MinerType, TransportType, ToolType, Season, SeasonLevel, UserSeasonEntry, SeasonLevelRequirement
 )
 
 
@@ -57,3 +57,25 @@ class UserChestAdmin(admin.ModelAdmin):
     list_display = ("chest", "owner", "obtained_at", "opened")
     list_filter = ("opened", "obtained_at")
     search_fields = ("owner__user__username", "chest__name")
+
+@admin.register(Season)
+class SeasonAdmin(admin.ModelAdmin):
+    list_display = ("name", "start_date", "end_date", "claim_rewards_at", "is_active_override")
+    list_filter = ("is_active_override",)
+    search_fields = ("name",)
+
+@admin.register(SeasonLevel)
+class SeasonLevelAdmin(admin.ModelAdmin):
+    list_display = ("name", "season", "lock_duration_days")
+    list_filter = ("season",)
+
+@admin.register(SeasonLevelRequirement)
+class SeasonLevelRequirementAdmin(admin.ModelAdmin):
+    list_display = ("level", "requirement_type", "value")
+    list_filter = ("requirement_type", "level__season")
+
+@admin.register(UserSeasonEntry)
+class UserSeasonEntryAdmin(admin.ModelAdmin):
+    list_display = ("user", "season", "level", "entered_at", "locked_until")
+    list_filter = ("season", "level")
+    search_fields = ("user__username",)

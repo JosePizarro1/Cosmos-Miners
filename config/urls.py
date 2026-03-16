@@ -3,10 +3,17 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from game.views import login_view, login_page, register, register_view, home_view, chests_public_view, buy_chest, open_chest, profile_view, profile_update, create_withdrawal, process_withdrawal, withdrawals_admin_view, admin_dashboard_view, admin_dashboard_stats, miners_admin_view, miners_admin_stats, miner_types_list, miner_type_create, miner_type_update, miner_type_toggle, user_miners_list, user_miner_create, user_miner_delete, miners_view, logout_view
+from game.views import login_view, login_page, register, register_view, home_view, chests_public_view, buy_chest, open_chest, profile_view, profile_update, create_withdrawal, process_withdrawal, withdrawals_admin_view, admin_dashboard_view, admin_dashboard_stats, miners_admin_view, miners_admin_stats, miner_types_list, miner_type_create, miner_type_update, miner_type_toggle, user_miners_list, user_miner_create, user_miner_delete, miners_view, logout_view, rankings_view
 from game.views_transports import transports_admin_view, transports_admin_stats, transport_types_list, transport_type_create, transport_type_update, transport_type_toggle, user_transports_list, user_transport_create, user_transport_delete, transports_view
 from game.views_tools import tools_admin_view, tools_admin_stats, tool_types_list, tool_type_create, tool_type_update, tool_type_toggle, user_tools_list, user_tool_create, user_tool_delete, tools_view
 from game.views_chests import chests_admin_view, chests_list, chest_create, chest_update, chest_delete, chest_toggle, chest_dependencies
+from game.views_rankings import (
+    seasons_admin_view, seasons_list, season_create, 
+    season_update, season_delete, season_toggle_override,
+    public_rankings_page, public_rankings_list, get_levels_api, 
+    get_available_items_api, enter_level_api,
+    season_levels_admin_list, level_create, level_update, level_delete
+)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", login_page, name="login_page"),
@@ -55,6 +62,11 @@ urlpatterns = [
     path("dashboard/user-tools/create/", user_tool_create, name="user_tool_create"),
     path("dashboard/user-tools/delete/<int:pk>/", user_tool_delete, name="user_tool_delete"),
     path("logout/", logout_view, name="logout"),
+    path("rankings/", public_rankings_page, name="rankings"),
+    path("rankings/list/", public_rankings_list, name="rankings_list_api"),
+    path("rankings/levels/<int:season_id>/", get_levels_api, name="rankings_levels_api"),
+    path("rankings/available-items/", get_available_items_api, name="available_items_api"),
+    path("rankings/enter/", enter_level_api, name="enter_level_api"),
 
     # Chests Admin
     path("dashboard/chests/", chests_admin_view, name="chests_admin"),
@@ -64,6 +76,20 @@ urlpatterns = [
     path("dashboard/chests/delete/<int:pk>/", chest_delete, name="chest_delete_api"),
     path("dashboard/chests/toggle/<int:pk>/", chest_toggle, name="chest_toggle_api"),
     path("dashboard/chests/dependencies/", chest_dependencies, name="chest_dependencies_api"),
+
+    # Seasons Admin
+    path("dashboard/seasons/", seasons_admin_view, name="seasons_admin"),
+    path("dashboard/seasons/list/", seasons_list, name="seasons_list_api"),
+    path("dashboard/seasons/create/", season_create, name="season_create_api"),
+    path("dashboard/seasons/update/<int:pk>/", season_update, name="season_update_api"),
+    path("dashboard/seasons/delete/<int:pk>/", season_delete, name="season_delete_api"),
+    path("dashboard/seasons/toggle/<int:pk>/", season_toggle_override, name="season_toggle_api"),
+
+    # Levels Admin
+    path("dashboard/seasons/levels/list/<int:season_id>/", season_levels_admin_list, name="season_levels_admin_list"),
+    path("dashboard/seasons/levels/create/", level_create, name="level_create_api"),
+    path("dashboard/seasons/levels/update/<int:pk>/", level_update, name="level_update_api"),
+    path("dashboard/seasons/levels/delete/<int:pk>/", level_delete, name="level_delete_api"),
 
 ]
 

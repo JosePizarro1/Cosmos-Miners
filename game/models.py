@@ -1,5 +1,6 @@
 from django.conf import settings
 from .models_cofres import *
+from .models_rankings import *
 
 from django.db import models
 from django.utils import timezone
