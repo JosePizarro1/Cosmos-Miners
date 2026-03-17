@@ -6,7 +6,12 @@ from django.conf.urls.static import static
 from game.views import login_view, login_page, register, register_view, home_view, chests_public_view, buy_chest, open_chest, profile_view, profile_update, create_withdrawal, process_withdrawal, withdrawals_admin_view, admin_dashboard_view, admin_dashboard_stats, miners_admin_view, miners_admin_stats, miner_types_list, miner_type_create, miner_type_update, miner_type_toggle, user_miners_list, user_miner_create, user_miner_delete, miners_view, logout_view, rankings_view
 from game.views_transports import transports_admin_view, transports_admin_stats, transport_types_list, transport_type_create, transport_type_update, transport_type_toggle, user_transports_list, user_transport_create, user_transport_delete, transports_view
 from game.views_tools import tools_admin_view, tools_admin_stats, tool_types_list, tool_type_create, tool_type_update, tool_type_toggle, user_tools_list, user_tool_create, user_tool_delete, tools_view
-from game.views_chests import chests_admin_view, chests_list, chest_create, chest_update, chest_delete, chest_toggle, chest_dependencies
+from game.views_chests import (
+    chests_admin_view, chests_list, chest_create, 
+    chest_update, chest_delete, chest_toggle, 
+    chest_dependencies, category_list, category_create, 
+    category_update, category_delete
+)
 from game.views_rankings import (
     seasons_admin_view, seasons_list, season_create, 
     season_update, season_delete, season_toggle_override,
@@ -76,6 +81,10 @@ urlpatterns = [
     path("dashboard/chests/delete/<int:pk>/", chest_delete, name="chest_delete_api"),
     path("dashboard/chests/toggle/<int:pk>/", chest_toggle, name="chest_toggle_api"),
     path("dashboard/chests/dependencies/", chest_dependencies, name="chest_dependencies_api"),
+    path("dashboard/chests/categories/list/", category_list, name="category_list_api"),
+    path("dashboard/chests/categories/create/", category_create, name="category_create_api"),
+    path("dashboard/chests/categories/update/<int:pk>/", category_update, name="category_update_api"),
+    path("dashboard/chests/categories/delete/<int:pk>/", category_delete, name="category_delete_api"),
 
     # Seasons Admin
     path("dashboard/seasons/", seasons_admin_view, name="seasons_admin"),

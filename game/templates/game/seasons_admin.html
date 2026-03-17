@@ -34,34 +34,40 @@
 <body class="min-h-screen bg-space text-white overflow-x-hidden relative pb-20">
     <div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.1)_1px,_transparent_1px)] bg-[size:32px_32px] opacity-20"></div>
 
-    <header class="relative z-10 px-6 py-6 flex items-center justify-between max-w-6xl mx-auto border-b border-white/5">
+    <header class="relative z-10 px-6 py-6 flex flex-col sm:flex-row items-center justify-between max-w-6xl mx-auto border-b border-white/5 gap-6">
         <div class="flex items-center gap-3">
             <i class="fas fa-trophy text-accent text-2xl"></i>
-            <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent uppercase">COSMOS</span>
-            <span class="text-xs text-gray-400 ml-2 uppercase font-black italic">Gestión de Temporadas</span>
+            <div>
+                <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent uppercase">COSMOS</span>
+                <span class="block sm:inline text-[10px] text-gray-400 sm:ml-2 uppercase font-black italic">Gestión de Temporadas</span>
+            </div>
         </div>
-        <div class="flex items-center gap-3">
-            <button onclick="openModal()" class="bg-accent text-black px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-transform">
-                <i class="fas fa-plus mr-1"></i> Nueva Temporada
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+            <button onclick="openModal()" class="flex-1 sm:flex-none bg-accent text-black px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 transition-transform truncate">
+                <i class="fas fa-plus mr-1"></i> Nueva <span class="hidden xs:inline">Temporada</span>
             </button>
-            <a href="/dashboard/admin/" class="bg-white/5 border border-white/10 px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-widest">Volver</a>
+            <a href="/dashboard/admin/" class="bg-white/5 border border-white/10 px-4 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                <i class="fas fa-arrow-left"></i> <span class="hidden sm:inline">Volver</span>
+            </a>
         </div>
     </header>
 
-    <main class="relative z-10 px-6 mt-10 max-w-6xl mx-auto">
+    <main class="relative z-10 px-4 sm:px-6 mt-10 max-w-6xl mx-auto">
         <div class="overflow-hidden rounded-3xl border border-white/5 bg-card backdrop-blur-xl">
-            <table class="w-full text-left">
-                <thead class="bg-white/5 text-[10px] uppercase font-black tracking-widest text-gray-500">
-                    <tr>
-                        <th class="px-6 py-4">Temporada</th>
-                        <th class="px-6 py-4">Inicio - Fin</th>
-                        <th class="px-6 py-4">Reclamo</th>
-                        <th class="px-6 py-4">Estado</th>
-                        <th class="px-6 py-4 text-right">Acciones</th>
-                    </tr>
-                </thead>
-                <tbody id="seasonsTable" class="divide-y divide-white/5"></tbody>
-            </table>
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead class="bg-white/5 text-[9px] sm:text-[10px] uppercase font-black tracking-widest text-gray-500">
+                        <tr>
+                            <th class="px-4 sm:px-6 py-4">Temporada</th>
+                            <th class="px-4 sm:px-6 py-4 whitespace-nowrap">Inicio - Fin</th>
+                            <th class="px-4 sm:px-6 py-4 whitespace-nowrap">Reclamo</th>
+                            <th class="px-4 sm:px-6 py-4">Estado</th>
+                            <th class="px-4 sm:px-6 py-4 text-right">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="seasonsTable" class="divide-y divide-white/5"></tbody>
+                </table>
+            </div>
         </div>
     </main>
 
@@ -131,12 +137,19 @@
                 <!-- Requisitos Dinámicos -->
                 <div class="border-t border-white/5 pt-6">
                     <div class="flex items-center justify-between mb-4">
-                        <label class="block text-[10px] uppercase text-accent font-black tracking-widest">Requisitos de Entrada</label>
-                        <button type="button" onclick="addRequirementRow()" class="text-[9px] font-black uppercase bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 hover:border-accent transition-all">+ Añadir Requisito</button>
+                        <label class="block text-[10px] uppercase text-accent font-black tracking-widest">Requisitos entrada</label>
+                        <button type="button" onclick="addRequirementRow()" class="text-[9px] font-black uppercase bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 hover:border-accent transition-all">+ Añadir</button>
                     </div>
-                    <div id="requirementsContainer" class="space-y-3">
-                        <!-- Rows added here -->
+                    <div id="requirementsContainer" class="space-y-3"></div>
+                </div>
+
+                <!-- Recompensas Dinámicas -->
+                <div class="border-t border-white/5 pt-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <label class="block text-[10px] uppercase text-pink font-black tracking-widest">Recompensas al Finalizar</label>
+                        <button type="button" onclick="addRewardRow()" class="text-[9px] font-black uppercase bg-white/5 px-3 py-1.5 rounded-lg border border-white/10 hover:border-pink transition-all">+ Añadir</button>
                     </div>
+                    <div id="rewardsContainer" class="space-y-3"></div>
                 </div>
 
                 <button type="submit" class="w-full py-5 rounded-2xl bg-accent text-black text-[12px] font-black uppercase tracking-[0.2em] shadow-[0_0_20px_rgba(0,224,255,0.2)] hover:brightness-110">Guardar Configuración de Nivel</button>
@@ -146,6 +159,7 @@
 
     <script>
         let selectedSeasonId = null;
+        let deps = { items: { miner: [], transport: [], tool: [] } };
         const reqTypes = {
             'miner_attempts': 'Mín. Intentos Minero',
             'transport_speed': 'Mín. Velocidad (Transporte %)',
@@ -172,20 +186,22 @@
             const table = document.getElementById('seasonsTable');
             table.innerHTML = data.items.map(s => `
                 <tr class="hover:bg-white/5 transition-colors group border-b border-white/5">
-                    <td class="px-6 py-5">
-                        <span class="font-black uppercase tracking-tight text-white">${s.name}</span>
-                        ${s.is_active_override ? '<span class="ml-2 bg-pink text-[8px] text-black font-black px-1.5 py-0.5 rounded uppercase">FORZADA</span>' : ''}
+                    <td class="px-4 sm:px-6 py-5">
+                        <span class="font-black uppercase tracking-tight text-white text-xs sm:text-base">${s.name}</span>
+                        ${s.is_active_override ? '<span class="block sm:inline-block sm:ml-2 bg-pink text-[7px] sm:text-[8px] text-black font-black px-1.5 py-0.5 rounded uppercase w-fit mt-1 sm:mt-0">FORZADA</span>' : ''}
                     </td>
-                    <td class="px-6 py-5 text-[10px] font-bold text-gray-400">
-                        ${new Date(s.start_date).toLocaleString()} <BR/> al ${new Date(s.end_date).toLocaleString()}
+                    <td class="px-4 sm:px-6 py-5 text-[9px] sm:text-[10px] font-bold text-gray-400 whitespace-nowrap">
+                        ${new Date(s.start_date).toLocaleString('es-ES', {day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'})} 
+                        <span class="block text-[8px] opacity-40 uppercase">hasta</span>
+                        ${new Date(s.end_date).toLocaleString('es-ES', {day:'2-digit', month:'2-digit', year:'2-digit', hour:'2-digit', minute:'2-digit'})}
                     </td>
-                    <td class="px-6 py-5 text-[10px] font-bold text-gray-400">${new Date(s.claim_rewards_at).toLocaleString()}</td>
-                    <td class="px-6 py-5">${renderStatusBadge(s.status)}</td>
-                    <td class="px-6 py-5 text-right">
-                        <div class="flex justify-end gap-2">
-                            <button onclick='openLevelsModal(${s.id}, "${s.name}")' title="Gestionar Niveles" class="w-9 h-9 rounded-xl bg-accent/10 text-accent hover:bg-accent flex items-center justify-center transition-all hover:text-black"><i class="fas fa-layer-group"></i></button>
-                            <button onclick='editSeason(${JSON.stringify(s).replace(/'/g, "&apos;")})' class="w-9 h-9 rounded-xl bg-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-all"><i class="fas fa-edit"></i></button>
-                            <button onclick="deleteSeason(${s.id})" class="w-9 h-9 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 flex items-center justify-center transition-all hover:text-white"><i class="fas fa-trash"></i></button>
+                    <td class="px-4 sm:px-6 py-5 text-[9px] sm:text-[10px] font-bold text-gray-400 whitespace-nowrap">${new Date(s.claim_rewards_at).toLocaleString('es-ES', {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})}</td>
+                    <td class="px-4 sm:px-6 py-5">${renderStatusBadge(s.status)}</td>
+                    <td class="px-4 sm:px-6 py-5 text-right">
+                        <div class="flex justify-end gap-1.5 sm:gap-2">
+                            <button onclick='openLevelsModal(${s.id}, "${s.name}")' title="Gestionar Niveles" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-accent/10 text-accent hover:bg-accent flex items-center justify-center transition-all hover:text-black"><i class="fas fa-layer-group text-xs sm:text-base"></i></button>
+                            <button onclick='editSeason(${JSON.stringify(s).replace(/'/g, "&apos;")})' class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/5 text-gray-400 hover:text-white flex items-center justify-center transition-all"><i class="fas fa-edit text-xs sm:text-base"></i></button>
+                            <button onclick="deleteSeason(${s.id})" class="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-red-500/10 text-red-500 hover:bg-red-500 flex items-center justify-center transition-all hover:text-white"><i class="fas fa-trash text-xs sm:text-base"></i></button>
                         </div>
                     </td>
                 </tr>
@@ -234,9 +250,14 @@
                 <div class="bg-white/5 border border-white/5 p-6 rounded-3xl flex justify-between items-start group hover:border-accent/40 transition-all">
                     <div>
                         <h4 class="font-black uppercase tracking-tight text-white mb-3 text-lg italic">${l.name}</h4>
+                        <div class="space-y-1 mb-4">
+                            <span class="block text-[8px] text-accent uppercase font-black mb-1 opacity-60 tracking-widest">Requisitos</span>
+                            ${l.requirements.map(r => `<p class="text-[10px] text-gray-500 font-bold uppercase tracking-tight"><span class="text-accent/40">•</span> ${reqTypes[r.type]}: <span class="text-gray-300">${r.value}</span></p>`).join('')}
+                        </div>
                         <div class="space-y-1">
-                            ${l.requirements.map(r => `<p class="text-[10px] text-gray-500 font-black uppercase tracking-widest"><span class="text-accent">•</span> ${reqTypes[r.type]}: <span class="text-white">${r.value}</span></p>`).join('')}
-                            <p class="text-[9px] text-pink font-black uppercase mt-3">BLOQUEO: ${l.lock_duration_days} DÍAS</p>
+                            <span class="block text-[8px] text-pink uppercase font-black mb-1 opacity-60 tracking-widest">Premios</span>
+                            ${l.rewards.map(rw => `<p class="text-[10px] text-gray-500 font-bold uppercase tracking-tight"><span class="text-pink/40">•</span> ${rw.type}: <span class="text-gray-300">${rw.type === 'gold' ? rw.amount + ' Gold' : '1 Item Especial'}</span></p>`).join(l.rewards.length ? '' : '<p class="text-[9px] text-gray-700 italic">Sin premios</p>')}
+                            <p class="text-[9px] text-pink font-black uppercase mt-4">BLOQUEO: ${l.lock_duration_days} DÍAS</p>
                         </div>
                     </div>
                     <div class="flex flex-col gap-2">
@@ -250,23 +271,65 @@
         function addRequirementRow(type = '', value = '') {
             const container = document.getElementById('requirementsContainer');
             const row = document.createElement('div');
-            row.className = 'flex items-center gap-2 requirement-row animate-in fade-in slide-in-from-top-2 duration-300';
+            row.className = 'flex items-center gap-2 requirement-row';
             row.innerHTML = `
-                <select class="req-type flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none text-xs text-white focus:border-accent">
-                    <option value="miner_attempts" ${type === 'miner_attempts' ? 'selected' : ''}>Mín. Intentos (Minero)</option>
-                    <option value="transport_speed" ${type === 'transport_speed' ? 'selected' : ''}>Mín. Velocidad % (Transp)</option>
-                    <option value="tool_multiplier" ${type === 'tool_multiplier' ? 'selected' : ''}>Mín. Multiplicador (Herr)</option>
+                <select class="req-type flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none text-[10px] font-black uppercase text-white focus:border-accent">
+                    <option value="miner_attempts" ${type === 'miner_attempts' ? 'selected' : ''}>Mín. Intentos</option>
+                    <option value="transport_speed" ${type === 'transport_speed' ? 'selected' : ''}>Mín. Velocidad %</option>
+                    <option value="tool_multiplier" ${type === 'tool_multiplier' ? 'selected' : ''}>Mín. Multiplicador</option>
                 </select>
-                <input type="number" step="0.01" value="${value}" placeholder="Valor" class="req-value w-24 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none text-xs text-white focus:border-accent">
-                <button type="button" onclick="this.parentElement.remove()" class="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"><i class="fas fa-minus"></i></button>
+                <input type="number" step="0.01" value="${value}" placeholder="X" class="req-value w-20 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none text-xs text-center text-white focus:border-accent">
+                <button type="button" onclick="this.parentElement.remove()" class="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"><i class="fas fa-times"></i></button>
             `;
             container.appendChild(row);
+        }
+
+        function addRewardRow(type = 'gold', value = '', itemId = null) {
+            const container = document.getElementById('rewardsContainer');
+            const row = document.createElement('div');
+            row.className = 'flex flex-col gap-2 p-3 bg-white/5 border border-white/10 rounded-2xl reward-row';
+            row.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <select class="rw-type flex-1 bg-space border border-white/10 rounded-xl px-4 py-2 outline-none text-[10px] font-black uppercase text-white focus:border-pink" onchange="updateRewardValues(this)">
+                        <option value="gold" ${type === 'gold' ? 'selected' : ''}>Cosmogold / Moneda</option>
+                        <option value="miner" ${type === 'miner' ? 'selected' : ''}>Minero Especial</option>
+                        <option value="transport" ${type === 'transport' ? 'selected' : ''}>Transporte Especial</option>
+                        <option value="tool" ${type === 'tool' ? 'selected' : ''}>Herramienta Especial</option>
+                    </select>
+                    <button type="button" onclick="this.parentElement.parentElement.remove()" class="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"><i class="fas fa-trash text-xs"></i></button>
+                </div>
+                <div class="rw-value-container"></div>
+            `;
+            container.appendChild(row);
+            updateRewardValues(row.querySelector('.rw-type'), value, itemId);
+        }
+
+        function updateRewardValues(select, val = '', itm = null) {
+            const container = select.parentElement.nextElementSibling;
+            const type = select.value;
+            if (type === 'gold') {
+                container.innerHTML = `<input type="number" step="0.01" value="${val}" placeholder="Cantidad de Cosmogold" class="rw-amount w-full bg-space border border-white/10 rounded-xl px-4 py-2 outline-none text-xs text-accent">`;
+            } else {
+                const list = deps.items[type] || [];
+                container.innerHTML = `
+                    <select class="rw-item-id w-full bg-space border border-white/10 rounded-xl px-4 py-2 outline-none text-xs text-white">
+                        <option value="">Selecciona Item...</option>
+                        ${list.map(i => `<option value="${i.id}" ${itm == i.id ? 'selected' : ''}>${i.name}</option>`).join('')}
+                    </select>
+                `;
+            }
+        }
+
+        async function loadDeps() {
+            const res = await fetch('/dashboard/chests/dependencies/');
+            deps = await res.json();
         }
 
         function openLevelForm() {
             document.getElementById('levelEditId').value = '';
             document.getElementById('levelForm').reset();
             document.getElementById('requirementsContainer').innerHTML = '';
+            document.getElementById('rewardsContainer').innerHTML = '';
             document.getElementById('levelFormTitle').innerText = 'Nuevo Nivel Estelar';
             document.getElementById('levelFormModal').classList.remove('hidden');
         }
@@ -277,7 +340,9 @@
             document.getElementById('lnName').value = l.name;
             document.getElementById('lnLock').value = l.lock_duration_days;
             document.getElementById('requirementsContainer').innerHTML = '';
+            document.getElementById('rewardsContainer').innerHTML = '';
             l.requirements.forEach(r => addRequirementRow(r.type, r.value));
+            l.rewards.forEach(rw => addRewardRow(rw.type, rw.amount, rw.item_id));
             document.getElementById('levelFormTitle').innerText = 'Personalizar Nivel';
             document.getElementById('levelFormModal').classList.remove('hidden');
         }
@@ -295,6 +360,16 @@
                 });
             });
 
+            const rewards = [];
+            document.querySelectorAll('.reward-row').forEach(row => {
+                const type = row.querySelector('.rw-type').value;
+                rewards.push({
+                    type: type,
+                    amount: type === 'gold' ? row.querySelector('.rw-amount').value : 0,
+                    item_id: type !== 'gold' ? row.querySelector('.rw-item-id').value : null
+                });
+            });
+
             const res = await fetch(url, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
@@ -302,7 +377,8 @@
                     season_id: selectedSeasonId,
                     name: document.getElementById('lnName').value,
                     lock_duration_days: document.getElementById('lnLock').value,
-                    requirements: requirements
+                    requirements: requirements,
+                    rewards: rewards
                 })
             });
             if (res.ok) { closeLevelFormModal(); loadLevels(); }
@@ -315,7 +391,10 @@
             }
         }
 
-        window.onload = loadSeasons;
+        window.onload = () => {
+            loadSeasons();
+            loadDeps();
+        };
     </script>
 </body>
 </html>

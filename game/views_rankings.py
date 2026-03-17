@@ -4,7 +4,11 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 from django.utils import timezone
-from .models import Season, UserSeasonEntry, SeasonLevel, SeasonLevelRequirement
+from .models import (
+    Season, UserSeasonEntry, SeasonLevel, 
+    SeasonLevelRequirement, SeasonLevelReward,
+    MinerType, TransportType, ToolType
+)
 import json
 from django.db import transaction
 
@@ -115,7 +119,12 @@ def public_rankings_list(request):
             "user_entry": {
                 "level_name": entry.level.name,
                 "locked_until": entry.locked_until.isoformat(),
-                "is_locked": entry.locked_until > now
+                "is_locked": entry.locked_until > now,
+                "rewards": [{
+                    "type": r_item.reward_type,
+                    "amount": str(r_item.amount),
+                    "name": r_item.miner_type.name if r_item.miner_type else (r_item.transport_type.name if r_item.transport_type else (r_item.tool_type.name if r_item.tool_type else "Cosmogold"))
+                } for r_item in entry.level.rewards.all()]
             } if entry else None
         })
     return JsonResponse({"items": data})
@@ -133,11 +142,19 @@ def get_levels_api(request, season_id):
                 "type_display": r.get_requirement_type_display(),
                 "value": str(r.value)
             })
+        rewards = []
+        for r_item in l.rewards.all():
+            rewards.append({
+                "type": r_item.reward_type,
+                "amount": str(r_item.amount),
+                "name": r_item.miner_type.name if r_item.miner_type else (r_item.transport_type.name if r_item.transport_type else (r_item.tool_type.name if r_item.tool_type else "Cosmogold"))
+            })
         data.append({
             "id": l.id,
             "name": l.name,
             "lock_duration_days": l.lock_duration_days,
-            "requirements": reqs
+            "requirements": reqs,
+            "rewards": rewards
         })
     return JsonResponse({"items": data})
 
@@ -242,11 +259,19 @@ def season_levels_admin_list(request, season_id):
                 "type": r.requirement_type,
                 "value": str(r.value)
             })
+        rewards = []
+        for r_item in l.rewards.all():
+            rewards.append({
+                "type": r_item.reward_type,
+                "amount": str(r_item.amount),
+                "item_id": r_item.miner_type_id or r_item.transport_type_id or r_item.tool_type_id
+            })
         items.append({
             "id": l.id,
             "name": l.name,
             "lock_duration_days": l.lock_duration_days,
-            "requirements": reqs
+            "requirements": reqs,
+            "rewards": rewards
         })
     return JsonResponse({"items": items})
 
@@ -270,6 +295,16 @@ def level_create(request):
                     requirement_type=r['type'],
                     value=r['value']
                 )
+            rewards = data.get('rewards', [])
+            for rw in rewards:
+                SeasonLevelReward.objects.create(
+                    level=lvl,
+                    reward_type=rw['type'],
+                    amount=rw.get('amount', 0),
+                    miner_type_id=rw.get('item_id') if rw['type'] == 'miner' else None,
+                    transport_type_id=rw.get('item_id') if rw['type'] == 'transport' else None,
+                    tool_type_id=rw.get('item_id') if rw['type'] == 'tool' else None,
+                )
         return JsonResponse({"success": True})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=400)
@@ -287,7 +322,7 @@ def level_update(request, pk):
             level.lock_duration_days = data.get('lock_duration_days', 7)
             level.save()
             
-            # Update requirements: simpler to delete and recreate for an array
+            # Update requirements
             level.requirements.all().delete()
             requirements = data.get('requirements', [])
             for r in requirements:
@@ -295,6 +330,18 @@ def level_update(request, pk):
                     level=level,
                     requirement_type=r['type'],
                     value=r['value']
+                )
+            # Update rewards
+            level.rewards.all().delete()
+            rewards = data.get('rewards', [])
+            for rw in rewards:
+                SeasonLevelReward.objects.create(
+                    level=level,
+                    reward_type=rw['type'],
+                    amount=rw.get('amount', 0),
+                    miner_type_id=rw.get('item_id') if rw['type'] == 'miner' else None,
+                    transport_type_id=rw.get('item_id') if rw['type'] == 'transport' else None,
+                    tool_type_id=rw.get('item_id') if rw['type'] == 'tool' else None,
                 )
         return JsonResponse({"success": True})
     except Exception as e:

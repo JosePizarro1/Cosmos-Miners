@@ -78,3 +78,20 @@ class UserSeasonEntry(models.Model):
         unique_together = ('user', 'season')
         verbose_name = "Entrada a Temporada"
         verbose_name_plural = "Entradas a Temporada"
+class SeasonLevelReward(models.Model):
+    REWARD_TYPE = [
+        ('gold', 'Cosmogold / Moneda'),
+        ('miner', 'Minero Especial'),
+        ('transport', 'Transporte Especial'),
+        ('tool', 'Herramienta Especial'),
+    ]
+    level = models.ForeignKey(SeasonLevel, on_delete=models.CASCADE, related_name="rewards")
+    reward_type = models.CharField(max_length=20, choices=REWARD_TYPE)
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Cantidad / Oro")
+    
+    miner_type = models.ForeignKey('game.MinerType', on_delete=models.SET_NULL, null=True, blank=True)
+    transport_type = models.ForeignKey('game.TransportType', on_delete=models.SET_NULL, null=True, blank=True)
+    tool_type = models.ForeignKey('game.ToolType', on_delete=models.SET_NULL, null=True, blank=True)
+
+    def __str__(self):
+        return f"Premio {self.reward_type} para {self.level.name}"

@@ -72,53 +72,82 @@
     </div>
 
     <!-- Modal: Ingreso al Nivel (Selección de Items) -->
-    <div id="entryModal" class="fixed inset-0 z-[70] flex items-center justify-center bg-black/95 backdrop-blur-xl hidden p-4 overflow-y-auto">
-        <div class="bg-[#0a0a20] border border-white/10 w-full max-w-4xl rounded-[50px] p-10 relative">
-            <button onclick="closeEntryModal()" class="absolute top-10 right-10 text-gray-500 hover:text-white"><i class="fas fa-times text-2xl"></i></button>
-            <div class="text-center mb-10">
+    <div id="entryModal" class="fixed inset-0 z-[70] bg-black/95 backdrop-blur-xl hidden overflow-y-auto py-10 px-4">
+        <div class="bg-[#0a0a20] border border-white/10 w-full max-w-2xl mx-auto rounded-[30px] sm:rounded-[50px] p-6 sm:p-12 relative my-auto">
+            <button onclick="closeEntryModal()" class="absolute top-6 right-6 sm:top-10 sm:right-10 text-gray-500 hover:text-white transition-colors">
+                <i class="fas fa-times text-xl sm:text-2xl"></i>
+            </button>
+            <div class="text-center mb-8 sm:mb-12">
                 <span id="entryLevelName" class="text-accent text-[10px] font-black uppercase tracking-[0.2em] mb-2 block">Nivel</span>
-                <h2 class="text-4xl font-black uppercase tracking-tight italic">Preparar Despegue</h2>
-                <p class="text-gray-500 text-xs mt-2">Asigna los recursos requeridos para entrar en este rango estelar.</p>
+                <h2 class="text-2xl sm:text-4xl font-black uppercase tracking-tight italic">Preparar Despegue</h2>
+                <p class="text-gray-500 text-[10px] sm:text-xs mt-2 px-4">Asigna los recursos requeridos para entrar en este rango estelar.</p>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-8">
+            <div id="slotsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-4xl mx-auto">
                 <!-- Miner -->
-                <div class="space-y-4">
+                <div id="col-miner" class="space-y-4">
                     <h4 class="text-center text-[10px] font-black uppercase text-gray-500 tracking-widest">Minero</h4>
                     <div id="slot-miner" onclick="openItemPicker('miner')" class="item-slot relative overflow-hidden group">
-                        <div id="miner-placeholder" class="text-center"><i class="fas fa-user-astronaut text-3xl text-gray-700 group-hover:text-accent"></i></div>
+                        <div id="miner-placeholder" class="text-center"><i class="fas fa-user-astronaut text-2xl sm:text-3xl text-gray-700 group-hover:text-accent"></i></div>
                         <img id="miner-preview" class="absolute inset-0 w-full h-full object-contain p-4 hidden">
                         <div id="miner-req-badge" class="absolute top-2 right-2 hidden"><span class="bg-accent/20 text-accent text-[8px] px-2 py-0.5 rounded-full font-black">REQ</span></div>
                     </div>
                 </div>
                 <!-- Transport -->
-                <div class="space-y-4">
+                <div id="col-transport" class="space-y-4">
                     <h4 class="text-center text-[10px] font-black uppercase text-gray-500 tracking-widest">Transporte</h4>
                     <div id="slot-transport" onclick="openItemPicker('transport')" class="item-slot relative overflow-hidden group">
-                        <div id="transport-placeholder" class="text-center"><i class="fas fa-shuttle-space text-3xl text-gray-700 group-hover:text-pink"></i></div>
+                        <div id="transport-placeholder" class="text-center"><i class="fas fa-shuttle-space text-2xl sm:text-3xl text-gray-700 group-hover:text-pink"></i></div>
                         <img id="transport-preview" class="absolute inset-0 w-full h-full object-contain p-4 hidden">
                         <div id="transport-req-badge" class="absolute top-2 right-2 hidden"><span class="bg-pink/20 text-pink text-[8px] px-2 py-0.5 rounded-full font-black">REQ</span></div>
                     </div>
                 </div>
                 <!-- Tool -->
-                <div class="space-y-4">
+                <div id="col-tool" class="space-y-4">
                     <h4 class="text-center text-[10px] font-black uppercase text-gray-500 tracking-widest">Herramienta</h4>
                     <div id="slot-tool" onclick="openItemPicker('tool')" class="item-slot relative overflow-hidden group">
-                        <div id="tool-placeholder" class="text-center"><i class="fas fa-screwdriver-wrench text-3xl text-gray-700 group-hover:text-yellow-400"></i></div>
+                        <div id="tool-placeholder" class="text-center"><i class="fas fa-screwdriver-wrench text-2xl sm:text-3xl text-gray-700 group-hover:text-yellow-400"></i></div>
                         <img id="tool-preview" class="absolute inset-0 w-full h-full object-contain p-4 hidden">
                         <div id="tool-req-badge" class="absolute top-2 right-2 hidden"><span class="bg-yellow-400/20 text-yellow-400 text-[8px] px-2 py-0.5 rounded-full font-black">REQ</span></div>
                     </div>
                 </div>
             </div>
 
-            <div class="mt-12 bg-white/5 rounded-3xl p-6 border border-white/5 flex items-start gap-4">
-                <div class="w-10 h-10 rounded-xl bg-pink/10 flex items-center justify-center text-pink shrink-0"><i class="fas fa-lock"></i></div>
+            <div class="mt-8 sm:mt-12 bg-white/5 rounded-2xl sm:rounded-3xl p-5 sm:p-6 border border-white/5 flex items-start gap-4">
+                <div class="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-pink/10 flex items-center justify-center text-pink shrink-0"><i class="fas fa-lock text-sm sm:text-base"></i></div>
                 <div>
-                    <h5 class="text-xs font-black uppercase tracking-tight mb-1">Inhabilitación de Recursos</h5>
-                    <p id="lockDurationText" class="text-[10px] text-gray-500"></p>
+                    <h5 class="text-[10px] sm:text-xs font-black uppercase tracking-tight mb-1">Inhabilitación de Recursos</h5>
+                    <p id="lockDurationText" class="text-[9px] sm:text-[10px] text-gray-500"></p>
                 </div>
             </div>
-            <button onclick="submitEntry()" id="btnSubmitEntry" class="w-full mt-8 py-5 rounded-2xl bg-accent text-black font-black uppercase tracking-[0.2em] text-[10px] hover:brightness-110">Ingresar al Nivel</button>
+            <button onclick="submitEntry()" id="btnSubmitEntry" class="w-full mt-6 sm:mt-8 py-4 sm:py-5 rounded-2xl bg-accent text-black font-black uppercase tracking-[0.2em] text-[9px] sm:text-[10px] hover:brightness-110">Ingresar al Nivel</button>
+        </div>
+    </div>
+
+    <!-- Modal: Ranking Participantes -->
+    <div id="rankingModal" class="fixed inset-0 z-[70] bg-black/95 backdrop-blur-xl hidden overflow-y-auto py-10 px-4">
+        <div class="bg-[#0a0a20] border border-white/10 w-full max-w-2xl mx-auto rounded-[40px] p-8 sm:p-12 relative my-auto">
+            <button onclick="closeRankingModal()" class="absolute top-10 right-10 text-gray-500 hover:text-white transition-colors"><i class="fas fa-times text-2xl"></i></button>
+            <div class="text-center mb-10">
+                <span id="rankSeasonName" class="text-accent text-[10px] font-black uppercase tracking-widest mb-2 block">Temporada</span>
+                <h2 class="text-3xl font-black uppercase tracking-tight italic">Ranking de Pilotos</h2>
+                <div id="rankLevelBadge" class="mt-3 inline-block bg-white/5 px-4 py-1.5 rounded-full border border-white/10 text-[10px] font-black text-gray-400 uppercase tracking-widest">Nivel 1</div>
+            </div>
+
+            <!-- Rewards Quick View -->
+            <div id="rankRewards" class="mb-10 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- Rewards here -->
+            </div>
+
+            <div class="bg-white/5 rounded-3xl border border-white/10 p-10 text-center">
+                <div class="w-16 h-16 bg-accent/10 text-accent rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h4 class="text-sm font-black uppercase tracking-widest text-white">Listado de Competidores</h4>
+                <p class="text-[10px] text-gray-500 mt-2 leading-relaxed">Aquí se listarán los participantes y su progreso actual dentro de este nivel estelar. Los datos se actualizan conforme avanza el ciclo de minado.</p>
+            </div>
+
+            <button onclick="closeRankingModal()" class="w-full mt-8 py-4 rounded-2xl bg-white/5 border border-white/10 text-[10px] font-black uppercase tracking-widest text-gray-400 hover:bg-white/10 transition-all">Cerrar Tablero</button>
         </div>
     </div>
 
@@ -167,7 +196,7 @@
         function renderSeasonAction(s) {
             if (s.status === 'active') {
                 if (s.user_entry) {
-                    return `<button class="px-8 py-3 rounded-xl bg-blueglow/10 border border-blueglow/30 text-blueglow font-black text-[10px] uppercase tracking-widest cursor-default">REGISTRADO</button>`;
+                    return `<button onclick='openRankingModal(${JSON.stringify(s).replace(/'/g, "&apos;")})' class="px-8 py-3 rounded-xl bg-blueglow text-black font-black text-[10px] uppercase tracking-widest hover:scale-105 transition-all shadow-[0_0_15px_rgba(0,224,255,0.3)]">VER RANKING</button>`;
                 }
                 return `<button onclick="openLevelsModal(${s.id})" class="px-10 py-4 rounded-2xl bg-accent text-black font-black text-[11px] uppercase tracking-[0.2em] hover:scale-105 hover:shadow-[0_0_30px_rgba(0,224,255,0.3)] transition-all">Participar</button>`;
             }
@@ -254,14 +283,33 @@
             const data = await res.json();
             const grid = document.getElementById('levelsGrid');
             grid.innerHTML = data.items.map(l => `
-                <div class="bg-white/5 border border-white/5 p-6 rounded-[30px] hover:border-accent/20 transition-all flex flex-col justify-between group">
-                    <div>
-                        <h4 class="text-xl font-black uppercase mb-4 italic">${l.name}</h4>
-                        <div class="space-y-2 mb-6">
-                            ${l.requirements.map(r => `<p class="text-[10px] text-gray-400 font-bold uppercase flex items-center gap-2"><i class="${reqIcons[r.type]} w-4"></i> ${r.type_display}: ${r.value}</p>`).join(l.requirements.length?'':'<p class="text-[10px] text-gray-500 italic">Sin requisitos</p>')}
+                <div class="bg-white/5 border border-white/10 p-8 rounded-[40px] hover:border-accent/40 transition-all flex flex-col justify-between group relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-24 h-24 bg-accent/5 rounded-full blur-2xl -mr-12 -mt-12 group-hover:bg-accent/10 transition-all"></div>
+                    <div class="relative">
+                        <h4 class="text-xl font-black uppercase mb-4 italic tracking-tight">${l.name}</h4>
+                        <div class="space-y-4 mb-8">
+                            <div>
+                                <span class="text-[8px] font-black text-accent uppercase tracking-[0.2em] block mb-2 opacity-60">Requerimientos</span>
+                                <div class="space-y-1.5">
+                                    ${l.requirements.map(r => `<p class="text-[10px] text-gray-400 font-bold uppercase flex items-center gap-2"><i class="${reqIcons[r.type]} w-4"></i> ${r.type_display}: <span class="text-white">${r.value}</span></p>`).join(l.requirements.length?'':'<p class="text-[10px] text-gray-500 italic">Sin requisitos</p>')}
+                                </div>
+                            </div>
+                            <div class="pt-4 border-t border-white/5">
+                                <span class="text-[8px] font-black text-pink uppercase tracking-[0.2em] block mb-2 opacity-60">Recompensas</span>
+                                <div class="space-y-1.5">
+                                    ${l.rewards.map(rw => `
+                                        <div class="flex items-center gap-2">
+                                            <div class="w-5 h-5 rounded-lg bg-pink/10 flex items-center justify-center text-pink text-[9px]">
+                                                <i class="fas ${rw.type === 'gold' ? 'fa-coins' : 'fa-gift'}"></i>
+                                            </div>
+                                            <p class="text-[9px] font-black text-gray-300 uppercase truncate">${rw.type === 'gold' ? rw.amount + ' Gold' : rw.name}</p>
+                                        </div>
+                                    `).join(l.rewards.length ? '' : '<p class="text-[9px] text-gray-700 italic">Sin recompensas</p>')}
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <button onclick="openEntryModal(${JSON.stringify(l).replace(/"/g, '&quot;')})" class="w-full py-3 rounded-xl bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-widest group-hover:bg-accent group-hover:text-black transition-all">Ingresar</button>
+                    <button onclick="openEntryModal(${JSON.stringify(l).replace(/"/g, '&quot;')})" class="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-[9px] font-black uppercase tracking-[0.2em] group-hover:bg-accent group-hover:text-black group-hover:border-accent transition-all">PREPARAR MISIÓN</button>
                 </div>
             `).join('');
             document.getElementById('levelsModal').classList.remove('hidden');
@@ -273,13 +321,26 @@
             document.getElementById('entryLevelName').innerText = level.name;
             document.getElementById('lockDurationText').innerText = `Items bloqueados por ${level.lock_duration_days} días tras el ingreso.`;
             
+            let reqCount = 0;
             ['miner', 'transport', 'tool'].forEach(type => {
                 const reqFound = level.requirements.some(r => r.type.startsWith(type));
-                document.getElementById(`${type}-req-badge`).classList.toggle('hidden', !reqFound);
+                const col = document.getElementById(`col-${type}`);
+                if (reqFound) {
+                    col.classList.remove('hidden');
+                    document.getElementById(`${type}-req-badge`).classList.remove('hidden');
+                    reqCount++;
+                } else {
+                    col.classList.add('hidden');
+                }
                 document.getElementById(`slot-${type}`).classList.remove('selected');
                 document.getElementById(`${type}-placeholder`).classList.remove('hidden');
                 document.getElementById(`${type}-preview`).classList.add('hidden');
             });
+
+            // Adjust grid columns based on requirement count
+            const grid = document.getElementById('slotsGrid');
+            grid.classList.remove('md:grid-cols-1', 'md:grid-cols-2', 'md:grid-cols-3');
+            grid.classList.add(`md:grid-cols-${reqCount || 1}`);
 
             document.getElementById('levelsModal').classList.add('hidden');
             document.getElementById('entryModal').classList.remove('hidden');
@@ -343,6 +404,33 @@
         function closeLevelsModal() { document.getElementById('levelsModal').classList.add('hidden'); }
         function closeEntryModal() { document.getElementById('entryModal').classList.add('hidden'); }
         function closePickerModal() { document.getElementById('pickerModal').classList.add('hidden'); }
+
+        async function openRankingModal(season) {
+            document.getElementById('rankSeasonName').innerText = season.name;
+            document.getElementById('rankLevelBadge').innerText = season.user_entry.level_name;
+            
+            const rewardsDiv = document.getElementById('rankRewards');
+            if (season.user_entry.rewards && season.user_entry.rewards.length) {
+                rewardsDiv.innerHTML = `
+                    <div class="col-span-full mb-2"><span class="text-[8px] font-black text-pink uppercase tracking-widest opacity-60">Premios en disputa</span></div>
+                ` + season.user_entry.rewards.map(rw => `
+                    <div class="flex items-center gap-3 bg-white/5 p-3 rounded-2xl border border-white/5">
+                        <div class="w-8 h-8 rounded-lg bg-pink/10 flex items-center justify-center text-pink text-xs"><i class="fas ${rw.type === 'gold' ? 'fa-coins' : 'fa-gift'}"></i></div>
+                        <div>
+                            <p class="text-[9px] font-black text-white uppercase tracking-tight">${rw.type === 'gold' ? rw.amount + ' Gold' : rw.name}</p>
+                        </div>
+                    </div>
+                `).join('');
+                rewardsDiv.classList.remove('hidden');
+            } else {
+                rewardsDiv.classList.add('hidden');
+            }
+
+            document.getElementById('rankingModal').classList.remove('hidden');
+        }
+
+        function closeRankingModal() { document.getElementById('rankingModal').classList.add('hidden'); }
+
         window.onload = loadRankings;
     </script>
 </body>

@@ -212,3 +212,57 @@ def chest_toggle(request, pk):
         return JsonResponse({"success": True, "is_in_store": chest.is_in_store})
     except Exception as e:
         return JsonResponse({"error": str(e)}, status=500)
+@require_POST
+@csrf_protect
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def category_list(request):
+    try:
+        categories = list(ChestCategory.objects.all().values("id", "name"))
+        return JsonResponse({"success": True, "items": categories})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+@require_POST
+@csrf_protect
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def category_create(request):
+    try:
+        data = json.loads(request.body)
+        name = data.get("name")
+        if not name:
+            return JsonResponse({"error": "Nombre requerido"}, status=400)
+        category = ChestCategory.objects.create(name=name)
+        return JsonResponse({"success": True, "id": category.id})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+@require_POST
+@csrf_protect
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def category_update(request, pk):
+    try:
+        data = json.loads(request.body)
+        name = data.get("name")
+        category = ChestCategory.objects.get(pk=pk)
+        category.name = name
+        category.save()
+        return JsonResponse({"success": True})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+@require_POST
+@csrf_protect
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def category_delete(request, pk):
+    try:
+        category = ChestCategory.objects.get(pk=pk)
+        if category.chest_set.exists():
+            return JsonResponse({"error": "No se puede eliminar una categoría con cofres asociados"}, status=400)
+        category.delete()
+        return JsonResponse({"success": True})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
