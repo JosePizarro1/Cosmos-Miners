@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Preparar Despegue - Cosmos Miners</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        space: "#05050f",
+                        card: "rgba(20,30,60,0.75)",
+                        accent: "#00e0ff",
+                        pink: "#ff4d8d",
+                        gold: "#ffca28",
+                        blueglow: "#0077ff"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .rarity-common {
+            border-color: rgba(156, 163, 175, 0.3);
+        }
+
+        .rarity-common .rarity-tag {
+            background: rgba(156, 163, 175, 0.15);
+            color: #9ca3af;
+        }
+
+        .rarity-rare {
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .rarity-rare .rarity-tag {
+            background: rgba(59, 130, 246, 0.15);
+            color: #3b82f6;
+        }
+
+        .rarity-epic {
+            border-color: rgba(168, 85, 247, 0.3);
+        }
+
+        .rarity-epic .rarity-tag {
+            background: rgba(168, 85, 247, 0.15);
+            color: #a855f7;
+        }
+
+        .rarity-legendary {
+            border-color: rgba(255, 202, 40, 0.3);
+        }
+
+        .rarity-legendary .rarity-tag {
+            background: rgba(255, 202, 40, 0.15);
+            color: #ffca28;
+        }
+
+        .asset-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .asset-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .asset-card.selected {
+            border-color: #00e0ff !important;
+            box-shadow: 0 0 25px rgba(0, 224, 255, 0.2), inset 0 0 30px rgba(0, 224, 255, 0.05);
+        }
+
+        .asset-card.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 24px;
+            height: 24px;
+            background: #00e0ff;
+            color: #05050f;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 900;
+            font-size: 12px;
+        }
+
+        .planet-card.selected {
+            border-color: #ff4d8d !important;
+            box-shadow: 0 0 25px rgba(255, 77, 141, 0.2), inset 0 0 30px rgba(255, 77, 141, 0.05);
+        }
+
+        .planet-card.selected::after {
+            background: #ff4d8d;
+        }
+
+        .glass-modal {
+            background: rgba(10, 15, 40, 0.95);
+            backdrop-filter: blur(25px);
+        }
+
+        .step-indicator.active {
+            background: #00e0ff;
+            color: #05050f;
+        }
+
+        .step-indicator.completed {
+            background: rgba(0, 224, 255, 0.2);
+            color: #00e0ff;
+        }
+
+        @keyframes previewSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px) scale(0.95);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .preview-appear {
+            animation: previewSlideIn 0.4s ease forwards;
+        }
+
+        .stat-glow {
+            text-shadow: 0 0 10px currentColor;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen bg-space text-white pb-20 overflow-x-hidden">
+    <!-- Background -->
+    <div class="fixed inset-0 z-0 pointer-events-none">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,119,255,0.1)_0%,_transparent_70%)]">
+        </div>
+    </div>
+
+    <div class="relative z-10 max-w-lg mx-auto px-6 pt-10">
+        <!-- HEADER -->
+        <header class="flex items-center justify-between mb-8">
+            <a href="{% url 'mining_dashboard' %}"
+                class="bg-card w-11 h-11 rounded-2xl flex items-center justify-center border border-white/10 hover:border-accent/40 transition-all">
+                <i class="fas fa-chevron-left text-gray-300"></i>
+            </a>
+            <div class="text-center">
+                <h1
+                    class="text-xl font-black italic tracking-tighter bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent uppercase">
+                    Preparar Despegue</h1>
+                <p class="text-[8px] uppercase font-bold text-gray-500 tracking-[0.3em]">Configuración de flota</p>
+            </div>
+            <div class="w-11"></div>
+        </header>
+
+        <!-- STEP INDICATOR -->
+        <div class="flex items-center justify-center gap-2 mb-8">
+            <div id="step1dot"
+                class="step-indicator active w-8 h-8 rounded-full flex items-center justify-center text-xs font-black">1
+            </div>
+            <div class="w-8 h-0.5 bg-white/10" id="line1"></div>
+            <div id="step2dot"
+                class="step-indicator w-8 h-8 rounded-full flex items-center justify-center text-xs font-black bg-white/10 text-gray-500">
+                2</div>
+            <div class="w-8 h-0.5 bg-white/10" id="line2"></div>
+            <div id="step3dot"
+                class="step-indicator w-8 h-8 rounded-full flex items-center justify-center text-xs font-black bg-white/10 text-gray-500">
+                3</div>
+            <div class="w-8 h-0.5 bg-white/10" id="line3"></div>
+            <div id="step4dot"
+                class="step-indicator w-8 h-8 rounded-full flex items-center justify-center text-xs font-black bg-white/10 text-gray-500">
+                4</div>
+        </div>
+
+        <!-- STEP 1: MINERS -->
+        <div id="step1" class="animate__animated animate__fadeIn animate__faster">
+            <h2 class="text-sm uppercase font-black text-accent mb-4 tracking-[0.2em] pl-1 flex items-center gap-2">
+                <i class="fas fa-user-astronaut"></i> Selecciona tu Minero
+            </h2>
+            <div class="space-y-4 mb-6">
+                {% for m in miners %}
+                <div class="asset-card relative bg-card border-2 border-white/10 p-5 rounded-[2rem] rarity-{{ m.miner_type.rarity }}"
+                    data-id="{{ m.id }}" data-type="miner" data-attempts="{{ m.miner_type.attempts }}"
+                    data-image="{% if m.miner_type.image %}{{ m.miner_type.image.url }}{% endif %}"
+                    onclick="selectAsset(this, 'miner')">
+                    <div class="flex items-center gap-4">
+                        {% if m.miner_type.image %}
+                        <img src="{{ m.miner_type.image.url }}"
+                            class="w-16 h-16 rounded-2xl object-cover border border-white/10">
+                        {% else %}
+                        <div
+                            class="w-16 h-16 rounded-2xl bg-space/60 border border-white/10 flex items-center justify-center">
+                            <i class="fas fa-user-astronaut text-accent/40 text-2xl"></i>
+                        </div>
+                        {% endif %}
+                        <div class="flex-1">
+                            <h3 class="font-black text-white text-lg">{{ m.miner_type.name }}</h3>
+                            <span
+                                class="rarity-tag text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full inline-block mt-1">{{ m.miner_type.get_rarity_display }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 grid grid-cols-1 gap-2">
+                        <div
+                            class="bg-space/40 rounded-xl px-4 py-2 flex justify-between items-center border border-white/5">
+                            <span class="text-[9px] text-gray-500 uppercase font-bold">Intentos de minado</span>
+                            <span class="text-sm font-black text-accent">{{ m.miner_type.attempts }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-12 bg-card/30 border border-dashed border-white/10 rounded-3xl">
+                    <i class="fas fa-user-slash text-3xl text-gray-600 mb-3"></i>
+                    <p class="text-gray-500 text-xs font-bold uppercase">No tienes mineros disponibles</p>
+                </div>
+                {% endfor %}
+            </div>
+            <button onclick="goToStep(2)" id="btnStep1" disabled
+                class="w-full bg-white/5 py-4 rounded-3xl font-black uppercase tracking-widest text-gray-500 border border-white/10 transition-all disabled:opacity-30">
+                SIGUIENTE <i class="fas fa-chevron-right ml-2"></i>
+            </button>
+        </div>
+
+        <!-- STEP 2: TOOLS -->
+        <div id="step2" class="hidden animate__animated animate__fadeIn animate__faster">
+            <h2 class="text-sm uppercase font-black text-accent mb-4 tracking-[0.2em] pl-1 flex items-center gap-2">
+                <i class="fas fa-screwdriver-wrench"></i> Selecciona Herramienta
+            </h2>
+            <div class="space-y-4 mb-6">
+                {% for t in tools %}
+                <div class="asset-card relative bg-card border-2 border-white/10 p-5 rounded-[2rem] rarity-{{ t.tool_type.rarity }}"
+                    data-id="{{ t.id }}" data-type="tool" data-bonus="{{ t.tool_type.bonus_pct }}"
+                    data-image="{% if t.tool_type.image %}{{ t.tool_type.image.url }}{% endif %}"
+                    onclick="selectAsset(this, 'tool')">
+                    <div class="flex items-center gap-4">
+                        {% if t.tool_type.image %}
+                        <img src="{{ t.tool_type.image.url }}"
+                            class="w-16 h-16 rounded-2xl object-cover border border-white/10">
+                        {% else %}
+                        <div
+                            class="w-16 h-16 rounded-2xl bg-space/60 border border-white/10 flex items-center justify-center">
+                            <i class="fas fa-screwdriver-wrench text-accent/40 text-2xl"></i>
+                        </div>
+                        {% endif %}
+                        <div class="flex-1">
+                            <h3 class="font-black text-white text-lg">{{ t.tool_type.name }}</h3>
+                            <span
+                                class="rarity-tag text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full inline-block mt-1">{{ t.tool_type.get_rarity_display }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 grid grid-cols-1 gap-2">
+                        <div
+                            class="bg-space/40 rounded-xl px-4 py-2 flex justify-between items-center border border-white/5">
+                            <span class="text-[9px] text-gray-500 uppercase font-bold">Producción (Bonus)</span>
+                            <span class="text-sm font-black text-accent">{{ t.tool_type.bonus_pct }}%</span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-12 bg-card/30 border border-dashed border-white/10 rounded-3xl">
+                    <i class="fas fa-wrench text-3xl text-gray-600 mb-3"></i>
+                    <p class="text-gray-500 text-xs font-bold uppercase">No tienes herramientas disponibles</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="flex gap-3">
+                <button onclick="goToStep(1)"
+                    class="flex-1 bg-white/5 py-4 rounded-3xl font-black uppercase tracking-widest text-gray-400 border border-white/10">
+                    <i class="fas fa-chevron-left mr-2"></i> ATRÁS
+                </button>
+                <button onclick="goToStep(3)" id="btnStep2" disabled
+                    class="flex-1 bg-white/5 py-4 rounded-3xl font-black uppercase tracking-widest text-gray-500 border border-white/10 transition-all disabled:opacity-30">
+                    SIGUIENTE <i class="fas fa-chevron-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 3: TRANSPORTS -->
+        <div id="step3" class="hidden animate__animated animate__fadeIn animate__faster">
+            <h2 class="text-sm uppercase font-black text-accent mb-4 tracking-[0.2em] pl-1 flex items-center gap-2">
+                <i class="fas fa-shuttle-space"></i> Selecciona Transporte
+            </h2>
+            <div class="space-y-4 mb-6">
+                {% for tr in transports %}
+                <div class="asset-card relative bg-card border-2 border-white/10 p-5 rounded-[2rem] rarity-{{ tr.transport_type.rarity }}"
+                    data-id="{{ tr.id }}" data-type="transport" data-speed="{{ tr.transport_type.speed }}"
+                    data-image="{% if tr.transport_type.image %}{{ tr.transport_type.image.url }}{% endif %}"
+                    onclick="selectAsset(this, 'transport')">
+                    <div class="flex items-center gap-4">
+                        {% if tr.transport_type.image %}
+                        <img src="{{ tr.transport_type.image.url }}"
+                            class="w-16 h-16 rounded-2xl object-cover border border-white/10">
+                        {% else %}
+                        <div
+                            class="w-16 h-16 rounded-2xl bg-space/60 border border-white/10 flex items-center justify-center">
+                            <i class="fas fa-shuttle-space text-accent/40 text-2xl"></i>
+                        </div>
+                        {% endif %}
+                        <div class="flex-1">
+                            <h3 class="font-black text-white text-lg">{{ tr.transport_type.name }}</h3>
+                            <span
+                                class="rarity-tag text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full inline-block mt-1">{{ tr.transport_type.get_rarity_display }}</span>
+                        </div>
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 gap-2">
+                        <div
+                            class="bg-space/40 rounded-xl px-4 py-2 flex justify-between items-center border border-white/5">
+                            <span class="text-[9px] text-gray-500 uppercase font-bold">Velocidad</span>
+                            <span class="text-sm font-black text-accent">{{ tr.transport_type.speed }}%</span>
+                        </div>
+                        <div
+                            class="bg-space/40 rounded-xl px-4 py-2 flex justify-between items-center border border-white/5">
+                            <span class="text-[9px] text-gray-500 uppercase font-bold">Capacidad</span>
+                            <span class="text-sm font-black text-gold">{{ tr.transport_type.capacity }}</span>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-12 bg-card/30 border border-dashed border-white/10 rounded-3xl">
+                    <i class="fas fa-rocket text-3xl text-gray-600 mb-3"></i>
+                    <p class="text-gray-500 text-xs font-bold uppercase">No tienes transportes disponibles</p>
+                </div>
+                {% endfor %}
+            </div>
+            <div class="flex gap-3">
+                <button onclick="goToStep(2)"
+                    class="flex-1 bg-white/5 py-4 rounded-3xl font-black uppercase tracking-widest text-gray-400 border border-white/10">
+                    <i class="fas fa-chevron-left mr-2"></i> ATRÁS
+                </button>
+                <button onclick="goToStep(4)" id="btnStep3" disabled
+                    class="flex-1 bg-white/5 py-4 rounded-3xl font-black uppercase tracking-widest text-gray-500 border border-white/10 transition-all disabled:opacity-30">
+                    SIGUIENTE <i class="fas fa-chevron-right ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 4: PLANETS -->
+        <div id="step4" class="hidden animate__animated animate__fadeIn animate__faster">
+            <h2 class="text-sm uppercase font-black text-pink mb-4 tracking-[0.2em] pl-1 flex items-center gap-2">
+                <i class="fas fa-globe"></i> Destino Planetario
+            </h2>
+            <div class="space-y-4 mb-6">
+                {% for p in planets %}
+                <div class="asset-card planet-card relative bg-card border-2 border-white/10 p-5 rounded-[2rem]"
+                    data-id="{{ p.id }}" data-type="planet" data-travel="{{ p.travel_time_base }}"
+                    data-success="{{ p.success_rate_base }}"
+                    data-image="{% if p.image %}{{ p.image.url }}{% endif %}"
+                    data-minerals='[{% for pm in p.produced_minerals.all %}{"name":"{{ pm.mineral.name }}","min":{{ pm.min_amount }},"max":{{ pm.max_amount }}}{% if not forloop.last %},{% endif %}{% endfor %}]'
+                    onclick="selectAsset(this, 'planet')">
+                    <div class="flex items-center gap-4">
+                        {% if p.image %}
+                        <img src="{{ p.image.url }}" class="w-16 h-16 rounded-2xl object-cover border border-white/10">
+                        {% else %}
+                        <div
+                            class="w-16 h-16 rounded-2xl bg-space/60 border border-pink/20 flex items-center justify-center">
+                            <i class="fas fa-globe text-pink/40 text-2xl"></i>
+                        </div>
+                        {% endif %}
+                        <div class="flex-1">
+                            <h3 class="font-black text-white text-lg">{{ p.name }}</h3>
+                        </div>
+                    </div>
+                    <div class="mt-4 grid grid-cols-2 gap-2">
+                        <div
+                            class="bg-space/40 rounded-xl px-4 py-2 flex justify-between items-center border border-white/5">
+                            <span class="text-[9px] text-gray-500 uppercase font-bold">Tiempo Viaje</span>
+                            <span class="text-sm font-black text-accent">{{ p.travel_time_base }}h</span>
+                        </div>
+                        <div
+                            class="bg-space/40 rounded-xl px-4 py-2 flex justify-between items-center border border-white/5">
+                            <span class="text-[9px] text-gray-500 uppercase font-bold">% Victoria</span>
+                            <span class="text-sm font-black text-green-400">{{ p.success_rate_base }}%</span>
+                        </div>
+                    </div>
+                    <!-- Planet Minerals -->
+                    {% for pm in p.produced_minerals.all %}
+                    <div
+                        class="mt-2 bg-space/30 rounded-xl px-4 py-2 flex justify-between items-center border border-white/5">
+                        <span class="text-[9px] text-gray-400 uppercase font-bold flex items-center gap-1">
+                            <i class="fas fa-gem text-accent/30 text-[8px]"></i> {{ pm.mineral.name }}
+                        </span>
+                        <span class="text-[10px] font-black text-gold">{{ pm.min_amount }} - {{ pm.max_amount }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% empty %}
+                <div class="text-center py-12 bg-card/30 border border-dashed border-white/10 rounded-3xl">
+                    <i class="fas fa-globe text-3xl text-gray-600 mb-3"></i>
+                    <p class="text-gray-500 text-xs font-bold uppercase">No hay planetas disponibles</p>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- LIVE PREVIEW PANEL -->
+            <div id="previewPanel" class="hidden mb-6">
+                <div
+                    class="bg-card border border-accent/30 p-5 rounded-[2rem] shadow-[0_0_30px_rgba(0,224,255,0.1)] preview-appear">
+                    <h3 class="text-xs uppercase font-black text-accent tracking-[0.2em] mb-4 flex items-center gap-2">
+                        <i class="fas fa-calculator"></i> Estadísticas Ajustadas
+                    </h3>
+                    <div class="grid grid-cols-2 gap-3 mb-4">
+                        <div class="bg-space/50 rounded-xl p-3 text-center border border-white/5">
+                            <p class="text-[8px] text-gray-500 uppercase font-black mb-1">Tiempo Real</p>
+                            <p class="text-lg font-black text-accent stat-glow" id="prevTime">--</p>
+                            <p class="text-[8px] text-gray-600 mt-0.5" id="prevTimeNote"></p>
+                        </div>
+                        <div class="bg-space/50 rounded-xl p-3 text-center border border-white/5">
+                            <p class="text-[8px] text-gray-500 uppercase font-black mb-1">% Victoria (Base)</p>
+                            <p class="text-lg font-black text-green-400 stat-glow" id="prevSuccess">--</p>
+                        </div>
+                        <div class="bg-space/50 rounded-xl p-3 text-center border border-white/5">
+                            <p class="text-[8px] text-gray-500 uppercase font-black mb-1">Intentos</p>
+                            <p class="text-lg font-black text-pink stat-glow" id="prevAttempts">--</p>
+                        </div>
+                        <div class="bg-space/50 rounded-xl p-3 text-center border border-white/5">
+                            <p class="text-[8px] text-gray-500 uppercase font-black mb-1">Eficiencia Producción</p>
+                            <p class="text-lg font-black text-gold stat-glow" id="prevMulti">--</p>
+                        </div>
+                    </div>
+                    <div id="prevMinerals" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="goToStep(3)"
+                    class="flex-1 bg-white/5 py-4 rounded-3xl font-black uppercase tracking-widest text-gray-400 border border-white/10">
+                    <i class="fas fa-chevron-left mr-2"></i> ATRÁS
+                </button>
+                <button onclick="showConfirmation()" id="btnStep4" disabled
+                    class="flex-1 bg-white/5 py-4 rounded-3xl font-black uppercase tracking-widest text-gray-500 border border-white/10 transition-all disabled:opacity-30">
+                    REVISAR <i class="fas fa-check ml-2"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- CONFIRMATION MODAL -->
+        <div id="confirmModal"
+            class="fixed inset-0 z-[100] hidden items-center justify-center p-6 bg-space/80 backdrop-blur-md">
+            <div
+                class="glass-modal border border-white/10 w-full max-w-sm rounded-[3rem] p-8 shadow-2xl relative animate__animated animate__zoomIn animate__faster">
+                <button onclick="closeConfirm()"
+                    class="absolute top-8 right-8 text-gray-500 hover:text-white transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+
+                <h2 class="text-lg font-black uppercase tracking-widest text-white mb-6 flex items-center gap-3">
+                    <i class="fas fa-clipboard-check text-accent"></i> Confirmar Misión
+                </h2>
+
+                <div id="summaryContent" class="space-y-3 mb-6">
+                    <!-- Filled by JS -->
+                </div>
+
+                <form action="{% url 'start_mining_trip' %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="miner_id" id="formMiner">
+                    <input type="hidden" name="tool_id" id="formTool">
+                    <input type="hidden" name="transport_id" id="formTransport">
+                    <input type="hidden" name="planet_id" id="formPlanet">
+
+                    <button type="submit"
+                        class="w-full bg-gradient-to-r from-accent to-blueglow py-5 rounded-3xl font-black uppercase tracking-widest text-space shadow-[0_10px_40px_rgba(0,224,255,0.3)] hover:translate-y-[-2px] active:translate-y-[1px] transition-all border-b-4 border-blue-900">
+                        <i class="fas fa-rocket mr-2"></i> LANZAR EXPEDICIÓN
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const selection = { miner: null, tool: null, transport: null, planet: null };
+        const selectionNames = { miner: '', tool: '', transport: '', planet: '' };
+        const selectionImages = { miner: '', tool: '', transport: '', planet: '' };
+        const selectionData = { attempts: 0, multiplier: 1, bonus: 0, speed: 100 };
+
+        function selectAsset(card, type) {
+            // Remove selection from siblings
+            const siblings = card.parentElement.querySelectorAll('.asset-card');
+            siblings.forEach(s => s.classList.remove('selected'));
+
+            // Select this one
+            card.classList.add('selected');
+            selection[type] = card.dataset.id;
+            selectionNames[type] = card.querySelector('h3').textContent;
+            selectionImages[type] = card.dataset.image || '';
+
+            // Store stats from data attributes
+            if (type === 'miner') selectionData.attempts = parseInt(card.dataset.attempts) || 0;
+            if (type === 'tool') {
+                selectionData.bonus = parseFloat(card.dataset.bonus) || 100;
+                selectionData.multiplier = selectionData.bonus / 100.0;
+            }
+            if (type === 'transport') selectionData.speed = parseInt(card.dataset.speed) || 100;
+
+            // If planet selected, show preview
+            if (type === 'planet') {
+                showPreview(card);
+            }
+
+            // Enable next button
+            const stepNum = type === 'miner' ? 1 : type === 'tool' ? 2 : type === 'transport' ? 3 : 4;
+            const btn = document.getElementById('btnStep' + stepNum);
+            if (btn) {
+                btn.disabled = false;
+                btn.classList.remove('bg-white/5', 'text-gray-500');
+                btn.classList.add('bg-accent', 'text-space');
+            }
+
+            if (window.navigator.vibrate) window.navigator.vibrate(5);
+        }
+
+        // Add data-image to other assets too if not present
+        // (Note: miner, tool, transport cards in previous steps had images in <img> tags but maybe not in data-image)
+        // Let's ensure they have it or selectAsset handles it.
+        // I will add it to the loop below for safety.
+
+        function showPreview(planetCard) {
+            const baseTravel = parseFloat(planetCard.dataset.travel);
+            const baseSuccess = parseInt(planetCard.dataset.success);
+            const minerals = JSON.parse(planetCard.dataset.minerals || '[]');
+
+            // Calculate adjusted stats
+            const totalHours = baseTravel / (selectionData.speed / 100);
+            const hours = Math.floor(totalHours);
+            const minutes = Math.round((totalHours - hours) * 60);
+
+            let timeStr = "";
+            if (hours > 0) timeStr += `${hours}h `;
+            if (minutes > 0 || hours === 0) timeStr += `${minutes}m`;
+
+            const adjustedSuccess = baseSuccess;
+            const multi = selectionData.multiplier;
+            const bonus = selectionData.bonus;
+            const attempts = selectionData.attempts;
+
+            // Update preview
+            document.getElementById('prevTime').textContent = timeStr.trim();
+            document.getElementById('prevTimeNote').textContent = baseTravel + 'h base → velocidad ' + selectionData.speed + '%';
+            document.getElementById('prevSuccess').textContent = adjustedSuccess + '%';
+            document.getElementById('prevAttempts').textContent = attempts;
+            document.getElementById('prevMulti').textContent = bonus + '%';
+
+            // Minerals with adjusted ranges
+            const mineralsDiv = document.getElementById('prevMinerals');
+            mineralsDiv.innerHTML = '';
+            minerals.forEach(m => {
+                const adjMin = Math.floor(m.min * multi);
+                const adjMax = Math.floor(m.max * multi);
+                mineralsDiv.innerHTML += `
+                    <div class="bg-space/40 rounded-xl px-4 py-2 flex justify-between items-center border border-white/5">
+                        <span class="text-[9px] text-gray-400 uppercase font-bold flex items-center gap-1">
+                            <i class="fas fa-gem text-accent/30 text-[8px]"></i> ${m.name}
+                        </span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[9px] text-gray-600 line-through">${m.min}-${m.max}</span>
+                            <span class="text-[10px] font-black text-gold">${adjMin} - ${adjMax}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Show panel with animation
+            const panel = document.getElementById('previewPanel');
+            panel.classList.remove('hidden');
+            panel.querySelector('.preview-appear').style.animation = 'none';
+            panel.querySelector('.preview-appear').offsetHeight; // reflow
+            panel.querySelector('.preview-appear').style.animation = '';
+        }
+
+        function goToStep(step) {
+            // Hide all steps
+            for (let i = 1; i <= 4; i++) {
+                document.getElementById('step' + i).classList.add('hidden');
+            }
+            // Show target
+            document.getElementById('step' + step).classList.remove('hidden');
+
+            // Update indicators
+            for (let i = 1; i <= 4; i++) {
+                const dot = document.getElementById('step' + i + 'dot');
+                dot.classList.remove('active', 'completed');
+                dot.classList.add('bg-white/10', 'text-gray-500');
+
+                if (i < step) {
+                    dot.classList.remove('bg-white/10', 'text-gray-500');
+                    dot.classList.add('completed');
+                    dot.innerHTML = '<i class="fas fa-check text-[10px]"></i>';
+                } else if (i === step) {
+                    dot.classList.remove('bg-white/10', 'text-gray-500');
+                    dot.classList.add('active');
+                    dot.textContent = i;
+                } else {
+                    dot.textContent = i;
+                }
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showConfirmation() {
+            // Set form values
+            document.getElementById('formMiner').value = selection.miner;
+            document.getElementById('formTool').value = selection.tool;
+            document.getElementById('formTransport').value = selection.transport;
+            document.getElementById('formPlanet').value = selection.planet;
+
+            // Build summary
+            const summary = document.getElementById('summaryContent');
+            summary.innerHTML = `
+                <div class="bg-space/50 rounded-2xl p-4 border border-white/5 flex items-center gap-3">
+                    ${selectionImages.miner ? `<img src="${selectionImages.miner}" class="w-10 h-10 object-contain rounded-lg">` : `<i class="fas fa-user-astronaut text-accent text-lg w-10 text-center"></i>`}
+                    <div>
+                        <p class="text-[8px] text-gray-500 uppercase font-black">Minero</p>
+                        <p class="text-sm font-black text-white">${selectionNames.miner}</p>
+                    </div>
+                </div>
+                <div class="bg-space/50 rounded-2xl p-4 border border-white/5 flex items-center gap-3">
+                    ${selectionImages.tool ? `<img src="${selectionImages.tool}" class="w-10 h-10 object-contain rounded-lg">` : `<i class="fas fa-screwdriver-wrench text-accent text-lg w-10 text-center"></i>`}
+                    <div>
+                        <p class="text-[8px] text-gray-500 uppercase font-black">Herramienta</p>
+                        <p class="text-sm font-black text-white">${selectionNames.tool}</p>
+                    </div>
+                </div>
+                <div class="bg-space/50 rounded-2xl p-4 border border-white/5 flex items-center gap-3">
+                    ${selectionImages.transport ? `<img src="${selectionImages.transport}" class="w-10 h-10 object-contain rounded-lg">` : `<i class="fas fa-shuttle-space text-accent text-lg w-10 text-center"></i>`}
+                    <div>
+                        <p class="text-[8px] text-gray-500 uppercase font-black">Transporte</p>
+                        <p class="text-sm font-black text-white">${selectionNames.transport}</p>
+                    </div>
+                </div>
+                <div class="bg-space/50 rounded-2xl p-4 border border-pink/20 flex items-center gap-3">
+                    ${selectionImages.planet ? `<img src="${selectionImages.planet}" class="w-12 h-12 object-contain rounded-xl">` : `<i class="fas fa-globe text-pink text-lg w-12 text-center"></i>`}
+                    <div>
+                        <p class="text-[8px] text-gray-500 uppercase font-black">Destino</p>
+                        <p class="text-sm font-black text-white">${selectionNames.planet}</p>
+                    </div>
+                </div>
+            `;
+
+            const modal = document.getElementById('confirmModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeConfirm() {
+            const modal = document.getElementById('confirmModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        document.getElementById('confirmModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('confirmModal')) closeConfirm();
+        });
+    </script>
+</body>
+
+</html>

@@ -19,7 +19,7 @@ class TransportTypeAdmin(admin.ModelAdmin):
 
 @admin.register(ToolType)
 class ToolTypeAdmin(admin.ModelAdmin):
-    list_display = ("name", "rarity", "production_multiplier", "is_active")
+    list_display = ("name", "rarity", "bonus_pct", "is_active")
     search_fields = ("name",)
 
 @admin.register(Profile)

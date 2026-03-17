@@ -163,7 +163,7 @@
         const reqTypes = {
             'miner_attempts': 'Mín. Intentos Minero',
             'transport_speed': 'Mín. Velocidad (Transporte %)',
-            'tool_multiplier': 'Mín. Multiplicador (Herramienta)'
+            'tool_bonus': 'Mín. Bonus % (Herramienta)'
         };
 
         function renderStatusBadge(status) {
@@ -276,7 +276,7 @@
                 <select class="req-type flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none text-[10px] font-black uppercase text-white focus:border-accent">
                     <option value="miner_attempts" ${type === 'miner_attempts' ? 'selected' : ''}>Mín. Intentos</option>
                     <option value="transport_speed" ${type === 'transport_speed' ? 'selected' : ''}>Mín. Velocidad %</option>
-                    <option value="tool_multiplier" ${type === 'tool_multiplier' ? 'selected' : ''}>Mín. Multiplicador</option>
+                    <option value="tool_bonus" ${type === 'tool_bonus' ? 'selected' : ''}>Mín. Bonus %</option>
                 </select>
                 <input type="number" step="0.01" value="${value}" placeholder="X" class="req-value w-20 bg-white/5 border border-white/10 rounded-xl px-4 py-3 outline-none text-xs text-center text-white focus:border-accent">
                 <button type="button" onclick="this.parentElement.remove()" class="w-10 h-10 rounded-xl bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"><i class="fas fa-times"></i></button>

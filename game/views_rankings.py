@@ -177,7 +177,7 @@ def get_available_items_api(request):
     return JsonResponse({
         "miners": [{"id": m.id, "name": m.miner_type.name, "attempts": m.miner_type.attempts, "image": m.miner_type.image.url if m.miner_type.image else None} for m in miners],
         "transports": [{"id": t.id, "name": t.transport_type.name, "speed": t.transport_type.speed, "image": t.transport_type.image.url if t.transport_type.image else None} for t in transports],
-        "tools": [{"id": t.id, "name": t.tool_type.name, "multiplier": str(t.tool_type.production_multiplier), "image": t.tool_type.image.url if t.tool_type.image else None} for t in tools],
+        "tools": [{"id": t.id, "name": t.tool_type.name, "bonus": str(t.tool_type.bonus_pct), "image": t.tool_type.image.url if t.tool_type.image else None} for t in tools],
     })
 
 @require_POST
@@ -217,10 +217,10 @@ def enter_level_api(request):
                 if transport.transport_type.speed < r.value:
                     return JsonResponse({"error": f"El transporte debe tener al menos {r.value}% de velocidad"}, status=400)
             
-            if r.requirement_type == 'tool_multiplier':
+            if r.requirement_type == 'tool_bonus':
                 if not tool: return JsonResponse({"error": "Se requiere una herramienta para este nivel"}, status=400)
-                if tool.tool_type.production_multiplier < r.value:
-                    return JsonResponse({"error": f"La herramienta debe tener al menos {r.value} de multiplicador"}, status=400)
+                if tool.tool_type.bonus_pct < r.value:
+                    return JsonResponse({"error": f"La herramienta debe tener al menos {r.value}% de bonus"}, status=400)
 
         now = timezone.now()
         locked_q = UserSeasonEntry.objects.filter(user=request.user, locked_until__gt=now)

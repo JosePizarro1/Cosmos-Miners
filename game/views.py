@@ -22,7 +22,12 @@ def register_view(request):
 
 @login_required
 def home_view(request):
-    return render(request, "game/home.html")
+    profile, _ = Profile.objects.get_or_create(user=request.user)
+    minerals = request.user.inventory_minerals.select_related('mineral').all()
+    return render(request, "game/home.html", {
+        "profile": profile,
+        "minerals": minerals
+    })
 
 @login_required
 def chests_public_view(request):

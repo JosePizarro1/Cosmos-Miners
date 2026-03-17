@@ -1,6 +1,7 @@
 from django.conf import settings
 from .models_cofres import *
 from .models_rankings import *
+from .models_planets import *
 
 from django.db import models
 from django.utils import timezone
@@ -208,17 +209,11 @@ class ToolType(models.Model):
         choices=ToolRarity.choices
     )
 
-    production_multiplier = models.DecimalField(
+    bonus_pct = models.DecimalField(
         max_digits=5,
         decimal_places=2,
-        help_text="Multiplicador de producción. Ej: 1.20 = +20%"
-    )
-
-    success_bonus = models.DecimalField(
-        max_digits=5,
-        decimal_places=2,
-        default=Decimal("0.00"),
-        help_text="Bonus adicional de probabilidad de éxito (%)"
+        default=Decimal("100.00"),
+        help_text="Bonus de producción en %. Ej: 100=x1, 200=x2 (duplica rango mineral)"
     )
 
     is_active = models.BooleanField(default=True)

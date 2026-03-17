@@ -60,8 +60,7 @@ def tool_types_list(request):
             "name": tt.name,
             "rarity": tt.rarity,
             "rarity_label": tt.get_rarity_display(),
-            "production_multiplier": str(tt.production_multiplier),
-            "success_bonus": str(tt.success_bonus),
+            "bonus_pct": str(tt.bonus_pct),
             "is_active": tt.is_active,
             "image_url": tt.image.url if tt.image else ""
         })
@@ -76,8 +75,7 @@ def tool_type_create(request):
     try:
         name = (request.POST.get("name") or "").strip()
         rarity = (request.POST.get("rarity") or "").strip()
-        production_multiplier_raw = request.POST.get("production_multiplier")
-        success_bonus_raw = request.POST.get("success_bonus")
+        bonus_pct_raw = request.POST.get("bonus_pct")
         is_active = _parse_bool(request.POST.get("is_active"))
         image = request.FILES.get("image")
 
@@ -89,19 +87,17 @@ def tool_type_create(request):
             return JsonResponse({"error": "Rareza inválida"}, status=400)
 
         try:
-            production_multiplier = Decimal(production_multiplier_raw)
-            success_bonus = Decimal(success_bonus_raw) if success_bonus_raw else Decimal("0.00")
+            bonus_pct = Decimal(bonus_pct_raw)
         except (TypeError, ValueError, InvalidOperation):
-            return JsonResponse({"error": "Multiplicador o bonus inválidos"}, status=400)
+            return JsonResponse({"error": "Bonus inválido"}, status=400)
         
-        if production_multiplier <= 0:
-            return JsonResponse({"error": "El multiplicador debe ser positivo"}, status=400)
+        if bonus_pct <= 0:
+            return JsonResponse({"error": "El bonus debe ser positivo"}, status=400)
 
         tt = ToolType.objects.create(
             name=name,
             rarity=rarity,
-            production_multiplier=production_multiplier,
-            success_bonus=success_bonus,
+            bonus_pct=bonus_pct,
             is_active=is_active,
             image=image
         )
@@ -113,8 +109,7 @@ def tool_type_create(request):
                 "name": tt.name,
                 "rarity": tt.rarity,
                 "rarity_label": tt.get_rarity_display(),
-                "production_multiplier": str(tt.production_multiplier),
-                "success_bonus": str(tt.success_bonus),
+                "bonus_pct": str(tt.bonus_pct),
                 "is_active": tt.is_active,
                 "image_url": tt.image.url if tt.image else ""
             }
@@ -133,8 +128,7 @@ def tool_type_update(request, pk):
         tt = ToolType.objects.get(pk=pk)
         name = (request.POST.get("name") or "").strip()
         rarity = (request.POST.get("rarity") or "").strip()
-        production_multiplier_raw = request.POST.get("production_multiplier")
-        success_bonus_raw = request.POST.get("success_bonus")
+        bonus_pct_raw = request.POST.get("bonus_pct")
         is_active = _parse_bool(request.POST.get("is_active"))
         image = request.FILES.get("image")
 
@@ -146,18 +140,16 @@ def tool_type_update(request, pk):
             return JsonResponse({"error": "Rareza inválida"}, status=400)
 
         try:
-            production_multiplier = Decimal(production_multiplier_raw)
-            success_bonus = Decimal(success_bonus_raw) if success_bonus_raw else Decimal("0.00")
+            bonus_pct = Decimal(bonus_pct_raw)
         except (TypeError, ValueError, InvalidOperation):
-            return JsonResponse({"error": "Multiplicador o bonus inválidos"}, status=400)
+            return JsonResponse({"error": "Bonus inválido"}, status=400)
         
-        if production_multiplier <= 0:
-            return JsonResponse({"error": "El multiplicador debe ser positivo"}, status=400)
+        if bonus_pct <= 0:
+            return JsonResponse({"error": "El bonus debe ser positivo"}, status=400)
 
         tt.name = name
         tt.rarity = rarity
-        tt.production_multiplier = production_multiplier
-        tt.success_bonus = success_bonus
+        tt.bonus_pct = bonus_pct
         tt.is_active = is_active
         if image:
             tt.image = image
@@ -170,8 +162,7 @@ def tool_type_update(request, pk):
                 "name": tt.name,
                 "rarity": tt.rarity,
                 "rarity_label": tt.get_rarity_display(),
-                "production_multiplier": str(tt.production_multiplier),
-                "success_bonus": str(tt.success_bonus),
+                "bonus_pct": str(tt.bonus_pct),
                 "is_active": tt.is_active,
                 "image_url": tt.image.url if tt.image else ""
             }

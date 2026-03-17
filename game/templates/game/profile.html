@@ -99,21 +99,21 @@
 
       <label class="block text-sm text-gray-300">
         Usuario
-        <input name="username" value="{{ user.username }}" class="w-full mt-2 p-3 rounded bg-white/5 text-white" />
+        <input name="username" value="{{ user.username }}" readonly class="w-full mt-2 p-3 rounded bg-white/5 text-gray-400 cursor-not-allowed outline-none" />
       </label>
 
       <label class="block text-sm text-gray-300">
         Email
-        <input name="email" value="{{ user.email }}" type="email" class="w-full mt-2 p-3 rounded bg-white/5 text-white" />
+        <input name="email" value="{{ user.email }}" type="email" readonly class="w-full mt-2 p-3 rounded bg-white/5 text-gray-400 cursor-not-allowed outline-none" />
       </label>
 
       <label class="block text-sm text-gray-300 lg:col-span-2">
         Wallet (Metamask / BSC)
-        <input name="wallet" value="{{ profile.wallet_metamask_bsc }}" class="w-full mt-2 p-3 rounded bg-white/5 text-white" />
+        <input name="wallet" value="{{ profile.wallet_metamask_bsc }}" readonly class="w-full mt-2 p-3 rounded bg-white/5 text-gray-400 cursor-not-allowed outline-none" />
         <div class="wallet-hint"><i class="fas fa-info-circle text-accent"></i> Dirección pública de tu wallet</div>
       </label>
 
-      <div class="flex justify-end gap-3 mt-auto lg:col-span-2">
+      <div class="hidden justify-end gap-3 mt-auto lg:col-span-2">
         <a href="/home/" class="px-4 py-2 rounded bg-white/5 text-gray-200">Cancelar</a>
         <button id="btnSave" type="submit" class="px-4 py-2 rounded bg-accent text-black font-bold flex items-center gap-2">
           <i class="fas fa-save"></i>

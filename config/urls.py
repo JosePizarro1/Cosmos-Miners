@@ -19,6 +19,10 @@ from game.views_rankings import (
     get_available_items_api, enter_level_api,
     season_levels_admin_list, level_create, level_update, level_delete
 )
+from game.views_planets import (
+    planets_admin, mining_dashboard, prepare_trip,
+    start_mining_trip, collect_mining_trip
+)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", login_page, name="login_page"),
@@ -99,6 +103,13 @@ urlpatterns = [
     path("dashboard/seasons/levels/create/", level_create, name="level_create_api"),
     path("dashboard/seasons/levels/update/<int:pk>/", level_update, name="level_update_api"),
     path("dashboard/seasons/levels/delete/<int:pk>/", level_delete, name="level_delete_api"),
+
+    # Planets & Minerals
+    path("dashboard/planets/", planets_admin, name="planets_admin"),
+    path("mining/", mining_dashboard, name="mining_dashboard"),
+    path("mining/prepare/", prepare_trip, name="prepare_trip"),
+    path("mining/start/", start_mining_trip, name="start_mining_trip"),
+    path("mining/collect/<int:trip_id>/", collect_mining_trip, name="collect_mining_trip"),
 
 ]
 

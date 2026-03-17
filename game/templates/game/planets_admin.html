@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Planetas y Minerales</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    
+    <!-- Animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        space: "#05050f",
+                        card: "rgba(20,30,60,0.75)",
+                        accent: "#00e0ff",
+                        pink: "#ff4d8d"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,224,255,0.3); border-radius: 10px; }
+        
+        .image-preview {
+            width: 100%;
+            height: 120px;
+            border: 2px dashed rgba(255,255,255,0.1);
+            border-radius: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            background: rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .image-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative">
+
+    <!-- Background -->
+    <div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.15)_1px,_transparent_1px)] bg-[size:32px_32px] opacity-20"></div>
+    <div class="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-transparent to-pink-900/20"></div>
+
+    <!-- Header -->
+    <header class="relative z-10 px-6 py-6 flex items-center justify-between max-w-6xl mx-auto flex-wrap gap-4">
+        <div class="flex items-center gap-3">
+            <i class="fas fa-rocket text-pink text-2xl"></i>
+            <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">COSMOS</span>
+            <span class="text-xs text-gray-300 ml-2 hidden md:inline">ADMIN · PLANETAS</span>
+        </div>
+
+        <div class="flex items-center gap-2 flex-wrap justify-end">
+            <button onclick="openCreateMineral()" class="bg-accent text-space px-4 py-2 rounded-xl text-sm font-black hover:scale-105 transition-all">
+                <i class="fas fa-plus mr-2"></i> Mineral
+            </button>
+            <button onclick="openCreatePlanet()" class="bg-pink text-white px-4 py-2 rounded-xl text-sm font-black hover:scale-105 transition-all">
+                <i class="fas fa-plus mr-2"></i> Planeta
+            </button>
+            <a href="{% url 'admin_dashboard' %}" class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold hover:border-accent/40 transition-all ml-2">
+                Volver
+            </a>
+        </div>
+    </header>
+
+    <main class="relative z-10 px-6 pb-12 max-w-6xl mx-auto space-y-8">
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="mb-6 p-4 rounded-2xl animate__animated animate__fadeInDown {% if message.tags == 'success' %}bg-green-500/20 text-green-400 border-green-500/30{% else %}bg-red-500/20 text-red-400 border-red-500/30{% endif %} border backdrop-blur-md">
+                    <i class="fas {% if message.tags == 'success' %}fa-check-circle{% else %}fa-exclamation-circle{% endif %} mr-2"></i>
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="grid lg:grid-cols-12 gap-8">
+            <!-- Mineral Column -->
+            <div class="lg:col-span-4 space-y-6">
+                <div class="flex items-center justify-between px-2">
+                    <h2 class="text-xl font-black flex items-center gap-2 text-accent italic">
+                        <i class="fas fa-gem"></i> MINERALES
+                    </h2>
+                    <span class="text-[10px] bg-white/5 px-2 py-1 rounded-lg text-gray-500 font-bold uppercase tracking-widest">
+                        Total: {{ minerals|length }}
+                    </span>
+                </div>
+                
+                <div class="space-y-3 max-h-[800px] overflow-y-auto pr-2 custom-scrollbar">
+                    {% for m in minerals %}
+                        <div class="group flex items-center gap-3 bg-card border border-white/10 p-3 rounded-2xl hover:border-accent/30 transition-all">
+                            {% if m.image %}
+                                <img src="{{ m.image.url }}" class="w-12 h-12 rounded-xl object-contain bg-space/50 p-1">
+                            {% else %}
+                                <div class="w-12 h-12 rounded-xl bg-space/50 flex items-center justify-center border border-white/10 text-accent/20">
+                                    <i class="fas fa-gem text-xl"></i>
+                                </div>
+                            {% endif %}
+                            <div class="flex-1">
+                                <p class="font-black text-sm text-white uppercase tracking-tighter">{{ m.name }}</p>
+                                <p class="text-[9px] text-gray-500 font-bold uppercase">ID: {{ m.id }}</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="openEditMineral('{{ m.id }}', '{{ m.name }}', '{% if m.image %}{{ m.image.url }}{% endif %}')" class="px-2.5 py-1.5 rounded bg-white/5 text-gray-200 text-sm hover:bg-white/10 hover:text-accent transition-colors">
+                                    <i class="fas fa-pen"></i>
+                                </button>
+                                <form method="POST" onsubmit="return confirm('¿Eliminar mineral?')">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete_mineral">
+                                    <input type="hidden" name="mineral_id" value="{{ m.id }}">
+                                    <button type="submit" class="px-2.5 py-1.5 rounded bg-white/5 text-gray-200 text-sm hover:bg-white/10 hover:text-red-400 transition-colors">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% empty %}
+                        <p class="text-gray-500 text-sm italic text-center py-12 bg-card rounded-3xl border border-dashed border-white/5">No hay minerales creados.</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Planet Column -->
+            <div class="lg:col-span-8 space-y-6">
+                <div class="flex items-center justify-between px-2">
+                    <h2 class="text-xl font-black flex items-center gap-2 text-pink italic">
+                        <i class="fas fa-globe"></i> PLANETAS
+                    </h2>
+                    <div class="flex gap-2">
+                        <button onclick="openConfigProduction()" class="text-[10px] bg-accent/10 text-accent px-3 py-1.5 rounded-lg font-black uppercase tracking-widest border border-accent/20 hover:bg-accent hover:text-space transition-all">
+                            <i class="fas fa-cog mr-1"></i> Config. Producción
+                        </button>
+                    </div>
+                </div>
+
+                <div class="grid md:grid-cols-2 gap-4">
+                    {% for p in planets %}
+                        <div class="bg-card border border-white/10 p-5 rounded-[2.5rem] hover:border-pink/30 transition-all relative overflow-hidden">
+                            <div class="flex flex-col sm:flex-row items-start gap-4">
+                                {% if p.image %}
+                                    <div class="w-full sm:w-24 h-32 sm:h-24 rounded-2xl bg-space/40 px-2 py-2 flex items-center justify-center">
+                                        <img src="{{ p.image.url }}" class="w-full h-full object-contain">
+                                    </div>
+                                {% else %}
+                                    <div class="w-full sm:w-24 h-32 sm:h-24 rounded-2xl bg-space/40 flex items-center justify-center border border-white/5 text-pink/20">
+                                        <i class="fas fa-globe text-4xl"></i>
+                                    </div>
+                                {% endif %}
+                                <div class="flex-1 w-full">
+                                    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2">
+                                        <h3 class="text-xl font-black italic text-white uppercase tracking-tighter truncate w-full sm:w-auto">{{ p.name }}</h3>
+                                        <div class="flex gap-2 self-start">
+                                            <button type="button" onclick="openEditPlanet('{{ p.id }}', '{{ p.name }}', '{{ p.travel_time_base }}', '{{ p.success_rate_base }}', '{% if p.image %}{{ p.image.url }}{% endif %}')" class="px-2.5 py-1.5 rounded bg-white/5 text-gray-200 text-sm hover:bg-white/10 hover:text-pink transition-colors">
+                                                <i class="fas fa-pen"></i>
+                                            </button>
+                                            <form method="POST" onsubmit="return confirm('¿Eliminar planeta?')">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="delete_planet">
+                                                <input type="hidden" name="planet_id" value="{{ p.id }}">
+                                                <button type="submit" class="px-2.5 py-1.5 rounded bg-white/5 text-gray-200 text-sm hover:bg-white/10 hover:text-red-400 transition-colors">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-2 mb-2">
+                                        <div class="bg-space/60 px-3 py-2 rounded-xl border border-white/5">
+                                            <p class="text-[8px] text-gray-500 uppercase font-black tracking-widest leading-none mb-1">Vuelo</p>
+                                            <p class="text-sm font-black text-accent leading-none">{{ p.travel_time_base }}h</p>
+                                        </div>
+                                        <div class="bg-space/60 px-3 py-2 rounded-xl border border-white/5">
+                                            <p class="text-[8px] text-gray-500 uppercase font-black tracking-widest leading-none mb-1">Éxito</p>
+                                            <p class="text-sm font-black text-green-400 leading-none">{{ p.success_rate_base }}%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Resources Area -->
+                            <div class="mt-4 pt-4 border-t border-white/5">
+                                <div class="flex items-center justify-between mb-3 px-1">
+                                    <p class="text-[9px] text-gray-500 uppercase font-bold tracking-widest flex items-center gap-1">
+                                        <i class="fas fa-gem text-accent"></i> Producción estimada
+                                    </p>
+                                </div>
+                                <div class="flex flex-wrap gap-2">
+                                    {% for pm in p.produced_minerals.all %}
+                                        <div class="flex items-center gap-2 bg-space/60 py-1.5 pl-3 pr-1.5 rounded-full border border-white/5 text-[10px]">
+                                            <span class="font-bold text-gray-300">{{ pm.mineral.name }}:</span>
+                                            <span class="text-accent font-black">{{ pm.min_amount }}-{{ pm.max_amount }}</span>
+                                            <form method="POST">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="action" value="delete_planet_mineral">
+                                                <input type="hidden" name="pm_id" value="{{ pm.id }}">
+                                                <button type="submit" class="w-5 h-5 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center">
+                                                    <i class="fas fa-times text-[8px]"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    {% empty %}
+                                        <p class="text-[10px] text-gray-600 italic px-2">Sin recursos linkeados</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- TESTING Area -->
+        <div class="mt-8 bg-card border border-yellow-500/20 p-6 sm:p-8 rounded-[2rem] sm:rounded-[3rem]">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                <!-- Solo agrupé Herramientas y Descripción -->
+                <div class="space-y-2 text-center md:text-left">
+                    <h2 class="text-xl font-black text-yellow-400 uppercase tracking-tighter italic">
+                        <i class="fas fa-flask mr-2"></i> Herramientas de Desarrollo
+                    </h2>
+                    <p class="text-sm text-gray-500 font-bold">Adelanta los viajes interestelares para pruebas rápidas de recolección.</p>
+                </div>
+                
+                <!-- Separé los "Viajes Activos" en una caja y el Botón -->
+                <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 w-full md:w-auto bg-space/60 p-4 rounded-3xl border border-white/5">
+                    <div class="text-center px-4 sm:border-r border-white/10 pb-4 sm:pb-0 border-b sm:border-b-0">
+                        <p class="text-[10px] text-gray-500 uppercase font-black tracking-widest mb-1">Viajes Activos</p>
+                        <p class="text-2xl font-black text-accent leading-none">{{ ongoing_count }}</p>
+                    </div>
+                    <form method="POST" class="w-full sm:w-auto">
+                        {% csrf_token %}
+                        <input type="hidden" name="action" value="force_finish">
+                        <button type="submit" class="w-full sm:w-auto bg-yellow-500 text-space font-black py-3 px-6 rounded-xl sm:rounded-2xl hover:scale-[1.05] active:scale-95 transition-all text-xs uppercase tracking-widest shadow-lg shadow-yellow-500/20">
+                            <i class="fas fa-bolt mr-2"></i> Forzar Fin
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- CREATE Mineral Modal -->
+    <div id="modalCreateMineral" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 md:p-6 bg-space/90 backdrop-blur-xl">
+        <div class="bg-card border border-accent/20 w-full max-w-md rounded-[2rem] md:rounded-[3rem] p-6 md:p-8 shadow-2xl relative animate__animated animate__zoomIn animate__faster">
+            <button type="button" onclick="closeCreateMineral()" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors z-50">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h2 class="text-2xl font-black uppercase text-accent mb-8 italic tracking-tighter">Registrar Nuevo Mineral</h2>
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_mineral">
+                <div>
+                    <label class="block text-[10px] uppercase font-black text-gray-400 mb-3 tracking-widest">Icono del Recurso</label>
+                    <div class="image-preview border-accent/20 hover:border-accent/50 transition-colors" onclick="this.nextElementSibling.click()">
+                        <i class="fas fa-cloud-upload-alt text-3xl text-accent/20"></i>
+                        <img src="" class="hidden">
+                    </div>
+                    <input type="file" name="image" accept="image/*" class="hidden" onchange="previewImage(this)">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Nombre del Mineral</label>
+                    <input type="text" name="name" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-4 focus:border-accent outline-none font-bold text-white">
+                </div>
+                <button type="submit" class="w-full bg-accent text-space font-black py-5 rounded-3xl uppercase tracking-widest text-xs shadow-xl shadow-accent/20 hover:scale-[1.02] active:scale-95 transition-all">
+                    Crear Mineral
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- CREATE Planet Modal -->
+    <div id="modalCreatePlanet" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 md:p-6 bg-space/90 backdrop-blur-xl">
+        <div class="bg-card border border-pink/20 w-full max-w-lg rounded-[2rem] md:rounded-[3rem] p-6 md:p-8 shadow-2xl relative animate__animated animate__zoomIn animate__faster">
+            <button type="button" onclick="closeCreatePlanet()" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors z-50">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h2 class="text-2xl font-black uppercase text-pink mb-8 italic tracking-tighter">Descubrir Nuevo Planeta</h2>
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_planet">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-[10px] uppercase font-black text-gray-400 mb-3 tracking-widest">Avatar Planetario</label>
+                        <div class="image-preview border-pink/20 hover:border-pink/50 transition-colors" onclick="this.nextElementSibling.click()">
+                            <i class="fas fa-rocket text-3xl text-pink/20"></i>
+                            <img src="" class="hidden">
+                        </div>
+                        <input type="file" name="image" accept="image/*" class="hidden" onchange="previewImage(this)">
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Nombre del Mundo</label>
+                            <input type="text" name="name" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-bold text-white uppercase italic">
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Base (h)</label>
+                                <input type="number" name="travel_time" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-black text-accent text-center">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Éxito (%)</label>
+                                <input type="number" name="success_rate" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-black text-green-400 text-center">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-pink text-white font-black py-5 rounded-3xl uppercase tracking-widest text-xs shadow-xl shadow-pink/20 hover:scale-[1.02] active:scale-95 transition-all">
+                    Registrar Planeta
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- CONFIG Production Modal -->
+    <div id="modalConfigProduction" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 md:p-6 bg-space/90 backdrop-blur-xl">
+        <div class="bg-card border border-white/10 w-full max-w-3xl rounded-[2rem] md:rounded-[3rem] p-6 md:p-10 shadow-2xl relative animate__animated animate__zoomIn animate__faster max-h-[90vh] overflow-y-auto">
+            <button type="button" onclick="closeConfigProduction()" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors z-50">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h2 class="text-xl md:text-2xl font-black uppercase text-accent mb-6 md:mb-8 italic tracking-tighter">Gestión de Producción</h2>
+            
+            <form method="POST" class="grid md:grid-cols-5 gap-4 items-end bg-space/40 p-4 md:p-6 rounded-[1.5rem] md:rounded-[2rem] border border-white/5 mb-6 md:mb-8">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="add_planet_mineral">
+                <div class="md:col-span-1">
+                    <label class="block text-[10px] uppercase font-black text-gray-400 mb-2">Planeta</label>
+                    <select name="planet_id" class="w-full bg-space border border-white/10 rounded-xl px-3 py-2.5 text-xs outline-none focus:border-accent">
+                        {% for p in planets %} <option value="{{ p.id }}">{{ p.name }}</option> {% endfor %}
+                    </select>
+                </div>
+                <div class="md:col-span-1">
+                    <label class="block text-[10px] uppercase font-black text-gray-400 mb-2">Mineral</label>
+                    <select name="mineral_id" class="w-full bg-space border border-white/10 rounded-xl px-3 py-2.5 text-xs outline-none focus:border-accent">
+                        {% for m in minerals %} <option value="{{ m.id }}">{{ m.name }}</option> {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-black text-gray-400 mb-2">Min</label>
+                    <input type="number" name="min_amount" required class="w-full bg-space border border-white/10 rounded-xl px-3 py-2.5 text-xs outline-none focus:border-accent">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-black text-gray-400 mb-2">Max</label>
+                    <input type="number" name="max_amount" required class="w-full bg-space border border-white/10 rounded-xl px-3 py-2.5 text-xs outline-none focus:border-accent">
+                </div>
+                <button type="submit" class="w-full md:w-auto bg-accent text-space font-black py-2.5 px-4 rounded-xl uppercase tracking-widest text-[10px] hover:scale-105 transition-all">
+                    Linkear
+                </button>
+            </form>
+
+            <div class="max-h-[250px] md:max-h-[300px] overflow-y-auto custom-scrollbar space-y-2 pr-2">
+                {% for p in planets %}
+                    {% for pm in p.produced_minerals.all %}
+                        <div class="flex items-center justify-between bg-white/5 px-4 py-3 rounded-xl border border-white/5">
+                            <div class="flex items-center gap-4">
+                                <span class="text-pink font-black text-xs uppercase">{{ p.name }}</span>
+                                <i class="fas fa-arrow-right text-[10px] text-gray-700"></i>
+                                <span class="text-accent font-black text-xs uppercase">{{ pm.mineral.name }}</span>
+                            </div>
+                            <div class="flex items-center gap-6">
+                                <span class="text-xs font-bold text-gray-400 italic">Rango: {{ pm.min_amount }} - {{ pm.max_amount }}</span>
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="action" value="delete_planet_mineral">
+                                    <input type="hidden" name="pm_id" value="{{ pm.id }}">
+                                    <button type="submit" class="text-red-400 hover:text-red-600 transition-colors">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Planet Modal -->
+    <div id="modalEditPlanet" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 md:p-6 bg-space/80 backdrop-blur-md">
+        <div class="bg-card border border-white/10 w-full max-w-lg rounded-[2rem] p-6 md:p-8 shadow-2xl relative animate__animated animate__zoomIn animate__faster">
+            <button type="button" onclick="closeEditPlanet()" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors z-50">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h2 class="text-xl font-black uppercase text-pink mb-8 italic tracking-tighter">Editar Planeta</h2>
+            
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit_planet">
+                <input type="hidden" name="planet_id" id="editPlanetId">
+                
+                <div class="grid grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Nueva Imagen (opcional)</label>
+                        <div class="image-preview border-pink/20" onclick="this.nextElementSibling.click()">
+                            <img id="editPlanetImg" src="" class="object-contain w-full h-full">
+                        </div>
+                        <input type="file" name="image" accept="image/*" class="hidden" onchange="previewImage(this)">
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Nombre</label>
+                            <input type="text" name="name" id="editPlanetName" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-5 py-3 focus:border-pink outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Horas</label>
+                                <input type="number" name="travel_time" id="editPlanetTime" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-5 py-3 focus:border-pink outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Éxito (%)</label>
+                                <input type="number" name="success_rate" id="editPlanetSuccess" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-5 py-3 focus:border-pink outline-none">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-pink text-white font-black py-5 rounded-3xl uppercase tracking-widest text-xs shadow-xl shadow-pink/20 hover:scale-[1.02] active:scale-95 transition-all">
+                    Guardar Cambios
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Mineral Modal -->
+    <div id="modalEditMineral" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 md:p-6 bg-space/80 backdrop-blur-md">
+        <div class="bg-card border border-white/10 w-full max-w-sm rounded-[2rem] p-6 md:p-8 shadow-2xl relative animate__animated animate__zoomIn animate__faster">
+            <button type="button" onclick="closeEditMineral()" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors z-50">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h2 class="text-xl font-black uppercase text-accent mb-8 italic tracking-tighter">Editar Mineral</h2>
+            
+            <form method="POST" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="edit_mineral">
+                <input type="hidden" name="mineral_id" id="editMineralId">
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Nombre</label>
+                        <input type="text" name="name" id="editMineralName" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-5 py-3 focus:border-accent outline-none">
+                    </div>
+                    <div>
+                        <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Cambiar Imagen</label>
+                        <div class="image-preview border-accent/20" onclick="this.nextElementSibling.click()">
+                            <img id="editMineralImg" src="" class="object-contain w-full h-full">
+                            <i id="editMineralIcon" class="fas fa-gem text-accent/20 text-2xl"></i>
+                        </div>
+                        <input type="file" name="image" accept="image/*" class="hidden" onchange="previewImage(this)">
+                    </div>
+                </div>
+                <button type="submit" class="w-full bg-accent text-space font-black py-5 rounded-3xl uppercase tracking-widest text-xs shadow-xl shadow-accent/20 hover:scale-[1.02] active:scale-95 transition-all">
+                    Actualizar Mineral
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function previewImage(input) {
+            const previewContainer = input.previousElementSibling;
+            const img = previewContainer.querySelector('img');
+            const icon = previewContainer.querySelector('i');
+            
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+                    img.classList.remove('hidden');
+                    if (icon) icon.classList.add('hidden');
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function openEditPlanet(id, name, time, success, imgUrl) {
+            document.getElementById('editPlanetId').value = id;
+            document.getElementById('editPlanetName').value = name;
+            document.getElementById('editPlanetTime').value = time;
+            document.getElementById('editPlanetSuccess').value = success;
+            const img = document.getElementById('editPlanetImg');
+            if (imgUrl) {
+                img.src = imgUrl;
+                img.classList.remove('hidden');
+            }
+            document.getElementById('modalEditPlanet').classList.remove('hidden');
+            document.getElementById('modalEditPlanet').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditPlanet() {
+            document.getElementById('modalEditPlanet').classList.add('hidden');
+            document.getElementById('modalEditPlanet').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        function openEditMineral(id, name, imgUrl) {
+            document.getElementById('editMineralId').value = id;
+            document.getElementById('editMineralName').value = name;
+            const img = document.getElementById('editMineralImg');
+            const icon = document.getElementById('editMineralIcon');
+            if (imgUrl) {
+                img.src = imgUrl;
+                img.classList.remove('hidden');
+                if (icon) icon.classList.add('hidden');
+            } else {
+                img.classList.add('hidden');
+                if (icon) icon.classList.remove('hidden');
+            }
+            document.getElementById('modalEditMineral').classList.remove('hidden');
+            document.getElementById('modalEditMineral').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeEditMineral() {
+            document.getElementById('modalEditMineral').classList.add('hidden');
+            document.getElementById('modalEditMineral').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+
+        // New Modal Controls
+        function openCreateMineral() {
+            document.getElementById('modalCreateMineral').classList.remove('hidden');
+            document.getElementById('modalCreateMineral').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeCreateMineral() {
+            document.getElementById('modalCreateMineral').classList.add('hidden');
+            document.getElementById('modalCreateMineral').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+        function openCreatePlanet() {
+            document.getElementById('modalCreatePlanet').classList.remove('hidden');
+            document.getElementById('modalCreatePlanet').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeCreatePlanet() {
+            document.getElementById('modalCreatePlanet').classList.add('hidden');
+            document.getElementById('modalCreatePlanet').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+        function openConfigProduction() {
+            document.getElementById('modalConfigProduction').classList.remove('hidden');
+            document.getElementById('modalConfigProduction').classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+        function closeConfigProduction() {
+            document.getElementById('modalConfigProduction').classList.add('hidden');
+            document.getElementById('modalConfigProduction').classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
+    </script>
+</body>
+</html>

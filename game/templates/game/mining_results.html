@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Resultados de Minería - Cosmos Miners</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" />
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        space: "#05050f",
+                        card: "rgba(20,30,60,0.75)",
+                        accent: "#00e0ff",
+                        pink: "#ff4d8d",
+                        gold: "#ffca28",
+                        blueglow: "#0077ff"
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .shimmer {
+            background: linear-gradient(90deg, transparent, rgba(0,224,255,0.1), transparent);
+            background-size: 200% 100%;
+            animation: shimmer 2s infinite;
+        }
+        
+        @keyframes countUp {
+            from { opacity: 0; transform: scale(0.5) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        
+        .attempt-card {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        .attempt-card.revealed {
+            animation: fadeSlideIn 0.5s ease forwards;
+        }
+        
+        @keyframes fadeSlideIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 20px rgba(0,224,255,0.1); }
+            50% { box-shadow: 0 0 40px rgba(0,224,255,0.3); }
+        }
+        
+        .total-card {
+            opacity: 0;
+            transform: scale(0.8);
+        }
+        .total-card.revealed {
+            animation: totalReveal 0.6s ease forwards;
+        }
+        @keyframes totalReveal {
+            0% { opacity: 0; transform: scale(0.8); }
+            50% { transform: scale(1.05); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        #loadingOverlay {
+            transition: opacity 0.5s ease;
+        }
+        
+        @keyframes drill {
+            0%, 100% { transform: rotate(0deg); }
+            25% { transform: rotate(15deg); }
+            75% { transform: rotate(-15deg); }
+        }
+        .drill-anim { animation: drill 0.3s infinite; }
+    </style>
+</head>
+<body class="min-h-screen bg-space text-white pb-20 overflow-x-hidden">
+    <div class="fixed inset-0 z-0 pointer-events-none">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,119,255,0.1)_0%,_transparent_70%)]"></div>
+    </div>
+
+    <!-- LOADING OVERLAY -->
+    <div id="loadingOverlay" class="fixed inset-0 z-50 bg-space flex flex-col items-center justify-center">
+        <div class="relative mb-8">
+            <div class="w-24 h-24 bg-gradient-to-br from-accent to-blueglow rounded-full flex items-center justify-center shadow-[0_0_50px_rgba(0,224,255,0.4)]">
+                <i class="fas fa-pickaxe text-space text-4xl drill-anim"></i>
+            </div>
+            <div class="absolute inset-0 bg-accent/20 rounded-full blur-xl animate-pulse"></div>
+        </div>
+        <h2 class="text-xl font-black uppercase tracking-[0.3em] text-white mb-3">Recolectando...</h2>
+        <p id="loadingText" class="text-sm text-gray-400 font-bold tracking-widest uppercase">Analizando muestras</p>
+        <div class="mt-6 w-48 bg-white/5 h-2 rounded-full overflow-hidden">
+            <div id="loadingBar" class="h-full bg-accent rounded-full transition-all duration-500" style="width: 0%"></div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT (hidden until loading finishes) -->
+    <div id="mainContent" class="relative z-10 max-w-lg mx-auto px-6 pt-10 hidden">
+        <!-- HEADER -->
+        <header class="text-center mb-8">
+            <div class="inline-flex items-center gap-2 bg-card/50 px-6 py-2 rounded-full border border-white/10 mb-4">
+                <i class="fas fa-globe text-pink"></i>
+                <span class="text-sm font-black text-white uppercase tracking-widest">{{ trip.planet.name }}</span>
+            </div>
+            <h1 class="text-3xl font-black italic tracking-tighter bg-gradient-to-r from-accent to-gold bg-clip-text text-transparent uppercase">
+                Informe de Minería
+            </h1>
+            <p class="text-[9px] text-gray-500 font-bold tracking-[0.3em] mt-2 uppercase">
+                {{ successful_attempts }}/{{ total_attempts }} intentos exitosos
+            </p>
+        </header>
+
+        <!-- ATTEMPTS DETAIL -->
+        <div class="space-y-4 mb-10" id="attemptsContainer">
+            {% for attempt in attempts_detail %}
+            <div class="attempt-card bg-card border {% if attempt.success %}border-green-500/20{% else %}border-red-500/20{% endif %} p-5 rounded-[2rem] relative overflow-hidden"
+                 data-delay="{{ forloop.counter0 }}">
+                
+                <!-- Status indicator -->
+                <div class="absolute top-0 left-0 w-full h-1 {% if attempt.success %}bg-gradient-to-r from-green-500/50 to-green-500/0{% else %}bg-gradient-to-r from-red-500/50 to-red-500/0{% endif %}"></div>
+                
+                <div class="flex items-center justify-between mb-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black
+                            {% if attempt.success %}bg-green-500/10 text-green-400 border border-green-500/20
+                            {% else %}bg-red-500/10 text-red-400 border border-red-500/20{% endif %}">
+                            #{{ attempt.number }}
+                        </div>
+                        <div>
+                            <p class="text-xs font-black uppercase tracking-widest
+                                {% if attempt.success %}text-green-400{% else %}text-red-400{% endif %}">
+                                {% if attempt.success %}
+                                    <i class="fas fa-check-circle mr-1"></i> Extracción Exitosa
+                                {% else %}
+                                    <i class="fas fa-times-circle mr-1"></i> Minado Fallido
+                                {% endif %}
+                            </p>
+                            <p class="text-[9px] text-gray-500 font-bold mt-0.5">
+                                Dado: {{ attempt.roll }} / Necesario: ≤{{ attempt.needed }}
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <!-- Dice visual -->
+                    <div class="w-10 h-10 rounded-xl {% if attempt.success %}bg-green-500/10 border border-green-500/20{% else %}bg-red-500/10 border border-red-500/20{% endif %} flex items-center justify-center">
+                        <span class="text-xs font-black {% if attempt.success %}text-green-400{% else %}text-red-400{% endif %}">{{ attempt.roll }}</span>
+                    </div>
+                </div>
+
+                {% if attempt.success %}
+                <div class="space-y-2 mt-3">
+                    {% for mineral in attempt.minerals %}
+                    <div class="flex items-center justify-between bg-space/40 rounded-xl px-4 py-2 border border-white/5">
+                        <span class="text-xs text-gray-400 font-bold flex items-center gap-2">
+                            <i class="fas fa-gem text-accent/40 text-[10px]"></i> {{ mineral.name }}
+                        </span>
+                        <span class="text-sm font-black text-gold">+{{ mineral.amount }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="bg-space/30 rounded-xl px-4 py-3 border border-red-500/10 mt-3">
+                    <p class="text-[10px] text-red-400/60 font-bold uppercase tracking-widest text-center">
+                        <i class="fas fa-ghost mr-1"></i> El minero no encontró recursos en este intento
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- TOTALS -->
+        <div id="totalsSection" class="mb-10">
+            <h2 class="text-sm uppercase font-black text-gray-500 mb-4 tracking-[0.3em] pl-2 text-center">Botín Total</h2>
+            
+            {% if totals %}
+            <div class="bg-card border border-accent/20 p-6 rounded-[2.5rem] shadow-[0_0_30px_rgba(0,224,255,0.1)] total-card">
+                <div class="space-y-3">
+                    {% for name, amount in totals.items %}
+                    <div class="flex items-center justify-between bg-space/40 rounded-2xl px-5 py-4 border border-white/5">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 bg-accent/10 rounded-xl flex items-center justify-center">
+                                <i class="fas fa-gem text-accent"></i>
+                            </div>
+                            <span class="text-sm font-black text-white uppercase tracking-wider">{{ name }}</span>
+                        </div>
+                        <span class="text-2xl font-black text-gold">+{{ amount }}</span>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="mt-5 pt-4 border-t border-white/10 text-center">
+                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-1">Recursos añadidos a tu almacén</p>
+                    <p class="text-[8px] text-accent/50 font-bold uppercase tracking-widest">
+                        <i class="fas fa-check mr-1"></i> Activos liberados y disponibles
+                    </p>
+                </div>
+            </div>
+            {% else %}
+            <div class="bg-card border border-red-500/20 p-8 rounded-[2.5rem] text-center total-card">
+                <i class="fas fa-heart-crack text-red-400/40 text-4xl mb-4"></i>
+                <p class="text-sm font-black text-red-400 uppercase tracking-widest">Misión Sin Botín</p>
+                <p class="text-[9px] text-gray-500 font-bold mt-2">Todos los intentos fallaron esta vez. ¡Mejor suerte en la próxima!</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- BACK BUTTON -->
+        <a href="{% url 'mining_dashboard' %}" class="block w-full text-center bg-accent py-5 rounded-3xl text-space font-black uppercase tracking-[0.2em] shadow-[0_10px_30px_rgba(0,224,255,0.2)] hover:scale-[1.02] active:scale-95 transition-all">
+            <i class="fas fa-arrow-left mr-2"></i> Volver al Centro de Minería
+        </a>
+    </div>
+
+    <script>
+        const loadingTexts = [
+            'Analizando muestras...',
+            'Procesando minerales...',
+            'Calculando rendimiento...',
+            'Evaluando extracción...',
+            'Verificando resultados...',
+            'Preparando informe...',
+        ];
+
+        let textIndex = 0;
+        const loadingText = document.getElementById('loadingText');
+        const loadingBar = document.getElementById('loadingBar');
+
+        // Animate loading
+        const textInterval = setInterval(() => {
+            textIndex = (textIndex + 1) % loadingTexts.length;
+            loadingText.textContent = loadingTexts[textIndex];
+        }, 400);
+
+        // Progress bar
+        let progress = 0;
+        const barInterval = setInterval(() => {
+            progress += Math.random() * 15 + 5;
+            if (progress > 100) progress = 100;
+            loadingBar.style.width = progress + '%';
+        }, 300);
+
+        // After loading, reveal content
+        setTimeout(() => {
+            clearInterval(textInterval);
+            clearInterval(barInterval);
+            loadingBar.style.width = '100%';
+            
+            setTimeout(() => {
+                const overlay = document.getElementById('loadingOverlay');
+                overlay.style.opacity = '0';
+                
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    document.getElementById('mainContent').classList.remove('hidden');
+                    
+                    // Reveal attempts one by one
+                    const cards = document.querySelectorAll('.attempt-card');
+                    cards.forEach((card, index) => {
+                        setTimeout(() => {
+                            card.classList.add('revealed');
+                        }, index * 600);
+                    });
+                    
+                    // Reveal totals after all attempts
+                    setTimeout(() => {
+                        document.querySelector('.total-card').classList.add('revealed');
+                    }, cards.length * 600 + 400);
+                    
+                }, 500);
+            }, 300);
+        }, 2500);
+    </script>
+</body>
+</html>

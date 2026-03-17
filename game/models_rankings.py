@@ -53,7 +53,7 @@ class SeasonLevelRequirement(models.Model):
     TYPE_CHOICES = [
         ('miner_attempts', 'Mín. Intentos Minero'),
         ('transport_speed', 'Mín. Velocidad (Transporte)'),
-        ('tool_multiplier', 'Mín. Multiplicador (Herramienta)'),
+        ('tool_bonus', 'Mín. Bonus % (Herramienta)'),
     ]
     level = models.ForeignKey(SeasonLevel, on_delete=models.CASCADE, related_name="requirements")
     requirement_type = models.CharField(max_length=50, choices=TYPE_CHOICES)

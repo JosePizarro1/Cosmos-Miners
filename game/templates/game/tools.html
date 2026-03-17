@@ -110,20 +110,14 @@
                         {% endif %}
                     </div>
 
-                    <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
-                        <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
-                            <div class="text-xs text-gray-400">Mult.</div>
-                            <div class="font-bold text-accent">x{{ t.tool_type.production_multiplier }}</div>
+                        <div class="rounded-2xl bg-white/5 border border-white/10 p-3 col-span-2">
+                            <div class="text-xs text-gray-400 font-bold uppercase tracking-wider">Bonus %</div>
+                            <div class="font-bold text-accent">{{ t.tool_type.bonus_pct }}%</div>
                         </div>
                         <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
-                            <div class="text-xs text-gray-400">Bonus</div>
-                            <div class="font-bold text-pink">+{{ t.tool_type.success_bonus }}%</div>
+                            <div class="text-xs text-gray-400 font-bold uppercase tracking-wider">Fecha</div>
+                            <div class="font-semibold text-gray-200 text-[10px]">{{ t.obtained_at|date:"Y-m-d" }}</div>
                         </div>
-                        <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
-                            <div class="text-xs text-gray-400">Obtenido</div>
-                            <div class="font-semibold text-gray-200">{{ t.obtained_at|date:"Y-m-d" }}</div>
-                        </div>
-                    </div>
                 </div>
             </article>
             {% empty %}

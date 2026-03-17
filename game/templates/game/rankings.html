@@ -166,7 +166,7 @@
         let currentLevel = null;
         let currentSeason = null;
 
-        const reqIcons = { 'miner_attempts': 'fas fa-user-astronaut text-accent', 'transport_speed': 'fas fa-shuttle-space text-pink', 'tool_multiplier': 'fas fa-screwdriver-wrench text-yellow-500' };
+        const reqIcons = { 'miner_attempts': 'fas fa-user-astronaut text-accent', 'transport_speed': 'fas fa-shuttle-space text-pink', 'tool_bonus': 'fas fa-screwdriver-wrench text-yellow-500' };
 
         function renderSeasonStatus(s) {
             if (s.user_entry) {
@@ -358,13 +358,13 @@
                 currentLevel.requirements.filter(r => r.type.startsWith(type)).forEach(r => {
                     if (r.type === 'miner_attempts' && item.attempts < parseFloat(r.value)) meetAll = false;
                     if (r.type === 'transport_speed' && item.speed < parseFloat(r.value)) meetAll = false;
-                    if (r.type === 'tool_multiplier' && parseFloat(item.multiplier) < parseFloat(r.value)) meetAll = false;
+                    if (r.type === 'tool_bonus' && parseFloat(item.bonus) < parseFloat(r.value)) meetAll = false;
                 });
                 return `
                     <div onclick="${meetAll?`selectItem('${type}',${JSON.stringify(item).replace(/"/g,'&quot;')})`:''}" class="bg-white/5 border border-white/5 rounded-2xl p-4 text-center group transition-all ${meetAll?'cursor-pointer hover:border-accent':'opacity-30 grayscale'}">
                         <img src="${item.image||''}" class="w-16 h-16 object-contain mx-auto mb-2">
                         <p class="text-[9px] font-black uppercase truncate">${item.name}</p>
-                        <p class="text-[8px] font-black text-gray-500">${type==='miner'?item.attempts+' Att':(type==='transport'?item.speed+'% Vel':'x'+item.multiplier)}</p>
+                        <p class="text-[8px] font-black text-gray-500">${type==='miner'?item.attempts+' Att':(type==='transport'?item.speed+'% Vel':item.bonus+'% Bonus')}</p>
                         ${!meetAll?'<span class="text-[7px] text-pink font-black uppercase mt-1 block">No apto</span>':''}
                     </div>
                 `;
