@@ -73,6 +73,8 @@ class UserSeasonEntry(models.Model):
     
     entered_at = models.DateTimeField(auto_now_add=True)
     locked_until = models.DateTimeField()
+    points = models.IntegerField(default=0, verbose_name="Puntos Acumulados")
+    rewards_claimed = models.BooleanField(default=False, verbose_name="Recompensas Reclamadas")
 
     class Meta:
         unique_together = ('user', 'season')
@@ -84,14 +86,19 @@ class SeasonLevelReward(models.Model):
         ('miner', 'Minero Especial'),
         ('transport', 'Transporte Especial'),
         ('tool', 'Herramienta Especial'),
+        ('mineral', 'Mineral'),
     ]
     level = models.ForeignKey(SeasonLevel, on_delete=models.CASCADE, related_name="rewards")
     reward_type = models.CharField(max_length=20, choices=REWARD_TYPE)
     amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, verbose_name="Cantidad / Oro")
     
+    rank_start = models.PositiveIntegerField(default=1, verbose_name="Puesto Inicio")
+    rank_end = models.PositiveIntegerField(default=1, verbose_name="Puesto Fin")
+    
     miner_type = models.ForeignKey('game.MinerType', on_delete=models.SET_NULL, null=True, blank=True)
     transport_type = models.ForeignKey('game.TransportType', on_delete=models.SET_NULL, null=True, blank=True)
     tool_type = models.ForeignKey('game.ToolType', on_delete=models.SET_NULL, null=True, blank=True)
+    mineral_type = models.ForeignKey('game.Mineral', on_delete=models.SET_NULL, null=True, blank=True)
 
     def __str__(self):
-        return f"Premio {self.reward_type} para {self.level.name}"
+        return f"Premio {self.reward_type} para {self.level.name} ({self.rank_start}-{self.rank_end})"

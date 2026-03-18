@@ -15,6 +15,7 @@ class Planet(models.Model):
     image = models.ImageField(upload_to="planets/", null=True, blank=True)
     travel_time_base = models.PositiveIntegerField(help_text="Tiempo base en horas")
     success_rate_base = models.PositiveIntegerField(help_text="Porcentaje de éxito base (%)")
+    puntos = models.PositiveIntegerField(default=0, help_text="Puntos máximos ganados por viaje exitoso")
     is_active = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

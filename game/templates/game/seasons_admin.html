@@ -73,7 +73,7 @@
 
     <!-- Modal Temporada -->
     <div id="modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm hidden p-4">
-        <div class="bg-[#0a0a20] border border-white/10 w-full max-w-xl rounded-3xl p-8 relative">
+        <div class="bg-[#0a0a20] border border-white/10 w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl p-8 relative custom-scrollbar">
             <button onclick="closeModal()" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors"><i class="fas fa-times"></i></button>
             <h2 id="modalTitle" class="text-2xl font-black mb-6 uppercase tracking-tight">Temporada</h2>
             <form id="seasonForm" class="space-y-5">
@@ -119,8 +119,8 @@
     </div>
 
     <!-- Modal Form Nivel (DINÁMICO) -->
-    <div id="levelFormModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden p-4 overflow-y-auto">
-        <div class="bg-[#0a0a20] border border-white/10 w-full max-w-xl rounded-3xl p-8 relative">
+    <div id="levelFormModal" class="fixed inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm hidden p-4">
+        <div class="bg-[#0a0a20] border border-white/10 w-full max-w-xl max-h-[90vh] overflow-y-auto rounded-3xl p-8 relative custom-scrollbar">
             <button onclick="closeLevelFormModal()" class="absolute top-6 right-6 text-gray-500 hover:text-white"><i class="fas fa-times"></i></button>
             <h3 id="levelFormTitle" class="text-xl font-black mb-6 uppercase tracking-tight italic">Nivel Estelar</h3>
             <form id="levelForm" class="space-y-6">
@@ -159,7 +159,7 @@
 
     <script>
         let selectedSeasonId = null;
-        let deps = { items: { miner: [], transport: [], tool: [] } };
+        let deps = { items: { miner: [], transport: [], tool: [], mineral: [] } };
         const reqTypes = {
             'miner_attempts': 'Mín. Intentos Minero',
             'transport_speed': 'Mín. Velocidad (Transporte %)',
@@ -209,6 +209,18 @@
         }
 
         // Season Logic...
+        function formatForInput(isoString) {
+            if (!isoString) return '';
+            const d = new Date(isoString);
+            if (isNaN(d.getTime())) return '';
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            return `${year}-${month}-${day}T${hours}:${minutes}`;
+        }
+
         function openModal() { document.getElementById('editId').value = ''; document.getElementById('seasonForm').reset(); document.getElementById('modalTitle').innerText = 'Nueva Temporada'; document.getElementById('modal').classList.remove('hidden'); }
         function closeModal() { document.getElementById('modal').classList.add('hidden'); }
         async function toggleOverride(id) { await fetch(`/dashboard/seasons/toggle/${id}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' } }); loadSeasons(); }
@@ -216,9 +228,9 @@
         function editSeason(s) {
             document.getElementById('editId').value = s.id;
             document.getElementById('fName').value = s.name;
-            document.getElementById('fStartDate').value = s.start_date.substring(0, 16);
-            document.getElementById('fEndDate').value = s.end_date.substring(0, 16);
-            document.getElementById('fClaimDate').value = s.claim_rewards_at.substring(0, 16);
+            document.getElementById('fStartDate').value = formatForInput(s.start_date);
+            document.getElementById('fEndDate').value = formatForInput(s.end_date);
+            document.getElementById('fClaimDate').value = formatForInput(s.claim_rewards_at);
             document.getElementById('fOverride').checked = s.is_active_override;
             document.getElementById('modalTitle').innerText = 'Editar Temporada';
             document.getElementById('modal').classList.remove('hidden');
@@ -228,7 +240,11 @@
             const id = document.getElementById('editId').value;
             const url = id ? `/dashboard/seasons/update/${id}/` : '/dashboard/seasons/create/';
             await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' }, body: JSON.stringify({
-                name: document.getElementById('fName').value, start_date: document.getElementById('fStartDate').value, end_date: document.getElementById('fEndDate').value, claim_rewards_at: document.getElementById('fClaimDate').value, is_active_override: document.getElementById('fOverride').checked
+                name: document.getElementById('fName').value, 
+                start_date: new Date(document.getElementById('fStartDate').value).toISOString(), 
+                end_date: new Date(document.getElementById('fEndDate').value).toISOString(), 
+                claim_rewards_at: new Date(document.getElementById('fClaimDate').value).toISOString(), 
+                is_active_override: document.getElementById('fOverride').checked
             })});
             closeModal(); loadSeasons();
         }
@@ -256,7 +272,7 @@
                         </div>
                         <div class="space-y-1">
                             <span class="block text-[8px] text-pink uppercase font-black mb-1 opacity-60 tracking-widest">Premios</span>
-                            ${l.rewards.map(rw => `<p class="text-[10px] text-gray-500 font-bold uppercase tracking-tight"><span class="text-pink/40">•</span> ${rw.type}: <span class="text-gray-300">${rw.type === 'gold' ? rw.amount + ' Gold' : '1 Item Especial'}</span></p>`).join(l.rewards.length ? '' : '<p class="text-[9px] text-gray-700 italic">Sin premios</p>')}
+                            ${l.rewards.map(rw => `<p class="text-[10px] text-gray-500 font-bold uppercase tracking-tight"><span class="text-pink/40">•</span> [Puesto ${rw.rank_start}-${rw.rank_end}] ${rw.type}: <span class="text-gray-300">${rw.type === 'gold' || rw.type === 'mineral' ? rw.amount + (rw.type === 'gold' ? ' Gold' : '') : '1 Item Especial'}</span></p>`).join(l.rewards.length ? '' : '<p class="text-[9px] text-gray-700 italic">Sin premios</p>')}
                             <p class="text-[9px] text-pink font-black uppercase mt-4">BLOQUEO: ${l.lock_duration_days} DÍAS</p>
                         </div>
                     </div>
@@ -284,21 +300,25 @@
             container.appendChild(row);
         }
 
-        function addRewardRow(type = 'gold', value = '', itemId = null) {
+        function addRewardRow(type = 'gold', value = '', itemId = null, rankStart = 1, rankEnd = 1) {
             const container = document.getElementById('rewardsContainer');
             const row = document.createElement('div');
             row.className = 'flex flex-col gap-2 p-3 bg-white/5 border border-white/10 rounded-2xl reward-row';
             row.innerHTML = `
                 <div class="flex items-center gap-2">
+                    <input type="number" min="1" value="${rankStart}" placeholder="Del" class="rw-rank-start w-16 bg-space border border-white/10 rounded-xl px-2 py-2 outline-none text-[10px] text-center text-white" title="Puesto Inicio">
+                    <span class="text-gray-500 text-[10px]">-</span>
+                    <input type="number" min="1" value="${rankEnd}" placeholder="Al" class="rw-rank-end w-16 bg-space border border-white/10 rounded-xl px-2 py-2 outline-none text-[10px] text-center text-white" title="Puesto Fin">
                     <select class="rw-type flex-1 bg-space border border-white/10 rounded-xl px-4 py-2 outline-none text-[10px] font-black uppercase text-white focus:border-pink" onchange="updateRewardValues(this)">
                         <option value="gold" ${type === 'gold' ? 'selected' : ''}>Cosmogold / Moneda</option>
                         <option value="miner" ${type === 'miner' ? 'selected' : ''}>Minero Especial</option>
                         <option value="transport" ${type === 'transport' ? 'selected' : ''}>Transporte Especial</option>
                         <option value="tool" ${type === 'tool' ? 'selected' : ''}>Herramienta Especial</option>
+                        <option value="mineral" ${type === 'mineral' ? 'selected' : ''}>Mineral</option>
                     </select>
                     <button type="button" onclick="this.parentElement.parentElement.remove()" class="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center hover:bg-red-500 hover:text-white transition-all"><i class="fas fa-trash text-xs"></i></button>
                 </div>
-                <div class="rw-value-container"></div>
+                <div class="rw-value-container flex gap-2 w-full"></div>
             `;
             container.appendChild(row);
             updateRewardValues(row.querySelector('.rw-type'), value, itemId);
@@ -309,6 +329,15 @@
             const type = select.value;
             if (type === 'gold') {
                 container.innerHTML = `<input type="number" step="0.01" value="${val}" placeholder="Cantidad de Cosmogold" class="rw-amount w-full bg-space border border-white/10 rounded-xl px-4 py-2 outline-none text-xs text-accent">`;
+            } else if (type === 'mineral') {
+                const list = deps.items[type] || [];
+                container.innerHTML = `
+                    <select class="rw-item-id w-1/2 bg-space border border-white/10 rounded-xl px-4 py-2 outline-none text-xs text-white">
+                        <option value="">Selecciona Mineral...</option>
+                        ${list.map(i => `<option value="${i.id}" ${itm == i.id ? 'selected' : ''}>${i.name}</option>`).join('')}
+                    </select>
+                    <input type="number" step="1" value="${val}" placeholder="Cantidad" class="rw-amount w-1/2 bg-space border border-white/10 rounded-xl px-4 py-2 outline-none text-xs text-accent">
+                `;
             } else {
                 const list = deps.items[type] || [];
                 container.innerHTML = `
@@ -342,7 +371,7 @@
             document.getElementById('requirementsContainer').innerHTML = '';
             document.getElementById('rewardsContainer').innerHTML = '';
             l.requirements.forEach(r => addRequirementRow(r.type, r.value));
-            l.rewards.forEach(rw => addRewardRow(rw.type, rw.amount, rw.item_id));
+            l.rewards.forEach(rw => addRewardRow(rw.type, rw.amount, rw.item_id, rw.rank_start, rw.rank_end));
             document.getElementById('levelFormTitle').innerText = 'Personalizar Nivel';
             document.getElementById('levelFormModal').classList.remove('hidden');
         }
@@ -363,10 +392,26 @@
             const rewards = [];
             document.querySelectorAll('.reward-row').forEach(row => {
                 const type = row.querySelector('.rw-type').value;
+                const rStart = parseInt(row.querySelector('.rw-rank-start').value);
+                const rEnd = parseInt(row.querySelector('.rw-rank-end').value);
+                
+                let amount = 0;
+                let itemId = null;
+                
+                if (type === 'gold' || type === 'mineral') {
+                    amount = row.querySelector('.rw-amount').value;
+                }
+                
+                if (type !== 'gold') {
+                    itemId = row.querySelector('.rw-item-id').value;
+                }
+                
                 rewards.push({
                     type: type,
-                    amount: type === 'gold' ? row.querySelector('.rw-amount').value : 0,
-                    item_id: type !== 'gold' ? row.querySelector('.rw-item-id').value : null
+                    amount: amount,
+                    item_id: itemId,
+                    rank_start: rStart,
+                    rank_end: rEnd
                 });
             });
 

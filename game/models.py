@@ -19,6 +19,9 @@ class Profile(models.Model):
 
     # Cosmos GOLD balance for the user
     cosmos_gold = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    
+    # Points earned from planets
+    points = models.IntegerField(default=0)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

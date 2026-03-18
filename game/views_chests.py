@@ -6,7 +6,7 @@ from django.views.decorators.csrf import csrf_protect
 from django.db import transaction
 from .models import (
     Chest, ChestCategory, ChestReward, 
-    MinerType, TransportType, ToolType
+    MinerType, TransportType, ToolType, Mineral
 )
 import json
 from decimal import Decimal
@@ -137,6 +137,7 @@ def chest_dependencies(request):
     miners = list(MinerType.objects.filter(is_active=True).values("id", "name"))
     transports = list(TransportType.objects.filter(is_active=True).values("id", "name"))
     tools = list(ToolType.objects.filter(is_active=True).values("id", "name"))
+    minerals = list(Mineral.objects.values("id", "name"))
     
     return JsonResponse({
         "success": True,
@@ -144,7 +145,8 @@ def chest_dependencies(request):
         "items": {
             "miner": miners,
             "transport": transports,
-            "tool": tools
+            "tool": tools,
+            "mineral": minerals
         }
     })
 

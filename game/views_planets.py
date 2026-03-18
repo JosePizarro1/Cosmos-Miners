@@ -5,6 +5,7 @@ from django.utils import timezone
 from datetime import timedelta
 from django.contrib import messages
 from .models import *
+from .models_rankings import UserSeasonEntry
 
 def is_admin(user):
     return user.is_superuser
@@ -30,11 +31,13 @@ def planets_admin(request):
             name = request.POST.get('name')
             time = request.POST.get('travel_time')
             success = request.POST.get('success_rate')
+            puntos = request.POST.get('puntos', 0)
             image = request.FILES.get('image')
             Planet.objects.create(
                 name=name,
                 travel_time_base=time,
                 success_rate_base=success,
+                puntos=puntos,
                 image=image
             )
             messages.success(request, f"Planeta {name} creado.")
@@ -62,6 +65,7 @@ def planets_admin(request):
             planet.name = request.POST.get('name')
             planet.travel_time_base = request.POST.get('travel_time')
             planet.success_rate_base = request.POST.get('success_rate')
+            planet.puntos = request.POST.get('puntos', 0)
             if request.FILES.get('image'):
                 planet.image = request.FILES.get('image')
             planet.save()
@@ -279,10 +283,30 @@ def collect_mining_trip(request, trip_id):
 
     successful_attempts = sum(1 for a in attempts_detail if a['success'])
     
+    # Give points if at least 1 successful attempt
+    won_points = 0
+    if successful_attempts > 0:
+        won_points = trip.planet.puntos
+        if won_points > 0:
+            profile = request.user.profile
+            profile.points += won_points
+            profile.save()
+            
+            # Give points to active ranking entries
+            active_entries = UserSeasonEntry.objects.filter(
+                user=request.user, 
+                season__start_date__lte=timezone.now(),
+                season__end_date__gte=timezone.now()
+            )
+            for entry in active_entries:
+                entry.points += won_points
+                entry.save()
+    
     return render(request, 'game/mining_results.html', {
         'trip': trip,
         'attempts_detail': attempts_detail,
         'totals': totals,
         'total_attempts': trip.attempts,
         'successful_attempts': successful_attempts,
+        'won_points': won_points,
     })

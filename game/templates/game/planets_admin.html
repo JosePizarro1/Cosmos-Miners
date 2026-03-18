@@ -165,7 +165,7 @@
                                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2">
                                         <h3 class="text-xl font-black italic text-white uppercase tracking-tighter truncate w-full sm:w-auto">{{ p.name }}</h3>
                                         <div class="flex gap-2 self-start">
-                                            <button type="button" onclick="openEditPlanet('{{ p.id }}', '{{ p.name }}', '{{ p.travel_time_base }}', '{{ p.success_rate_base }}', '{% if p.image %}{{ p.image.url }}{% endif %}')" class="px-2.5 py-1.5 rounded bg-white/5 text-gray-200 text-sm hover:bg-white/10 hover:text-pink transition-colors">
+                                            <button type="button" onclick="openEditPlanet('{{ p.id }}', '{{ p.name }}', '{{ p.travel_time_base }}', '{{ p.success_rate_base }}', '{{ p.puntos }}', '{% if p.image %}{{ p.image.url }}{% endif %}')" class="px-2.5 py-1.5 rounded bg-white/5 text-gray-200 text-sm hover:bg-white/10 hover:text-pink transition-colors">
                                                 <i class="fas fa-pen"></i>
                                             </button>
                                             <form method="POST" onsubmit="return confirm('¿Eliminar planeta?')">
@@ -178,7 +178,7 @@
                                             </form>
                                         </div>
                                     </div>
-                                    <div class="grid grid-cols-2 gap-2 mb-2">
+                                    <div class="grid grid-cols-3 gap-2 mb-2">
                                         <div class="bg-space/60 px-3 py-2 rounded-xl border border-white/5">
                                             <p class="text-[8px] text-gray-500 uppercase font-black tracking-widest leading-none mb-1">Vuelo</p>
                                             <p class="text-sm font-black text-accent leading-none">{{ p.travel_time_base }}h</p>
@@ -186,6 +186,10 @@
                                         <div class="bg-space/60 px-3 py-2 rounded-xl border border-white/5">
                                             <p class="text-[8px] text-gray-500 uppercase font-black tracking-widest leading-none mb-1">Éxito</p>
                                             <p class="text-sm font-black text-green-400 leading-none">{{ p.success_rate_base }}%</p>
+                                        </div>
+                                        <div class="bg-space/60 px-3 py-2 rounded-xl border border-white/5">
+                                            <p class="text-[8px] text-gray-500 uppercase font-black tracking-widest leading-none mb-1">Puntos</p>
+                                            <p class="text-sm font-black text-yellow-400 leading-none">{{ p.puntos }}</p>
                                         </div>
                                     </div>
                                 </div>
@@ -305,7 +309,7 @@
                             <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Nombre del Mundo</label>
                             <input type="text" name="name" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-bold text-white uppercase italic">
                         </div>
-                        <div class="grid md:grid-cols-2 gap-4">
+                        <div class="grid md:grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Base (h)</label>
                                 <input type="number" name="travel_time" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-black text-accent text-center">
@@ -313,6 +317,10 @@
                             <div>
                                 <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Éxito (%)</label>
                                 <input type="number" name="success_rate" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-black text-green-400 text-center">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Puntos</label>
+                                <input type="number" name="puntos" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-black text-yellow-400 text-center" value="0">
                             </div>
                         </div>
                     </div>
@@ -413,14 +421,18 @@
                             <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Nombre</label>
                             <input type="text" name="name" id="editPlanetName" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-5 py-3 focus:border-pink outline-none">
                         </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        <div class="grid grid-cols-3 gap-4">
                             <div>
                                 <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Horas</label>
-                                <input type="number" name="travel_time" id="editPlanetTime" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-5 py-3 focus:border-pink outline-none">
+                                <input type="number" name="travel_time" id="editPlanetTime" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-3 py-3 focus:border-pink outline-none text-center">
                             </div>
                             <div>
-                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Éxito (%)</label>
-                                <input type="number" name="success_rate" id="editPlanetSuccess" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-5 py-3 focus:border-pink outline-none">
+                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Éxito</label>
+                                <input type="number" name="success_rate" id="editPlanetSuccess" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-3 py-3 focus:border-pink outline-none text-center">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Pts.</label>
+                                <input type="number" name="puntos" id="editPlanetPuntos" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-3 py-3 focus:border-pink outline-none text-center">
                             </div>
                         </div>
                     </div>
@@ -483,11 +495,12 @@
             }
         }
 
-        function openEditPlanet(id, name, time, success, imgUrl) {
+        function openEditPlanet(id, name, time, success, puntos, imgUrl) {
             document.getElementById('editPlanetId').value = id;
             document.getElementById('editPlanetName').value = name;
             document.getElementById('editPlanetTime').value = time;
             document.getElementById('editPlanetSuccess').value = success;
+            document.getElementById('editPlanetPuntos').value = puntos;
             const img = document.getElementById('editPlanetImg');
             if (imgUrl) {
                 img.src = imgUrl;

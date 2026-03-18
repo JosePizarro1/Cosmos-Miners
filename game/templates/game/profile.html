@@ -91,6 +91,9 @@
         <div class="text-sm text-gray-300">Usuario</div>
         <div class="font-bold text-accent text-lg">{{ user.username }}</div>
         <div class="text-xs text-gray-400">Miembro desde {{ user.date_joined|date:"Y" }}</div>
+        <div class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded bg-yellow-500/10 border border-yellow-500/30 text-yellow-500 text-xs font-bold uppercase tracking-widest">
+            <i class="fas fa-star text-yellow-500"></i> {{ profile.points }} Puntos de Planetas
+        </div>
       </div>
     </div>
 

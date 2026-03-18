@@ -117,13 +117,17 @@ def public_rankings_list(request):
             "claim_rewards_at": s.claim_rewards_at.isoformat(),
             "status": s.status,
             "user_entry": {
+                "level_id": entry.level.id,
                 "level_name": entry.level.name,
                 "locked_until": entry.locked_until.isoformat(),
                 "is_locked": entry.locked_until > now,
+                "rewards_claimed": entry.rewards_claimed,
                 "rewards": [{
                     "type": r_item.reward_type,
                     "amount": str(r_item.amount),
-                    "name": r_item.miner_type.name if r_item.miner_type else (r_item.transport_type.name if r_item.transport_type else (r_item.tool_type.name if r_item.tool_type else "Cosmogold"))
+                    "name": r_item.miner_type.name if r_item.miner_type else (r_item.transport_type.name if r_item.transport_type else (r_item.tool_type.name if r_item.tool_type else (r_item.mineral_type.name if r_item.mineral_type else "Cosmogold"))),
+                    "rank_start": r_item.rank_start,
+                    "rank_end": r_item.rank_end
                 } for r_item in entry.level.rewards.all()]
             } if entry else None
         })
@@ -147,7 +151,9 @@ def get_levels_api(request, season_id):
             rewards.append({
                 "type": r_item.reward_type,
                 "amount": str(r_item.amount),
-                "name": r_item.miner_type.name if r_item.miner_type else (r_item.transport_type.name if r_item.transport_type else (r_item.tool_type.name if r_item.tool_type else "Cosmogold"))
+                "name": r_item.miner_type.name if r_item.miner_type else (r_item.transport_type.name if r_item.transport_type else (r_item.tool_type.name if r_item.tool_type else (r_item.mineral_type.name if r_item.mineral_type else "Cosmogold"))),
+                "rank_start": r_item.rank_start,
+                "rank_end": r_item.rank_end
             })
         data.append({
             "id": l.id,
@@ -264,7 +270,9 @@ def season_levels_admin_list(request, season_id):
             rewards.append({
                 "type": r_item.reward_type,
                 "amount": str(r_item.amount),
-                "item_id": r_item.miner_type_id or r_item.transport_type_id or r_item.tool_type_id
+                "item_id": r_item.miner_type_id or r_item.transport_type_id or r_item.tool_type_id or r_item.mineral_type_id,
+                "rank_start": r_item.rank_start,
+                "rank_end": r_item.rank_end
             })
         items.append({
             "id": l.id,
@@ -301,9 +309,12 @@ def level_create(request):
                     level=lvl,
                     reward_type=rw['type'],
                     amount=rw.get('amount', 0),
+                    rank_start=rw.get('rank_start', 1),
+                    rank_end=rw.get('rank_end', 1),
                     miner_type_id=rw.get('item_id') if rw['type'] == 'miner' else None,
                     transport_type_id=rw.get('item_id') if rw['type'] == 'transport' else None,
                     tool_type_id=rw.get('item_id') if rw['type'] == 'tool' else None,
+                    mineral_type_id=rw.get('item_id') if rw['type'] == 'mineral' else None,
                 )
         return JsonResponse({"success": True})
     except Exception as e:
@@ -339,9 +350,12 @@ def level_update(request, pk):
                     level=level,
                     reward_type=rw['type'],
                     amount=rw.get('amount', 0),
+                    rank_start=rw.get('rank_start', 1),
+                    rank_end=rw.get('rank_end', 1),
                     miner_type_id=rw.get('item_id') if rw['type'] == 'miner' else None,
                     transport_type_id=rw.get('item_id') if rw['type'] == 'transport' else None,
                     tool_type_id=rw.get('item_id') if rw['type'] == 'tool' else None,
+                    mineral_type_id=rw.get('item_id') if rw['type'] == 'mineral' else None,
                 )
         return JsonResponse({"success": True})
     except Exception as e:
@@ -362,3 +376,83 @@ def level_delete(request, pk):
 @login_required
 def public_rankings_page(request):
     return render(request, "game/rankings.html")
+
+@login_required
+def get_level_competitors_api(request, level_id):
+    level = get_object_or_404(SeasonLevel, pk=level_id)
+    entries = UserSeasonEntry.objects.filter(level=level).order_by('-points', 'entered_at')
+    
+    data = []
+    for idx, e in enumerate(entries):
+        data.append({
+            "rank": idx + 1,
+            "username": e.user.username,
+            "points": e.points,
+            "is_me": e.user == request.user
+        })
+    return JsonResponse({"items": data})
+
+@require_POST
+@csrf_protect
+@login_required
+def claim_rewards_api(request):
+    try:
+        data = json.loads(request.body)
+        season_id = data.get('season_id')
+        season = get_object_or_404(Season, pk=season_id)
+        
+        if season.status != 'finished':
+            return JsonResponse({"error": "La temporada aún no ha finalizado."}, status=400)
+            
+        entry = UserSeasonEntry.objects.filter(user=request.user, season=season).first()
+        if not entry:
+            return JsonResponse({"error": "No has participado en esta temporada."}, status=400)
+            
+        if entry.rewards_claimed:
+            return JsonResponse({"error": "Ya has reclamado las recompensas de esta temporada."}, status=400)
+            
+        # Determinar el puesto actual del usuario
+        entries = UserSeasonEntry.objects.filter(level=entry.level).order_by('-points', 'entered_at')
+        my_rank = 0
+        for idx, e in enumerate(entries):
+            if e.id == entry.id:
+                my_rank = idx + 1
+                break
+                
+        if my_rank == 0:
+            return JsonResponse({"error": "No se pudo determinar tu puesto."}, status=400)
+            
+        profile = request.user.profile
+        
+        rewards_given = []
+        with transaction.atomic():
+            for rw in entry.level.rewards.all():
+                if rw.rank_start <= my_rank <= rw.rank_end:
+                    rewards_given.append(f"{rw.amount} {rw.reward_type}")
+                    if rw.reward_type == 'gold':
+                        profile.cosmos_gold += rw.amount
+                    elif rw.reward_type == 'miner':
+                        from .models import UserMiner
+                        UserMiner.objects.create(owner=profile, miner_type=rw.miner_type)
+                    elif rw.reward_type == 'transport':
+                        from .models import UserTransport
+                        UserTransport.objects.create(owner=profile, transport_type=rw.transport_type)
+                    elif rw.reward_type == 'tool':
+                        from .models import UserTool
+                        UserTool.objects.create(owner=profile, tool_type=rw.tool_type)
+                    elif rw.reward_type == 'mineral':
+                        from .models_planets import UserMineral
+                        inv, _ = UserMineral.objects.get_or_create(user=request.user, mineral=rw.mineral_type)
+                        inv.amount += int(rw.amount)
+                        inv.save()
+            
+            profile.save()
+            entry.rewards_claimed = True
+            entry.save()
+            
+        if not rewards_given:
+            return JsonResponse({"error": "No has alcanzado el puesto necesario para recibir recompensas."}, status=400)
+            
+        return JsonResponse({"success": True})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)

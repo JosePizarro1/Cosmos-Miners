@@ -17,7 +17,8 @@ from game.views_rankings import (
     season_update, season_delete, season_toggle_override,
     public_rankings_page, public_rankings_list, get_levels_api, 
     get_available_items_api, enter_level_api,
-    season_levels_admin_list, level_create, level_update, level_delete
+    season_levels_admin_list, level_create, level_update, level_delete,
+    get_level_competitors_api, claim_rewards_api
 )
 from game.views_planets import (
     planets_admin, mining_dashboard, prepare_trip,
@@ -74,8 +75,10 @@ urlpatterns = [
     path("rankings/", public_rankings_page, name="rankings"),
     path("rankings/list/", public_rankings_list, name="rankings_list_api"),
     path("rankings/levels/<int:season_id>/", get_levels_api, name="rankings_levels_api"),
+    path("rankings/competitors/<int:level_id>/", get_level_competitors_api, name="rankings_competitors_api"),
     path("rankings/available-items/", get_available_items_api, name="available_items_api"),
     path("rankings/enter/", enter_level_api, name="enter_level_api"),
+    path("rankings/claim/", claim_rewards_api, name="claim_rewards_api"),
 
     # Chests Admin
     path("dashboard/chests/", chests_admin_view, name="chests_admin"),
