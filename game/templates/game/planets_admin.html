@@ -165,7 +165,7 @@
                                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2">
                                         <h3 class="text-xl font-black italic text-white uppercase tracking-tighter truncate w-full sm:w-auto">{{ p.name }}</h3>
                                         <div class="flex gap-2 self-start">
-                                            <button type="button" onclick="openEditPlanet('{{ p.id }}', '{{ p.name }}', '{{ p.travel_time_base }}', '{{ p.success_rate_base }}', '{{ p.puntos }}', '{% if p.image %}{{ p.image.url }}{% endif %}')" class="px-2.5 py-1.5 rounded bg-white/5 text-gray-200 text-sm hover:bg-white/10 hover:text-pink transition-colors">
+                                            <button type="button" onclick="openEditPlanet('{{ p.id }}', '{{ p.name }}', '{{ p.travel_time_base }}', '{{ p.success_rate_base }}', '{{ p.puntos }}', '{% if p.image %}{{ p.image.url }}{% endif %}', '{{ p.is_free }}')" class="px-2.5 py-1.5 rounded bg-white/5 text-gray-200 text-sm hover:bg-white/10 hover:text-pink transition-colors">
                                                 <i class="fas fa-pen"></i>
                                             </button>
                                             <form method="POST" onsubmit="return confirm('¿Eliminar planeta?')">
@@ -191,6 +191,12 @@
                                             <p class="text-[8px] text-gray-500 uppercase font-black tracking-widest leading-none mb-1">Puntos</p>
                                             <p class="text-sm font-black text-yellow-400 leading-none">{{ p.puntos }}</p>
                                         </div>
+                                        {% if p.is_free %}
+                                        <div class="bg-accent/10 px-3 py-2 rounded-xl border border-accent/20">
+                                            <p class="text-[8px] text-accent uppercase font-black tracking-widest leading-none mb-1">Free</p>
+                                            <p class="text-xs font-black text-accent leading-none italic">GRATIS</p>
+                                        </div>
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
@@ -318,9 +324,14 @@
                                 <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Éxito (%)</label>
                                 <input type="number" name="success_rate" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-black text-green-400 text-center">
                             </div>
+                        <div class="grid md:grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Puntos</label>
                                 <input type="number" name="puntos" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-black text-yellow-400 text-center" value="0">
+                            </div>
+                            <div class="flex items-center gap-2 mt-4">
+                                <input type="checkbox" name="is_free" id="planetIsFree" class="accent-pink">
+                                <label for="planetIsFree" class="text-[10px] uppercase font-black text-gray-400 tracking-widest">Es Gratis</label>
                             </div>
                         </div>
                     </div>
@@ -430,9 +441,14 @@
                                 <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Éxito</label>
                                 <input type="number" name="success_rate" id="editPlanetSuccess" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-3 py-3 focus:border-pink outline-none text-center">
                             </div>
+                        <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Pts.</label>
                                 <input type="number" name="puntos" id="editPlanetPuntos" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-3 py-3 focus:border-pink outline-none text-center">
+                            </div>
+                            <div class="flex items-center gap-2 mt-4">
+                                <input type="checkbox" name="is_free" id="editPlanetIsFree" class="accent-pink">
+                                <label for="editPlanetIsFree" class="text-[10px] uppercase font-black text-gray-400 tracking-widest">Es Gratis</label>
                             </div>
                         </div>
                     </div>
@@ -495,12 +511,13 @@
             }
         }
 
-        function openEditPlanet(id, name, time, success, puntos, imgUrl) {
+        function openEditPlanet(id, name, time, success, puntos, imgUrl, isFree) {
             document.getElementById('editPlanetId').value = id;
             document.getElementById('editPlanetName').value = name;
             document.getElementById('editPlanetTime').value = time;
             document.getElementById('editPlanetSuccess').value = success;
             document.getElementById('editPlanetPuntos').value = puntos;
+            document.getElementById('editPlanetIsFree').checked = (isFree === 'True');
             const img = document.getElementById('editPlanetImg');
             if (imgUrl) {
                 img.src = imgUrl;

@@ -89,6 +89,7 @@ class MinerType(models.Model):
     )
 
     is_active = models.BooleanField(default=True)
+    is_free = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -154,6 +155,7 @@ class TransportType(models.Model):
     )
 
     is_active = models.BooleanField(default=True)
+    is_free = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -220,6 +222,7 @@ class ToolType(models.Model):
     )
 
     is_active = models.BooleanField(default=True)
+    is_free = models.BooleanField(default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

@@ -62,6 +62,7 @@ def tool_types_list(request):
             "rarity_label": tt.get_rarity_display(),
             "bonus_pct": str(tt.bonus_pct),
             "is_active": tt.is_active,
+            "is_free": tt.is_free,
             "image_url": tt.image.url if tt.image else ""
         })
     return JsonResponse({"success": True, "items": items})
@@ -77,6 +78,7 @@ def tool_type_create(request):
         rarity = (request.POST.get("rarity") or "").strip()
         bonus_pct_raw = request.POST.get("bonus_pct")
         is_active = _parse_bool(request.POST.get("is_active"))
+        is_free = _parse_bool(request.POST.get("is_free"))
         image = request.FILES.get("image")
 
         if not name:
@@ -99,6 +101,7 @@ def tool_type_create(request):
             rarity=rarity,
             bonus_pct=bonus_pct,
             is_active=is_active,
+            is_free=is_free,
             image=image
         )
 
@@ -111,6 +114,7 @@ def tool_type_create(request):
                 "rarity_label": tt.get_rarity_display(),
                 "bonus_pct": str(tt.bonus_pct),
                 "is_active": tt.is_active,
+                "is_free": tt.is_free,
                 "image_url": tt.image.url if tt.image else ""
             }
         })
@@ -130,6 +134,7 @@ def tool_type_update(request, pk):
         rarity = (request.POST.get("rarity") or "").strip()
         bonus_pct_raw = request.POST.get("bonus_pct")
         is_active = _parse_bool(request.POST.get("is_active"))
+        is_free = _parse_bool(request.POST.get("is_free"))
         image = request.FILES.get("image")
 
         if not name:
@@ -151,6 +156,7 @@ def tool_type_update(request, pk):
         tt.rarity = rarity
         tt.bonus_pct = bonus_pct
         tt.is_active = is_active
+        tt.is_free = is_free
         if image:
             tt.image = image
         tt.save()
@@ -164,6 +170,7 @@ def tool_type_update(request, pk):
                 "rarity_label": tt.get_rarity_display(),
                 "bonus_pct": str(tt.bonus_pct),
                 "is_active": tt.is_active,
+                "is_free": tt.is_free,
                 "image_url": tt.image.url if tt.image else ""
             }
         })

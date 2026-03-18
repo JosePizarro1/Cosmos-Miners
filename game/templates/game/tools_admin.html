@@ -100,6 +100,7 @@
                 <th>Nombre</th>
                 <th>Rareza</th>
                 <th>Bonus (%)</th>
+                <th>Free</th>
                 <th>Estado</th>
                 <th></th>
               </tr>
@@ -195,10 +196,17 @@
           </div>
         </div>
 
-        <label class="flex items-center gap-2 text-sm text-gray-300">
-          <input name="is_active" type="checkbox" class="accent-cyan-400" />
-          Activo
-        </label>
+        <div class="flex items-center gap-6">
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input name="is_active" type="checkbox" class="accent-cyan-400" />
+            Activo
+          </label>
+
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input name="is_free" type="checkbox" class="accent-pink-400" />
+            Gratis (Free)
+          </label>
+        </div>
 
         <div class="flex justify-end gap-3">
           <button type="button" id="cancelToolType" class="px-4 py-2 rounded bg-white/5 text-gray-200">Cancelar</button>
@@ -289,6 +297,7 @@
     <td>${mt.name}</td>
     <td>${mt.rarity_label}</td>
     <td>${mt.bonus_pct}%</td>
+    <td>${mt.is_free ? '<span class="text-accent font-bold">SI</span>' : '<span class="text-gray-500">NO</span>'}</td>
     <td>${badge}</td>
     <td class="text-right space-x-2">
       <button data-id="${mt.id}" class="edit-tool-type px-3 py-1 rounded bg-white/5 text-gray-200 text-sm"><i class="fas fa-pen"></i></button>
@@ -403,6 +412,7 @@
         toolTypeForm.querySelector('[name="rarity"]').value = mt.rarity;
         toolTypeForm.querySelector('[name="bonus_pct"]').value = mt.bonus_pct;
         toolTypeForm.querySelector('[name="is_active"]').checked = mt.is_active;
+        toolTypeForm.querySelector('[name="is_free"]').checked = mt.is_free;
         toolTypeModalTitle.textContent = 'Editar Tipo';
         if (mt.image_url) {
           imagePreview.innerHTML = `<img src="${mt.image_url}" class="w-full h-full object-cover" />`;

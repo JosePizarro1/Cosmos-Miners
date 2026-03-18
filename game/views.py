@@ -264,6 +264,7 @@ def miner_types_list(request):
             "rarity_label": mt.get_rarity_display(),
             "attempts": mt.attempts,
             "is_active": mt.is_active,
+            "is_free": mt.is_free,
             "image_url": mt.image.url if mt.image else ""
         })
     return JsonResponse({"success": True, "items": items})
@@ -278,6 +279,7 @@ def miner_type_create(request):
         rarity = (request.POST.get("rarity") or "").strip()
         attempts_raw = request.POST.get("attempts")
         is_active = _parse_bool(request.POST.get("is_active"))
+        is_free = _parse_bool(request.POST.get("is_free"))
         image = request.FILES.get("image")
 
         if not name: return JsonResponse({"error": "Nombre requerido"}, status=400)
@@ -288,8 +290,8 @@ def miner_type_create(request):
         except (TypeError, ValueError): return JsonResponse({"error": "Intentos inválidos"}, status=400)
         if attempts <= 0: return JsonResponse({"error": "Intentos inválidos"}, status=400)
 
-        mt = MinerType.objects.create(name=name, rarity=rarity, attempts=attempts, is_active=is_active, image=image)
-        return JsonResponse({"success": True, "item": {"id": mt.id, "name": mt.name, "rarity": mt.rarity, "rarity_label": mt.get_rarity_display(), "attempts": mt.attempts, "is_active": mt.is_active, "image_url": mt.image.url if mt.image else ""}})
+        mt = MinerType.objects.create(name=name, rarity=rarity, attempts=attempts, is_active=is_active, is_free=is_free, image=image)
+        return JsonResponse({"success": True, "item": {"id": mt.id, "name": mt.name, "rarity": mt.rarity, "rarity_label": mt.get_rarity_display(), "attempts": mt.attempts, "is_active": mt.is_active, "is_free": mt.is_free, "image_url": mt.image.url if mt.image else ""}})
     except Exception as e:
         print("MINER TYPE CREATE ERROR:", e)
         return JsonResponse({"error": "Error interno"}, status=500)
@@ -305,6 +307,7 @@ def miner_type_update(request, pk):
         rarity = (request.POST.get("rarity") or "").strip()
         attempts_raw = request.POST.get("attempts")
         is_active = _parse_bool(request.POST.get("is_active"))
+        is_free = _parse_bool(request.POST.get("is_free"))
         image = request.FILES.get("image")
 
         if not name: return JsonResponse({"error": "Nombre requerido"}, status=400)
@@ -319,9 +322,10 @@ def miner_type_update(request, pk):
         mt.rarity = rarity
         mt.attempts = attempts
         mt.is_active = is_active
+        mt.is_free = is_free
         if image: mt.image = image
         mt.save()
-        return JsonResponse({"success": True, "item": {"id": mt.id, "name": mt.name, "rarity": mt.rarity, "rarity_label": mt.get_rarity_display(), "attempts": mt.attempts, "is_active": mt.is_active, "image_url": mt.image.url if mt.image else ""}})
+        return JsonResponse({"success": True, "item": {"id": mt.id, "name": mt.name, "rarity": mt.rarity, "rarity_label": mt.get_rarity_display(), "attempts": mt.attempts, "is_active": mt.is_active, "is_free": mt.is_free, "image_url": mt.image.url if mt.image else ""}})
     except MinerType.DoesNotExist: return JsonResponse({"error": "No encontrado"}, status=404)
     except Exception as e:
         print("MINER TYPE UPDATE ERROR:", e)

@@ -17,6 +17,7 @@ class Planet(models.Model):
     success_rate_base = models.PositiveIntegerField(help_text="Porcentaje de éxito base (%)")
     puntos = models.PositiveIntegerField(default=0, help_text="Puntos máximos ganados por viaje exitoso")
     is_active = models.BooleanField(default=True)
+    is_free = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -7,6 +7,10 @@ from django.contrib import messages
 from .models import *
 from .models_rankings import UserSeasonEntry
 
+def _parse_bool(value):
+    if value is None: return False
+    return str(value).lower() in {"1", "true", "on", "yes"}
+
 def is_admin(user):
     return user.is_superuser
 
@@ -32,12 +36,14 @@ def planets_admin(request):
             time = request.POST.get('travel_time')
             success = request.POST.get('success_rate')
             puntos = request.POST.get('puntos', 0)
+            is_free = _parse_bool(request.POST.get('is_free'))
             image = request.FILES.get('image')
             Planet.objects.create(
                 name=name,
                 travel_time_base=time,
                 success_rate_base=success,
                 puntos=puntos,
+                is_free=is_free,
                 image=image
             )
             messages.success(request, f"Planeta {name} creado.")
@@ -66,6 +72,7 @@ def planets_admin(request):
             planet.travel_time_base = request.POST.get('travel_time')
             planet.success_rate_base = request.POST.get('success_rate')
             planet.puntos = request.POST.get('puntos', 0)
+            planet.is_free = _parse_bool(request.POST.get('is_free'))
             if request.FILES.get('image'):
                 planet.image = request.FILES.get('image')
             planet.save()

@@ -62,6 +62,7 @@ def transport_types_list(request):
             "capacity": tt.capacity,
             "speed": tt.speed,
             "is_active": tt.is_active,
+            "is_free": tt.is_free,
             "image_url": tt.image.url if tt.image else ""
         })
     return JsonResponse({"success": True, "items": items})
@@ -78,6 +79,7 @@ def transport_type_create(request):
         capacity_raw = request.POST.get("capacity")
         speed_raw = request.POST.get("speed")
         is_active = _parse_bool(request.POST.get("is_active"))
+        is_free = _parse_bool(request.POST.get("is_free"))
         image = request.FILES.get("image")
 
         if not name:
@@ -101,6 +103,7 @@ def transport_type_create(request):
             capacity=capacity,
             speed=speed,
             is_active=is_active,
+            is_free=is_free,
             image=image
         )
 
@@ -114,6 +117,7 @@ def transport_type_create(request):
                 "capacity": tt.capacity,
                 "speed": tt.speed,
                 "is_active": tt.is_active,
+                "is_free": tt.is_free,
                 "image_url": tt.image.url if tt.image else ""
             }
         })
@@ -134,6 +138,7 @@ def transport_type_update(request, pk):
         capacity_raw = request.POST.get("capacity")
         speed_raw = request.POST.get("speed")
         is_active = _parse_bool(request.POST.get("is_active"))
+        is_free = _parse_bool(request.POST.get("is_free"))
         image = request.FILES.get("image")
 
         if not name:
@@ -156,6 +161,7 @@ def transport_type_update(request, pk):
         tt.capacity = capacity
         tt.speed = speed
         tt.is_active = is_active
+        tt.is_free = is_free
         if image:
             tt.image = image
         tt.save()
@@ -170,6 +176,7 @@ def transport_type_update(request, pk):
                 "capacity": tt.capacity,
                 "speed": tt.speed,
                 "is_active": tt.is_active,
+                "is_free": tt.is_free,
                 "image_url": tt.image.url if tt.image else ""
             }
         })

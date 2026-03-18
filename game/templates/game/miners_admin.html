@@ -95,6 +95,7 @@
               <th>Nombre</th>
               <th>Rareza</th>
               <th>Intentos</th>
+              <th>Free</th>
               <th>Estado</th>
               <th></th>
             </tr>
@@ -178,10 +179,17 @@
         </div>
       </div>
 
-      <label class="flex items-center gap-2 text-sm text-gray-300">
-        <input name="is_active" type="checkbox" class="accent-cyan-400" />
-        Activo
-      </label>
+      <div class="flex items-center gap-6">
+        <label class="flex items-center gap-2 text-sm text-gray-300">
+          <input name="is_active" type="checkbox" class="accent-cyan-400" />
+          Activo
+        </label>
+
+        <label class="flex items-center gap-2 text-sm text-gray-300">
+          <input name="is_free" type="checkbox" class="accent-pink-400" />
+          Gratis (Free)
+        </label>
+      </div>
 
       <div class="flex justify-end gap-3">
         <button type="button" id="cancelMinerType" class="px-4 py-2 rounded bg-white/5 text-gray-200">Cancelar</button>
@@ -271,6 +279,7 @@ function renderMinerTypeRow(mt){
     <td>${mt.name}</td>
     <td>${mt.rarity_label}</td>
     <td>${mt.attempts}</td>
+    <td>${mt.is_free ? '<span class="text-accent font-bold">SI</span>' : '<span class="text-gray-500">NO</span>'}</td>
     <td>${badge}</td>
     <td class="text-right space-x-2">
       <button data-id="${mt.id}" class="edit-miner-type px-3 py-1 rounded bg-white/5 text-gray-200 text-sm"><i class="fas fa-pen"></i></button>
@@ -385,6 +394,7 @@ minerTypesTable.addEventListener('click', async (ev) => {
     minerTypeForm.querySelector('[name="rarity"]').value = mt.rarity;
     minerTypeForm.querySelector('[name="attempts"]').value = mt.attempts;
     minerTypeForm.querySelector('[name="is_active"]').checked = mt.is_active;
+    minerTypeForm.querySelector('[name="is_free"]').checked = mt.is_free;
     minerTypeModalTitle.textContent = 'Editar Tipo';
     if (mt.image_url) {
       imagePreview.innerHTML = `<img src="${mt.image_url}" class="w-full h-full object-cover" />`;
