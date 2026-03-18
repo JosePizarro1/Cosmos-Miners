@@ -1,7 +1,8 @@
 from django.contrib import admin
 from .models import (
     Profile, WithdrawalRequest, Chest, ChestCategory, ChestReward, UserChest,
-    MinerType, TransportType, ToolType, Season, SeasonLevel, UserSeasonEntry, SeasonLevelRequirement
+    MinerType, TransportType, ToolType, Season, SeasonLevel, UserSeasonEntry, SeasonLevelRequirement,
+    RegistrationReward
 )
 
 
@@ -79,3 +80,7 @@ class UserSeasonEntryAdmin(admin.ModelAdmin):
     list_display = ("user", "season", "level", "entered_at", "locked_until")
     list_filter = ("season", "level")
     search_fields = ("user__username",)
+@admin.register(RegistrationReward)
+class RegistrationRewardAdmin(admin.ModelAdmin):
+    list_display = ("reward_type", "miner_type", "transport_type", "tool_type", "amount", "is_active")
+    list_filter = ("reward_type", "is_active")

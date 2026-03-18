@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from game.views import login_view, login_page, register, register_view, home_view, chests_public_view, buy_chest, open_chest, profile_view, profile_update, create_withdrawal, process_withdrawal, withdrawals_admin_view, admin_dashboard_view, admin_dashboard_stats, miners_admin_view, miners_admin_stats, miner_types_list, miner_type_create, miner_type_update, miner_type_toggle, user_miners_list, user_miner_create, user_miner_delete, miners_view, logout_view, rankings_view
+from game.views import login_view, login_page, register, register_view, home_view, chests_public_view, buy_chest, open_chest, profile_view, profile_update, create_withdrawal, process_withdrawal, withdrawals_admin_view, admin_dashboard_view, admin_dashboard_stats, miners_admin_view, miners_admin_stats, miner_types_list, miner_type_create, miner_type_update, miner_type_toggle, user_miners_list, user_miner_create, user_miner_delete, miners_view, logout_view, rankings_view, registration_rewards_admin_view, registration_rewards_list_api, registration_reward_create_api, registration_reward_update_api, registration_reward_delete_api, registration_reward_toggle_api
 from game.views_transports import transports_admin_view, transports_admin_stats, transport_types_list, transport_type_create, transport_type_update, transport_type_toggle, user_transports_list, user_transport_create, user_transport_delete, transports_view
 from game.views_tools import tools_admin_view, tools_admin_stats, tool_types_list, tool_type_create, tool_type_update, tool_type_toggle, user_tools_list, user_tool_create, user_tool_delete, tools_view
 from game.views_chests import (
@@ -61,6 +61,15 @@ urlpatterns = [
     path("dashboard/user-transports/list/", user_transports_list, name="user_transports_list"),
     path("dashboard/user-transports/create/", user_transport_create, name="user_transport_create"),
     path("dashboard/user-transports/delete/<int:pk>/", user_transport_delete, name="user_transport_delete"),
+    
+    # Registration Rewards
+    path("dashboard/registration-rewards/", registration_rewards_admin_view, name="registration_rewards_admin"),
+    path("dashboard/registration-rewards/list/", registration_rewards_list_api, name="registration_rewards_list_api"),
+    path("dashboard/registration-rewards/create/", registration_reward_create_api, name="registration_reward_create_api"),
+    path("dashboard/registration-rewards/update/<int:pk>/", registration_reward_update_api, name="registration_reward_update_api"),
+    path("dashboard/registration-rewards/delete/<int:pk>/", registration_reward_delete_api, name="registration_reward_delete_api"),
+    path("dashboard/registration-rewards/toggle/<int:pk>/", registration_reward_toggle_api, name="registration_reward_toggle_api"),
+
     path("tools/", tools_view, name="tools_view"),
     path("dashboard/tools/", tools_admin_view, name="tools_admin"),
     path("dashboard/tools/stats/", tools_admin_stats, name="tools_admin_stats"),

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Regalos Registro · Cosmos Miners</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            space: "#05050f",
+            card: "rgba(20,30,60,0.75)",
+            accent: "#00e0ff",
+            pink: "#ff4d8d",
+            blueglow: "#0077ff"
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    option { background-color: #0c1a3a; }
+  </style>
+</head>
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative">
+  <div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.15)_1px,_transparent_1px)] bg-[size:32px_32px] opacity-20"></div>
+  
+  <header class="relative z-10 px-6 py-6 flex items-center justify-between max-w-6xl mx-auto">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-rocket text-accent text-2xl"></i>
+      <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent uppercase">COSMOS</span>
+      <span class="text-[10px] font-black uppercase text-gray-500 tracking-[0.2em] ml-2">ADMIN · KIT REGISTRO</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/dashboard/admin/" class="bg-card backdrop-blur-xl border border-white/10 px-6 py-2.5 rounded-2xl text-[10px] uppercase font-black tracking-widest hover:bg-white/10 transition-all flex items-center gap-2">
+        <i class="fas fa-home"></i> Dashboard
+      </a>
+    </div>
+  </header>
+
+  <section class="relative z-10 px-6 mt-4 mb-10 max-w-6xl mx-auto flex flex-col sm:flex-row sm:items-end justify-between gap-6">
+    <div>
+      <h1 class="text-4xl font-black leading-tight bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent uppercase tracking-tighter italic">
+        Regalos de Registro
+      </h1>
+      <p class="text-[10px] font-black uppercase tracking-widest text-gray-400 mt-1">Configura el "Starter Kit" para nuevos exploradores</p>
+    </div>
+    <button id="btnOpenModal" class="px-8 py-4 rounded-2xl bg-accent text-space font-black uppercase tracking-widest text-[10px] hover:scale-105 transition-all shadow-xl shadow-accent/20 flex items-center gap-3">
+      <i class="fas fa-plus"></i> Añadir Premio
+    </button>
+  </section>
+
+  <main class="relative z-10 px-6 pb-12 max-w-6xl mx-auto">
+    <div class="bg-card backdrop-blur-xl border border-white/10 rounded-[2.5rem] p-8 shadow-2xl relative overflow-hidden">
+      <!-- Glow effect -->
+      <div class="absolute top-0 right-0 w-64 h-64 bg-accent/5 blur-[100px] pointer-events-none"></div>
+      
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em] border-b border-white/5">
+            <tr>
+              <th class="px-6 py-6 font-black">Tipo</th>
+              <th class="px-6 py-6 font-black">Recompensa</th>
+              <th class="px-6 py-6 font-black">Estado</th>
+              <th class="px-6 py-6 font-black text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="rewardsTable" class="divide-y divide-white/5">
+            <tr><td colspan="4" class="text-gray-400 text-xs py-12 text-center italic">Cargando la configuración de premios...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL -->
+  <div id="rewardModal" class="fixed inset-0 hidden items-center justify-center z-50 p-4">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-xl" onclick="closeModal()"></div>
+    <div class="relative bg-card border border-white/10 rounded-[3rem] p-10 w-full max-w-lg shadow-[0_0_100px_rgba(0,0,0,0.5)] border-t-accent/30">
+      <div class="absolute -top-10 left-1/2 -translate-x-1/2 w-20 h-20 rounded-3xl bg-gradient-to-br from-accent to-blueglow flex items-center justify-center shadow-2xl shadow-accent/30 rotate-12">
+        <i class="fas fa-gift text-space text-3xl"></i>
+      </div>
+
+      <h4 id="modalTitle" class="text-3xl font-black mb-8 uppercase italic tracking-tighter text-white text-center mt-4">Nuevo Regalo</h4>
+      
+      <form id="rewardForm" class="space-y-6">
+        <input type="hidden" name="id" id="rewardId">
+        
+        <div class="space-y-2">
+          <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-4">Categoría del Premio</label>
+          <div class="relative">
+            <select id="rewardType" name="reward_type" class="w-full p-5 rounded-3xl bg-white/5 text-white border border-white/10 focus:border-accent outline-none appearance-none cursor-pointer transition-all">
+              <option value="gold">Cosmos Gold (Moneda)</option>
+              <option value="miner">Tripulante (Minero)</option>
+              <option value="tool">Tecnología (Herramienta)</option>
+              <option value="transport">Nave (Transporte)</option>
+            </select>
+            <i class="fas fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none"></i>
+          </div>
+        </div>
+
+        <!-- Miner Select -->
+        <div id="minerSelectGroup" class="reward-group hidden space-y-2">
+          <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-4">Seleccionar Minero</label>
+          <div class="relative">
+            <select name="miner_type_id" class="w-full p-5 rounded-3xl bg-white/5 text-white border border-white/10 outline-none appearance-none">
+              {% for m in miner_types %}
+                <option value="{{ m.id }}">{{ m.name }} ({{ m.rarity }})</option>
+              {% endfor %}
+            </select>
+            <i class="fas fa-user-astronaut absolute right-6 top-1/2 -translate-y-1/2 text-accent/40 pointer-events-none"></i>
+          </div>
+        </div>
+
+        <!-- Tool Select -->
+        <div id="toolSelectGroup" class="reward-group hidden space-y-2">
+          <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-4">Seleccionar Herramienta</label>
+          <div class="relative">
+            <select name="tool_type_id" class="w-full p-5 rounded-3xl bg-white/5 text-white border border-white/10 outline-none appearance-none">
+              {% for t in tool_types %}
+                <option value="{{ t.id }}">{{ t.name }} ({{ t.rarity }})</option>
+              {% endfor %}
+            </select>
+            <i class="fas fa-wrench absolute right-6 top-1/2 -translate-y-1/2 text-accent/40 pointer-events-none"></i>
+          </div>
+        </div>
+
+        <!-- Transport Select -->
+        <div id="transportSelectGroup" class="reward-group hidden space-y-2">
+          <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-4">Seleccionar Transporte</label>
+          <div class="relative">
+            <select name="transport_type_id" class="w-full p-5 rounded-3xl bg-white/5 text-white border border-white/10 outline-none appearance-none">
+              {% for tr in transport_types %}
+                <option value="{{ tr.id }}">{{ tr.name }} ({{ tr.rarity }})</option>
+              {% endfor %}
+            </select>
+            <i class="fas fa-rocket absolute right-6 top-1/2 -translate-y-1/2 text-accent/40 pointer-events-none"></i>
+          </div>
+        </div>
+
+        <!-- Gold Input -->
+        <div id="goldInputGroup" class="reward-group space-y-2">
+          <label class="text-[10px] font-black uppercase tracking-widest text-gray-500 ml-4">Monto Cosmos Gold</label>
+          <div class="relative">
+            <input type="number" name="amount" step="0.01" class="w-full p-5 rounded-3xl bg-white/5 text-white border border-white/10 focus:border-accent outline-none transition-all pl-12" placeholder="0.00">
+            <i class="fas fa-coins absolute left-5 top-1/2 -translate-y-1/2 text-yellow-500"></i>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-4 bg-white/5 p-5 rounded-3xl border border-white/5">
+          <div class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" name="is_active" id="isActive" class="sr-only peer" checked>
+            <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-accent/60"></div>
+          </div>
+          <label for="isActive" class="text-xs font-black uppercase tracking-widest text-gray-300">Premio Activado</label>
+        </div>
+
+        <div class="flex gap-4 pt-4">
+          <button type="button" onclick="closeModal()" class="flex-1 py-5 bg-white/5 hover:bg-white/10 rounded-3xl font-black transition-all uppercase tracking-widest text-[10px] text-gray-400">Cancelar</button>
+          <button type="submit" class="flex-1 py-5 bg-gradient-to-r from-accent to-blueglow text-space font-black rounded-3xl hover:scale-[1.02] transition-all uppercase tracking-widest text-[10px] shadow-xl shadow-accent/20">Guardar Premio</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    const rewardForm = document.getElementById('rewardForm');
+    const rewardType = document.getElementById('rewardType');
+    const rewardsTable = document.getElementById('rewardsTable');
+    const rewardModal = document.getElementById('rewardModal');
+    const groups = {
+      miner: document.getElementById('minerSelectGroup'),
+      tool: document.getElementById('toolSelectGroup'),
+      transport: document.getElementById('transportSelectGroup'),
+      gold: document.getElementById('goldInputGroup')
+    };
+
+    rewardType.addEventListener('change', () => {
+      Object.values(groups).forEach(g => g.classList.add('hidden'));
+      groups[rewardType.value].classList.remove('hidden');
+    });
+
+    async function loadRewards() {
+        try {
+            const res = await fetch('/dashboard/registration-rewards/list/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            const data = await res.json();
+            if (data.success) {
+                rewardsTable.innerHTML = data.items.map(r => `
+          <tr class="hover:bg-white/[0.02] transition-colors group">
+            <td class="px-6 py-6">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-accent/60">
+                    <i class="fas ${getIcon(r.reward_type)}"></i>
+                </div>
+                <span class="text-[10px] font-black uppercase tracking-widest text-gray-400">${r.reward_type_label}</span>
+              </div>
+            </td>
+            <td class="px-6 py-6">
+              <span class="font-bold text-sm text-white group-hover:text-accent transition-colors">
+                ${r.miner_type_name || r.tool_type_name || r.transport_type_name || parseFloat(r.amount).toLocaleString() + ' COSMOS GOLD'}
+              </span>
+            </td>
+            <td class="px-6 py-6">
+              <span class="px-3 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${r.is_active ? 'bg-accent/10 text-accent border border-accent/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}">
+                ${r.is_active ? 'Activo' : 'Inactivo'}
+              </span>
+            </td>
+            <td class="px-6 py-6 text-right space-x-1">
+              <button onclick='editReward(${JSON.stringify(r).replace(/'/g, "&#39;")})' class="w-9 h-9 rounded-xl bg-white/5 text-gray-500 hover:bg-accent hover:text-space transition-all active:scale-95"><i class="fas fa-pen text-xs"></i></button>
+              <button onclick="toggleReward(${r.id})" class="w-9 h-9 rounded-xl bg-white/5 text-gray-500 hover:bg-blueglow hover:text-white transition-all active:scale-95"><i class="fas fa-power-off text-xs"></i></button>
+              <button onclick="deleteReward(${r.id})" class="w-9 h-9 rounded-xl bg-white/5 text-gray-500 hover:bg-red-500 hover:text-white transition-all active:scale-95"><i class="fas fa-trash text-xs"></i></button>
+            </td>
+          </tr>
+        `).join('') || '<tr><td colspan="4" class="py-12 text-center text-gray-500 text-[10px] font-black uppercase tracking-widest italic">No hay premios configurados</td></tr>';
+            }
+        } catch(e) { console.error(e); }
+    }
+
+    function getIcon(type) {
+        if (type === 'miner') return 'fa-user-astronaut';
+        if (type === 'tool') return 'fa-screwdriver-wrench';
+        if (type === 'transport') return 'fa-shuttle-space';
+        return 'fa-coins';
+    }
+
+    document.getElementById('btnOpenModal').onclick = () => {
+      rewardForm.reset();
+      document.getElementById('rewardId').value = '';
+      document.getElementById('modalTitle').innerText = 'Nuevo Regalo';
+      rewardType.value = 'gold'; // Default
+      rewardType.dispatchEvent(new Event('change'));
+      rewardModal.classList.remove('hidden');
+      rewardModal.classList.add('flex');
+    };
+
+    function closeModal() {
+      rewardModal.classList.add('hidden');
+      rewardModal.classList.remove('flex');
+    }
+
+    window.editReward = function(r) {
+      document.getElementById('rewardId').value = r.id;
+      document.getElementById('modalTitle').innerText = 'Ficha de Regalo';
+      rewardType.value = r.reward_type;
+      
+      const selects = {
+          miner: 'miner_type_id',
+          tool: 'tool_type_id',
+          transport: 'transport_type_id'
+      };
+      
+      if (selects[r.reward_type]) {
+          const val = r[r.reward_type + '_type_id'];
+          const sel = rewardForm.querySelector(`select[name="${selects[r.reward_type]}"]`);
+          if(sel) sel.value = val;
+      }
+      
+      if (r.reward_type === 'gold') {
+          rewardForm.querySelector('input[name="amount"]').value = r.amount;
+      }
+      
+      document.getElementById('isActive').checked = r.is_active;
+      rewardType.dispatchEvent(new Event('change'));
+      rewardModal.classList.remove('hidden');
+      rewardModal.classList.add('flex');
+    };
+
+    rewardForm.onsubmit = async (e) => {
+      e.preventDefault();
+      const id = document.getElementById('rewardId').value;
+      const url = id ? `/dashboard/registration-rewards/update/${id}/` : '/dashboard/registration-rewards/create/';
+      
+      const payload = {
+          reward_type: rewardType.value,
+          miner_type_id: rewardForm.querySelector('select[name="miner_type_id"]').value || null,
+          tool_type_id: rewardForm.querySelector('select[name="tool_type_id"]').value || null,
+          transport_type_id: rewardForm.querySelector('select[name="transport_type_id"]').value || null,
+          amount: parseFloat(rewardForm.querySelector('input[name="amount"]').value) || 0,
+          is_active: document.getElementById('isActive').checked
+      };
+
+      try {
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+            body: JSON.stringify(payload)
+          });
+
+          if (res.ok) {
+            closeModal();
+            loadRewards();
+            Swal.fire({ icon: 'success', title: 'Sistema Actualizado', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false, background: '#0c1a3a', color: '#fff' });
+          }
+      } catch(e) { console.error(e); }
+    };
+
+    window.toggleReward = async function(id) {
+      await fetch(`/dashboard/registration-rewards/toggle/${id}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+      });
+      loadRewards();
+    };
+
+    window.deleteReward = async function(id) {
+       const result = await Swal.fire({
+          title: '¿Confirmar eliminación?',
+          text: "Este regalo dejará de entregarse a nuevos usuarios.",
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: '#ff4d8d',
+          cancelButtonColor: '#1a2f5e',
+          confirmButtonText: 'Sí, eliminar',
+          background: '#0c1a3a',
+          color: '#fff'
+      });
+      
+      if (result.isConfirmed) {
+          await fetch(`/dashboard/registration-rewards/delete/${id}/`, {
+              method: 'POST',
+              headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+          });
+          loadRewards();
+          Swal.fire({ title: 'Eliminado', icon: 'success', timer: 1000, showConfirmButton: false, background: '#0c1a3a', color: '#fff' });
+      }
+    };
+
+    window.onload = loadRewards;
+  </script>
+</body>
+</html>

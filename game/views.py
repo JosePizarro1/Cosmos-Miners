@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect
 from django.db import transaction
-from .models import Profile, WithdrawalRequest, MinerType, UserMiner, Chest, UserChest, UserTransport, UserTool, Season
+from .models import Profile, WithdrawalRequest, MinerType, UserMiner, Chest, UserChest, UserTransport, UserTool, Season, ToolType, TransportType, RegistrationReward
 import random
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
@@ -23,7 +23,7 @@ def register_view(request):
 @login_required
 def home_view(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
-    minerals = request.user.inventory_minerals.select_related('mineral').all()
+    minerals = request.user.inventory_minerals.filter(amount__gt=0).select_related('mineral').all()
     return render(request, "game/home.html", {
         "profile": profile,
         "minerals": minerals
@@ -515,3 +515,115 @@ def open_chest(request, user_chest_id):
 def rankings_view(request):
     seasons = Season.objects.all().order_by('-start_date')
     return render(request, "game/rankings.html", {"seasons": seasons})
+
+# Registration Rewards Admin Views
+@ensure_csrf_cookie
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def registration_rewards_admin_view(request):
+    miner_types = list(MinerType.objects.filter(is_active=True).values("id", "name", "rarity"))
+    tool_types = list(ToolType.objects.filter(is_active=True).values("id", "name", "rarity"))
+    transport_types = list(TransportType.objects.filter(is_active=True).values("id", "name", "rarity"))
+    return render(request, "game/registration_rewards_admin.html", {
+        "miner_types": miner_types,
+        "tool_types": tool_types,
+        "transport_types": transport_types
+    })
+
+@require_POST
+@csrf_protect
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def registration_rewards_list_api(request):
+    items = []
+    for r in RegistrationReward.objects.all().order_by("-created_at"):
+        items.append({
+            "id": r.id,
+            "reward_type": r.reward_type,
+            "reward_type_label": r.get_reward_type_display(),
+            "miner_type_id": r.miner_type.id if r.miner_type else None,
+            "miner_type_name": r.miner_type.name if r.miner_type else None,
+            "tool_type_id": r.tool_type.id if r.tool_type else None,
+            "tool_type_name": r.tool_type.name if r.tool_type else None,
+            "transport_type_id": r.transport_type.id if r.transport_type else None,
+            "transport_type_name": r.transport_type.name if r.transport_type else None,
+            "amount": str(r.amount),
+            "is_active": r.is_active
+        })
+    return JsonResponse({"success": True, "items": items})
+
+@require_POST
+@csrf_protect
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def registration_reward_create_api(request):
+    try:
+        data = json.loads(request.body)
+        reward_type = data.get("reward_type")
+        miner_type_id = data.get("miner_type_id")
+        tool_type_id = data.get("tool_type_id")
+        transport_type_id = data.get("transport_type_id")
+        amount = data.get("amount", 0)
+        is_active = data.get("is_active", True)
+
+        reward = RegistrationReward.objects.create(
+            reward_type=reward_type,
+            miner_type_id=miner_type_id if reward_type == "miner" else None,
+            tool_type_id=tool_type_id if reward_type == "tool" else None,
+            transport_type_id=transport_type_id if reward_type == "transport" else None,
+            amount=amount if reward_type == "gold" else 0,
+            is_active=is_active
+        )
+        return JsonResponse({"success": True})
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+@require_POST
+@csrf_protect
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def registration_reward_update_api(request, pk):
+    try:
+        data = json.loads(request.body)
+        reward = RegistrationReward.objects.get(pk=pk)
+        reward.reward_type = data.get("reward_type")
+        reward.miner_type_id = data.get("miner_type_id") if reward.reward_type == "miner" else None
+        reward.tool_type_id = data.get("tool_type_id") if reward.reward_type == "tool" else None
+        reward.transport_type_id = data.get("transport_type_id") if reward.reward_type == "transport" else None
+        reward.amount = data.get("amount", 0) if reward.reward_type == "gold" else 0
+        reward.is_active = data.get("is_active", True)
+        reward.save()
+        return JsonResponse({"success": True})
+    except RegistrationReward.DoesNotExist:
+        return JsonResponse({"error": "No encontrado"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+@require_POST
+@csrf_protect
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def registration_reward_delete_api(request, pk):
+    try:
+        reward = RegistrationReward.objects.get(pk=pk)
+        reward.delete()
+        return JsonResponse({"success": True})
+    except RegistrationReward.DoesNotExist:
+        return JsonResponse({"error": "No encontrado"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+@require_POST
+@csrf_protect
+@login_required
+@user_passes_test(lambda u: u.is_staff)
+def registration_reward_toggle_api(request, pk):
+    try:
+        reward = RegistrationReward.objects.get(pk=pk)
+        reward.is_active = not reward.is_active
+        reward.save()
+        return JsonResponse({"success": True, "is_active": reward.is_active})
+    except RegistrationReward.DoesNotExist:
+        return JsonResponse({"error": "No encontrado"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

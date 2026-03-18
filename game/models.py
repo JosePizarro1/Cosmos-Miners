@@ -66,7 +66,7 @@ class WithdrawalRequest(models.Model):
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
-        Profile.objects.get_or_create(user=instance)
+        profile, _ = Profile.objects.get_or_create(user=instance)
 
 class MinerRarity(models.TextChoices):
     COMMON = "common", "Común"
@@ -250,3 +250,51 @@ class UserTool(models.Model):
 
     def __str__(self):
         return f"{self.tool_type.name} - {self.owner.user.username}"
+
+
+class RegistrationReward(models.Model):
+    class RewardType(models.TextChoices):
+        MINER = "miner", "Minero"
+        TRANSPORT = "transport", "Transporte"
+        TOOL = "tool", "Herramienta"
+        GOLD = "gold", "Cosmos Gold"
+
+    reward_type = models.CharField(max_length=20, choices=RewardType.choices)
+    
+    miner_type = models.ForeignKey(MinerType, on_delete=models.SET_NULL, null=True, blank=True)
+    transport_type = models.ForeignKey(TransportType, on_delete=models.SET_NULL, null=True, blank=True)
+    tool_type = models.ForeignKey(ToolType, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    amount = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="Para Gold o cantidad")
+    is_active = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        if self.reward_type == self.RewardType.MINER:
+            return f"Regalo: Minero {self.miner_type.name if self.miner_type else '???'}"
+        if self.reward_type == self.RewardType.TRANSPORT:
+            return f"Regalo: Transporte {self.transport_type.name if self.transport_type else '???'}"
+        if self.reward_type == self.RewardType.TOOL:
+            return f"Regalo: Herramienta {self.tool_type.name if self.tool_type else '???'}"
+        return f"Regalo: {self.amount} Cosmos Gold"
+
+@receiver(post_save, sender=User)
+def grant_registration_rewards(sender, instance, created, **kwargs):
+    if created:
+        # We need to ensure Profile is created first or use its signal
+        # Since create_user_profile (at top) creates the profile, we can use it here.
+        profile = instance.profile
+        
+        # Grant Starter Pack Items
+        rewards = RegistrationReward.objects.filter(is_active=True)
+        for r in rewards:
+            if r.reward_type == RegistrationReward.RewardType.MINER and r.miner_type:
+                UserMiner.objects.create(owner=profile, miner_type=r.miner_type)
+            elif r.reward_type == RegistrationReward.RewardType.TRANSPORT and r.transport_type:
+                UserTransport.objects.create(owner=profile, transport_type=r.transport_type)
+            elif r.reward_type == RegistrationReward.RewardType.TOOL and r.tool_type:
+                UserTool.objects.create(owner=profile, tool_type=r.tool_type)
+            elif r.reward_type == RegistrationReward.RewardType.GOLD:
+                profile.cosmos_gold += r.amount
+                profile.save()
