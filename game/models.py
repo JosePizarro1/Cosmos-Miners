@@ -146,10 +146,6 @@ class TransportType(models.Model):
         choices=TransportRarity.choices
     )
 
-    capacity = models.PositiveIntegerField(
-        help_text="Cantidad máxima de recursos que puede transportar"
-    )
-
     speed = models.PositiveIntegerField(
         help_text="Velocidad del transporte (impacta tiempo de viaje)"
     )

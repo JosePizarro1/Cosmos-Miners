@@ -182,6 +182,14 @@ def start_mining_trip(request):
         transport = UserTransport.objects.get(id=transport_id, owner=profile, status=TransportStatus.IDLE)
         planet = Planet.objects.get(id=planet_id, is_active=True)
         
+        # Check compatibility (Free vs Paid)
+        planet_free = planet.is_free
+        if miner.miner_type.is_free != planet_free or \
+           tool.tool_type.is_free != planet_free or \
+           transport.transport_type.is_free != planet_free:
+            messages.error(request, "Compatibilidad de misión fallida: Los mundos GRATIS solo se exploran con activos GRATIS. Activos premium requieren mundos premium.")
+            return redirect('mining_dashboard')
+
         # Calculations
         # 1. Travel Time (modified by transport speed)
         # speed 100% = 1.0 multiplier. Time = base / (speed/100)

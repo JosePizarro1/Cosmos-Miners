@@ -59,7 +59,6 @@ def transport_types_list(request):
             "name": tt.name,
             "rarity": tt.rarity,
             "rarity_label": tt.get_rarity_display(),
-            "capacity": tt.capacity,
             "speed": tt.speed,
             "is_active": tt.is_active,
             "is_free": tt.is_free,
@@ -76,7 +75,6 @@ def transport_type_create(request):
     try:
         name = (request.POST.get("name") or "").strip()
         rarity = (request.POST.get("rarity") or "").strip()
-        capacity_raw = request.POST.get("capacity")
         speed_raw = request.POST.get("speed")
         is_active = _parse_bool(request.POST.get("is_active"))
         is_free = _parse_bool(request.POST.get("is_free"))
@@ -90,17 +88,15 @@ def transport_type_create(request):
             return JsonResponse({"error": "Rareza inválida"}, status=400)
 
         try:
-            capacity = int(capacity_raw)
             speed = int(speed_raw)
         except (TypeError, ValueError):
-            return JsonResponse({"error": "Capacidad o velocidad inválidos"}, status=400)
-        if capacity <= 0 or speed <= 0:
-            return JsonResponse({"error": "Capacidad y velocidad deben ser positivos"}, status=400)
+            return JsonResponse({"error": "Velocidad inválida"}, status=400)
+        if speed <= 0:
+            return JsonResponse({"error": "La velocidad debe ser positiva"}, status=400)
 
         tt = TransportType.objects.create(
             name=name,
             rarity=rarity,
-            capacity=capacity,
             speed=speed,
             is_active=is_active,
             is_free=is_free,
@@ -114,7 +110,6 @@ def transport_type_create(request):
                 "name": tt.name,
                 "rarity": tt.rarity,
                 "rarity_label": tt.get_rarity_display(),
-                "capacity": tt.capacity,
                 "speed": tt.speed,
                 "is_active": tt.is_active,
                 "is_free": tt.is_free,
@@ -135,7 +130,6 @@ def transport_type_update(request, pk):
         tt = TransportType.objects.get(pk=pk)
         name = (request.POST.get("name") or "").strip()
         rarity = (request.POST.get("rarity") or "").strip()
-        capacity_raw = request.POST.get("capacity")
         speed_raw = request.POST.get("speed")
         is_active = _parse_bool(request.POST.get("is_active"))
         is_free = _parse_bool(request.POST.get("is_free"))
@@ -149,16 +143,14 @@ def transport_type_update(request, pk):
             return JsonResponse({"error": "Rareza inválida"}, status=400)
 
         try:
-            capacity = int(capacity_raw)
             speed = int(speed_raw)
         except (TypeError, ValueError):
-            return JsonResponse({"error": "Capacidad o velocidad inválidos"}, status=400)
-        if capacity <= 0 or speed <= 0:
-            return JsonResponse({"error": "Capacidad y velocidad deben ser positivos"}, status=400)
+            return JsonResponse({"error": "Velocidad inválida"}, status=400)
+        if speed <= 0:
+            return JsonResponse({"error": "La velocidad debe ser positiva"}, status=400)
 
         tt.name = name
         tt.rarity = rarity
-        tt.capacity = capacity
         tt.speed = speed
         tt.is_active = is_active
         tt.is_free = is_free
@@ -173,7 +165,6 @@ def transport_type_update(request, pk):
                 "name": tt.name,
                 "rarity": tt.rarity,
                 "rarity_label": tt.get_rarity_display(),
-                "capacity": tt.capacity,
                 "speed": tt.speed,
                 "is_active": tt.is_active,
                 "is_free": tt.is_free,

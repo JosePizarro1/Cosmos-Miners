@@ -105,18 +105,14 @@
             {% endif %}
           </div>
 
-          <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
+          <div class="mt-4 grid grid-cols-2 gap-3 text-sm text-center">
             <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
-              <div class="text-xs text-gray-400">Capacidad</div>
-              <div class="font-bold text-accent">{{ t.transport_type.capacity }}</div>
+              <div class="text-[9px] uppercase tracking-widest text-gray-500 font-bold mb-1">Velocidad</div>
+              <div class="font-black text-pink text-lg">{{ t.transport_type.speed }}%</div>
             </div>
             <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
-              <div class="text-xs text-gray-400">Velocidad</div>
-              <div class="font-bold text-pink">{{ t.transport_type.speed }}</div>
-            </div>
-            <div class="rounded-2xl bg-white/5 border border-white/10 p-3">
-              <div class="text-xs text-gray-400">Obtenido</div>
-              <div class="font-semibold text-gray-200">{{ t.obtained_at|date:"Y-m-d H:i" }}</div>
+              <div class="text-[9px] uppercase tracking-widest text-gray-500 font-bold mb-1">Obtenido</div>
+              <div class="font-bold text-gray-200">{{ t.obtained_at|date:"d/m/y" }}</div>
             </div>
           </div>
         </div>

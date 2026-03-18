@@ -298,10 +298,13 @@
                 <i class="fas fa-times text-xl"></i>
             </button>
             <h2 class="text-2xl font-black uppercase text-pink mb-8 italic tracking-tighter">Descubrir Nuevo Planeta</h2>
+            
             <form method="POST" enctype="multipart/form-data" class="space-y-6">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="add_planet">
+                
                 <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Column 1: Image -->
                     <div>
                         <label class="block text-[10px] uppercase font-black text-gray-400 mb-3 tracking-widest">Avatar Planetario</label>
                         <div class="image-preview border-pink/20 hover:border-pink/50 transition-colors" onclick="this.nextElementSibling.click()">
@@ -310,12 +313,15 @@
                         </div>
                         <input type="file" name="image" accept="image/*" class="hidden" onchange="previewImage(this)">
                     </div>
+
+                    <!-- Column 2: Data -->
                     <div class="space-y-4">
                         <div>
                             <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Nombre del Mundo</label>
                             <input type="text" name="name" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-bold text-white uppercase italic">
                         </div>
-                        <div class="grid md:grid-cols-3 gap-4">
+                        
+                        <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Base (h)</label>
                                 <input type="number" name="travel_time" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-black text-accent text-center">
@@ -324,18 +330,21 @@
                                 <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Éxito (%)</label>
                                 <input type="number" name="success_rate" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-black text-green-400 text-center">
                             </div>
-                        <div class="grid md:grid-cols-2 gap-4">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 items-end">
                             <div>
                                 <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Puntos</label>
                                 <input type="number" name="puntos" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-black text-yellow-400 text-center" value="0">
                             </div>
-                            <div class="flex items-center gap-2 mt-4">
-                                <input type="checkbox" name="is_free" id="planetIsFree" class="accent-pink">
-                                <label for="planetIsFree" class="text-[10px] uppercase font-black text-gray-400 tracking-widest">Es Gratis</label>
+                            <div class="flex items-center gap-2 pb-4">
+                                <input type="checkbox" name="is_free" id="planetIsFree" class="w-5 h-5 accent-pink">
+                                <label for="planetIsFree" class="text-[10px] uppercase font-black text-gray-400 tracking-widest">Gratis (Free)</label>
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <button type="submit" class="w-full bg-pink text-white font-black py-5 rounded-3xl uppercase tracking-widest text-xs shadow-xl shadow-pink/20 hover:scale-[1.02] active:scale-95 transition-all">
                     Registrar Planeta
                 </button>
@@ -406,7 +415,7 @@
         </div>
     </div>
 
-    <!-- Edit Planet Modal -->
+    <!-- EDIT Planet Modal -->
     <div id="modalEditPlanet" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 md:p-6 bg-space/80 backdrop-blur-md">
         <div class="bg-card border border-white/10 w-full max-w-lg rounded-[2rem] p-6 md:p-8 shadow-2xl relative animate__animated animate__zoomIn animate__faster">
             <button type="button" onclick="closeEditPlanet()" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors z-50">
@@ -420,6 +429,7 @@
                 <input type="hidden" name="planet_id" id="editPlanetId">
                 
                 <div class="grid grid-cols-2 gap-6">
+                    <!-- Column 1: Image -->
                     <div>
                         <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Nueva Imagen (opcional)</label>
                         <div class="image-preview border-pink/20" onclick="this.nextElementSibling.click()">
@@ -427,12 +437,15 @@
                         </div>
                         <input type="file" name="image" accept="image/*" class="hidden" onchange="previewImage(this)">
                     </div>
+
+                    <!-- Column 2: Data -->
                     <div class="space-y-4">
                         <div>
                             <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Nombre</label>
                             <input type="text" name="name" id="editPlanetName" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-5 py-3 focus:border-pink outline-none">
                         </div>
-                        <div class="grid grid-cols-3 gap-4">
+                        
+                        <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Horas</label>
                                 <input type="number" name="travel_time" id="editPlanetTime" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-3 py-3 focus:border-pink outline-none text-center">
@@ -441,18 +454,21 @@
                                 <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Éxito</label>
                                 <input type="number" name="success_rate" id="editPlanetSuccess" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-3 py-3 focus:border-pink outline-none text-center">
                             </div>
-                        <div class="grid grid-cols-2 gap-4">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4 items-end">
                             <div>
                                 <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Pts.</label>
                                 <input type="number" name="puntos" id="editPlanetPuntos" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-3 py-3 focus:border-pink outline-none text-center">
                             </div>
-                            <div class="flex items-center gap-2 mt-4">
-                                <input type="checkbox" name="is_free" id="editPlanetIsFree" class="accent-pink">
-                                <label for="editPlanetIsFree" class="text-[10px] uppercase font-black text-gray-400 tracking-widest">Es Gratis</label>
+                            <div class="flex items-center gap-2 pb-4">
+                                <input type="checkbox" name="is_free" id="editPlanetIsFree" class="w-5 h-5 accent-pink">
+                                <label for="editPlanetIsFree" class="text-[10px] uppercase font-black text-gray-400 tracking-widest">Gratis (Free)</label>
                             </div>
                         </div>
                     </div>
                 </div>
+
                 <button type="submit" class="w-full bg-pink text-white font-black py-5 rounded-3xl uppercase tracking-widest text-xs shadow-xl shadow-pink/20 hover:scale-[1.02] active:scale-95 transition-all">
                     Guardar Cambios
                 </button>

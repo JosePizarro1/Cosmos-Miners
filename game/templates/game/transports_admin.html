@@ -99,7 +99,6 @@
                 <th class="py-2">Imagen</th>
                 <th>Nombre</th>
                 <th>Rareza</th>
-                <th>Capacidad</th>
                 <th>Free</th>
                 <th>Estado</th>
                 <th></th>
@@ -156,33 +155,21 @@
 
       <form id="transportTypeForm" class="space-y-4">
         <input type="hidden" name="id" />
-        <div>
-          <label class="text-sm text-gray-300">Nombre</label>
-          <input name="name"
-            class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors" />
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label class="text-sm text-gray-300">Rareza</label>
-            <select name="rarity"
-              class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,<svg xmlns="
-              http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white"
-              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline></svg>')] bg-no-repeat bg-[right_1rem_center]
-              bg-[length:1rem] pr-10">
-              <option value="common" selected>Común</option>
-              <option value="rare">Raro</option>
-              <option value="epic">Épico</option>
-              <option value="legendary">Legendario</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="text-sm text-gray-300">Capacidad</label>
-            <input name="capacity" type="number" min="1"
-              class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors" />
-          </div>
+        <div>
+          <label class="text-sm text-gray-300">Rareza</label>
+          <select name="rarity"
+            class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,<svg xmlns="
+            http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline></svg>')] bg-no-repeat bg-[right_1rem_center]
+            bg-[length:1rem] pr-10">
+            <option value="common" selected>Común</option>
+            <option value="rare">Raro</option>
+            <option value="epic">Épico</option>
+            <option value="legendary">Legendario</option>
+          </select>
         </div>
 
         <div>
@@ -303,7 +290,6 @@
     <td class="py-2">${img}</td>
     <td>${mt.name}</td>
     <td>${mt.rarity_label}</td>
-    <td>${mt.capacity}</td>
     <td>${mt.is_free ? '<span class="text-accent font-bold">SI</span>' : '<span class="text-gray-500">NO</span>'}</td>
     <td>${badge}</td>
     <td class="text-right space-x-2">
@@ -417,7 +403,6 @@
         transportTypeForm.querySelector('[name="id"]').value = mt.id;
         transportTypeForm.querySelector('[name="name"]').value = mt.name;
         transportTypeForm.querySelector('[name="rarity"]').value = mt.rarity;
-        transportTypeForm.querySelector('[name="capacity"]').value = mt.capacity;
         transportTypeForm.querySelector('[name="speed"]').value = mt.speed;
         transportTypeForm.querySelector('[name="is_active"]').checked = mt.is_active;
         transportTypeForm.querySelector('[name="is_free"]').checked = mt.is_free;

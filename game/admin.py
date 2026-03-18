@@ -14,7 +14,7 @@ class MinerTypeAdmin(admin.ModelAdmin):
 
 @admin.register(TransportType)
 class TransportTypeAdmin(admin.ModelAdmin):
-    list_display = ("name", "rarity", "capacity", "speed", "is_active")
+    list_display = ("name", "rarity", "speed", "is_active")
     search_fields = ("name",)
 
 @admin.register(ToolType)
