@@ -91,17 +91,19 @@
         <table class="w-full text-left text-sm">
           <thead class="text-gray-400 text-xs">
             <tr>
-              <th class="py-2">Imagen</th>
-              <th>Nombre</th>
-              <th>Rareza</th>
-              <th>Intentos</th>
-              <th>Free</th>
-              <th>Estado</th>
-              <th></th>
+                <th class="py-2">Imagen</th>
+                <th>Nombre</th>
+                <th>Rareza</th>
+                <th>Intentos</th>
+                <th>Multiplicador</th>
+                <th>Temporada</th>
+                <th>Free</th>
+                <th>Estado</th>
+                <th></th>
             </tr>
           </thead>
           <tbody id="minerTypesTable">
-            <tr><td colspan="6" class="text-gray-400 text-xs py-4">Cargando...</td></tr>
+            <tr><td colspan="9" class="text-gray-400 text-xs py-4">Cargando...</td></tr>
           </tbody>
         </table>
       </div>
@@ -159,6 +161,7 @@
             name="rarity"
             class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>')] bg-no-repeat bg-[right_1rem_center] bg-[length:1rem] pr-10">
             <option value="common" selected>Común</option>
+            <option value="uncommon">Poco común</option>
             <option value="rare">Raro</option>
             <option value="epic">Épico</option>
             <option value="legendary">Legendario</option>
@@ -166,9 +169,32 @@
         </div>
 
         <div>
-          <label class="text-sm text-gray-300">Intentos</label>
-          <input name="attempts" type="number" min="1" class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors" />
+          <label class="text-sm text-gray-300">Intentos Minado</label>
+          <input name="attempts" type="number" min="1" value="1"
+            class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors" />
         </div>
+      </div>
+
+      <div>
+        <label class="text-sm text-gray-300">Multiplicador Puntos</label>
+        <div class="flex items-center gap-2 mt-2">
+          <span class="text-gray-400 font-bold">x</span>
+          <input name="points_multiplier" type="number" min="1" step="0.01" value="1.00"
+            class="w-full p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors" />
+        </div>
+      </div>
+
+      <div>
+        <label class="text-sm text-gray-300">Temporada Aplicable</label>
+        <select name="season_id" id="seasonSelect"
+          class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors appearance-none bg-[url('data:image/svg+xml;charset=UTF-8,<svg xmlns="
+          http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline></svg>')] bg-no-repeat bg-[right_1rem_center]
+          bg-[length:1rem] pr-10">
+          <option value="">Ninguna (Sólo puntos base)</option>
+        </select>
+        <p class="text-[10px] text-gray-500 mt-1">El multiplicador sólo se aplica si el usuario está inscrito en esta temporada.</p>
       </div>
 
       <div>
@@ -243,6 +269,7 @@ const minerTypesTable = document.getElementById('minerTypesTable');
 const userMinersTable = document.getElementById('userMinersTable');
 const minerTypeSelect = document.getElementById('minerTypeSelect');
 const userSelect = document.getElementById('userSelect');
+const seasonSelect = document.getElementById('seasonSelect');
 
 const minerTypeModal = document.getElementById('minerTypeModal');
 const userMinerModal = document.getElementById('userMinerModal');
@@ -279,6 +306,8 @@ function renderMinerTypeRow(mt){
     <td>${mt.name}</td>
     <td>${mt.rarity_label}</td>
     <td>${mt.attempts}</td>
+    <td class="font-bold text-accent">x${mt.points_multiplier}</td>
+    <td class="text-gray-400 text-xs">${mt.season_name}</td>
     <td>${mt.is_free ? '<span class="text-accent font-bold">SI</span>' : '<span class="text-gray-500">NO</span>'}</td>
     <td>${badge}</td>
     <td class="text-right space-x-2">
@@ -306,11 +335,12 @@ async function loadStats(){
     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
   });
   const data = await res.json();
-  if (res.ok && data.success) {
-    document.getElementById('statMinerTypes').textContent = data.stats.total_miner_types;
-    document.getElementById('statUserMiners').textContent = data.stats.total_user_miners;
-    userSelect.innerHTML = data.users.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
-  }
+      if (res.ok && data.success) {
+        document.getElementById('statMinerTypes').textContent = data.stats.total_miner_types;
+        document.getElementById('statUserMiners').textContent = data.stats.total_user_miners;
+        userSelect.innerHTML = data.users.map(u => `<option value="${u.id}">${u.username}</option>`).join('');
+        seasonSelect.innerHTML = '<option value="">Ninguna (Sólo puntos base)</option>' + data.seasons.map(s => `<option value="${s.id}">${s.name}</option>`).join('');
+      }
 }
 
 async function loadMinerTypes(){
@@ -320,7 +350,7 @@ async function loadMinerTypes(){
   });
   const data = await res.json();
   if (res.ok && data.success) {
-    minerTypesTable.innerHTML = data.items.map(renderMinerTypeRow).join('') || '<tr><td colspan="6" class="text-gray-400 text-xs py-4">Sin registros</td></tr>';
+    minerTypesTable.innerHTML = data.items.map(renderMinerTypeRow).join('') || '<tr><td colspan="9" class="text-gray-400 text-xs py-4">Sin registros</td></tr>';
     minerTypeSelect.innerHTML = data.items.map(mt => `<option value="${mt.id}">${mt.name}</option>`).join('');
   }
 }
@@ -393,6 +423,8 @@ minerTypesTable.addEventListener('click', async (ev) => {
     minerTypeForm.querySelector('[name="name"]').value = mt.name;
     minerTypeForm.querySelector('[name="rarity"]').value = mt.rarity;
     minerTypeForm.querySelector('[name="attempts"]').value = mt.attempts;
+    minerTypeForm.querySelector('[name="points_multiplier"]').value = mt.points_multiplier;
+    minerTypeForm.querySelector('[name="season_id"]').value = mt.season_id || "";
     minerTypeForm.querySelector('[name="is_active"]').checked = mt.is_active;
     minerTypeForm.querySelector('[name="is_free"]').checked = mt.is_free;
     minerTypeModalTitle.textContent = 'Editar Tipo';

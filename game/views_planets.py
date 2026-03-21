@@ -157,12 +157,22 @@ def prepare_trip(request):
     tools = UserTool.objects.filter(owner=profile, status=ToolStatus.IDLE)
     transports = UserTransport.objects.filter(owner=profile, status=TransportStatus.IDLE)
     planets = Planet.objects.prefetch_related('produced_minerals__mineral').filter(is_active=True)
+    
+    # Get active seasons where the user is enrolled
+    now_dt = timezone.now()
+    user_seasons = list(UserSeasonEntry.objects.filter(
+        user=request.user,
+        season__start_date__lte=now_dt,
+        season__end_date__gte=now_dt
+    ).values_list('season_id', flat=True))
 
     return render(request, 'game/prepare_trip.html', {
         'miners': miners,
         'tools': tools,
         'transports': transports,
         'planets': planets,
+        'user_seasons': user_seasons,
+        'now': now_dt,
     })
 
 @login_required
@@ -301,7 +311,23 @@ def collect_mining_trip(request, trip_id):
     # Give points if at least 1 successful attempt
     won_points = 0
     if successful_attempts > 0:
-        won_points = trip.planet.puntos
+        puntos_base = trip.planet.puntos
+        multiplier = 1.0
+        miner_type = trip.miner.miner_type
+        
+        if miner_type.points_multiplier > 1:
+            # Check if multiplier applies (no season required OR user enrolled in ACTIVE required season)
+            now = timezone.now()
+            if not miner_type.season or UserSeasonEntry.objects.filter(
+                user=request.user, 
+                season=miner_type.season,
+                season__start_date__lte=now,
+                season__end_date__gte=now
+            ).exists():
+                multiplier = float(miner_type.points_multiplier)
+        
+        won_points = int(puntos_base * multiplier)
+        
         if won_points > 0:
             profile = request.user.profile
             profile.points += won_points

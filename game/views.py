@@ -234,13 +234,15 @@ def miners_admin_view(request):
 def miners_admin_stats(request):
     try:
         users = list(User.objects.values("id", "username").order_by("username"))
+        seasons = list(Season.objects.values("id", "name").order_by("-start_date"))
         return JsonResponse({
             "success": True,
             "stats": {
                 "total_miner_types": MinerType.objects.count(),
                 "total_user_miners": UserMiner.objects.count()
             },
-            "users": users
+            "users": users,
+            "seasons": seasons
         })
     except Exception as e:
         print("MINERS ADMIN STATS ERROR:", e)
@@ -263,6 +265,9 @@ def miner_types_list(request):
             "rarity": mt.rarity,
             "rarity_label": mt.get_rarity_display(),
             "attempts": mt.attempts,
+            "points_multiplier": str(mt.points_multiplier),
+            "season_id": mt.season_id,
+            "season_name": mt.season.name if mt.season else "Todas",
             "is_active": mt.is_active,
             "is_free": mt.is_free,
             "image_url": mt.image.url if mt.image else ""
@@ -278,6 +283,8 @@ def miner_type_create(request):
         name = (request.POST.get("name") or "").strip()
         rarity = (request.POST.get("rarity") or "").strip()
         attempts_raw = request.POST.get("attempts")
+        points_multiplier_raw = request.POST.get("points_multiplier") or "1.00"
+        season_id = request.POST.get("season_id")
         is_active = _parse_bool(request.POST.get("is_active"))
         is_free = _parse_bool(request.POST.get("is_free"))
         image = request.FILES.get("image")
@@ -290,8 +297,31 @@ def miner_type_create(request):
         except (TypeError, ValueError): return JsonResponse({"error": "Intentos inválidos"}, status=400)
         if attempts <= 0: return JsonResponse({"error": "Intentos inválidos"}, status=400)
 
-        mt = MinerType.objects.create(name=name, rarity=rarity, attempts=attempts, is_active=is_active, is_free=is_free, image=image)
-        return JsonResponse({"success": True, "item": {"id": mt.id, "name": mt.name, "rarity": mt.rarity, "rarity_label": mt.get_rarity_display(), "attempts": mt.attempts, "is_active": mt.is_active, "is_free": mt.is_free, "image_url": mt.image.url if mt.image else ""}})
+        # Handle optional season_id
+        season = None
+        if season_id and season_id != "null" and season_id != "":
+            try:
+                season = Season.objects.get(id=season_id)
+            except Season.DoesNotExist:
+                return JsonResponse({"error": "Temporada no válida"}, status=400)
+
+        try:
+            points_multiplier = Decimal(points_multiplier_raw)
+        except (TypeError, ValueError):
+            return JsonResponse({"error": "Multiplicador inválido"}, status=400)
+
+        mt = MinerType.objects.create(
+            name=name, rarity=rarity, attempts=attempts, 
+            points_multiplier=points_multiplier, season=season,
+            is_active=is_active, is_free=is_free, image=image
+        )
+        return JsonResponse({"success": True, "item": {
+            "id": mt.id, "name": mt.name, "rarity": mt.rarity, 
+            "rarity_label": mt.get_rarity_display(), "attempts": mt.attempts,
+            "points_multiplier": str(mt.points_multiplier), "season_id": mt.season_id,
+            "is_active": mt.is_active, "is_free": mt.is_free, 
+            "image_url": mt.image.url if mt.image else ""
+        }})
     except Exception as e:
         print("MINER TYPE CREATE ERROR:", e)
         return JsonResponse({"error": "Error interno"}, status=500)
@@ -306,6 +336,8 @@ def miner_type_update(request, pk):
         name = (request.POST.get("name") or "").strip()
         rarity = (request.POST.get("rarity") or "").strip()
         attempts_raw = request.POST.get("attempts")
+        points_multiplier_raw = request.POST.get("points_multiplier") or "1.00"
+        season_id = request.POST.get("season_id")
         is_active = _parse_bool(request.POST.get("is_active"))
         is_free = _parse_bool(request.POST.get("is_free"))
         image = request.FILES.get("image")
@@ -318,14 +350,35 @@ def miner_type_update(request, pk):
         except (TypeError, ValueError): return JsonResponse({"error": "Intentos inválidos"}, status=400)
         if attempts <= 0: return JsonResponse({"error": "Intentos inválidos"}, status=400)
 
+        # Handle optional season_id
+        season = None
+        if season_id and season_id != "null" and season_id != "":
+            try:
+                season = Season.objects.get(id=season_id)
+            except Season.DoesNotExist:
+                return JsonResponse({"error": "Temporada no válida"}, status=400)
+
+        try:
+            points_multiplier = Decimal(points_multiplier_raw)
+        except (TypeError, ValueError):
+            return JsonResponse({"error": "Multiplicador inválido"}, status=400)
+
         mt.name = name
         mt.rarity = rarity
         mt.attempts = attempts
+        mt.points_multiplier = points_multiplier
+        mt.season = season
         mt.is_active = is_active
         mt.is_free = is_free
         if image: mt.image = image
         mt.save()
-        return JsonResponse({"success": True, "item": {"id": mt.id, "name": mt.name, "rarity": mt.rarity, "rarity_label": mt.get_rarity_display(), "attempts": mt.attempts, "is_active": mt.is_active, "is_free": mt.is_free, "image_url": mt.image.url if mt.image else ""}})
+        return JsonResponse({"success": True, "item": {
+            "id": mt.id, "name": mt.name, "rarity": mt.rarity, 
+            "rarity_label": mt.get_rarity_display(), "attempts": mt.attempts,
+            "points_multiplier": str(mt.points_multiplier), "season_id": mt.season_id,
+            "is_active": mt.is_active, "is_free": mt.is_free, 
+            "image_url": mt.image.url if mt.image else ""
+        }})
     except MinerType.DoesNotExist: return JsonResponse({"error": "No encontrado"}, status=404)
     except Exception as e:
         print("MINER TYPE UPDATE ERROR:", e)
@@ -464,7 +517,11 @@ def logout_view(request):
 def miners_view(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
     miners = profile.miners.select_related("miner_type").order_by("-obtained_at")
-    return render(request, "game/miners.html", {"profile": profile, "miners": miners})
+    return render(request, "game/miners.html", {
+        "profile": profile, 
+        "miners": miners,
+        "now": timezone.now()
+    })
 
 @require_POST
 @csrf_protect

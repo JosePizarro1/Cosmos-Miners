@@ -6,6 +6,7 @@ from .models_planets import *
 from django.db import models
 from django.utils import timezone
 from decimal import Decimal
+from .models_rankings import Season
 from django.contrib.auth import get_user_model
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -70,6 +71,7 @@ def create_user_profile(sender, instance, created, **kwargs):
 
 class MinerRarity(models.TextChoices):
     COMMON = "common", "Común"
+    UNCOMMON = "uncommon", "Poco común"
     RARE = "rare", "Raro"
     EPIC = "epic", "Épico"
     LEGENDARY = "legendary", "Legendario"
@@ -86,6 +88,16 @@ class MinerType(models.Model):
 
     attempts = models.PositiveIntegerField(
         help_text="Cantidad de intentos de minado por viaje"
+    )
+
+    points_multiplier = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal('1.00'),
+        help_text="Multiplicador de puntos de planeta. 1=normal, 2=doble, etc."
+    )
+    season = models.ForeignKey(
+        Season, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='miner_types',
+        help_text="Temporada a la que aplica el multiplicador de puntos"
     )
 
     is_active = models.BooleanField(default=True)
@@ -127,6 +139,7 @@ class UserMiner(models.Model):
 
 class TransportRarity(models.TextChoices):
     COMMON = "common", "Común"
+    UNCOMMON = "uncommon", "Poco común"
     RARE = "rare", "Raro"
     EPIC = "epic", "Épico"
     LEGENDARY = "legendary", "Legendario"
@@ -192,6 +205,7 @@ class UserTransport(models.Model):
 
 class ToolRarity(models.TextChoices):
     COMMON = "common", "Común"
+    UNCOMMON = "uncommon", "Poco común"
     RARE = "rare", "Raro"
     EPIC = "epic", "Épico"
     LEGENDARY = "legendary", "Legendario"

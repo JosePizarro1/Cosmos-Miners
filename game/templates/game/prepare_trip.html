@@ -189,6 +189,8 @@
                 {% for m in miners %}
                 <div class="asset-card relative bg-card border-2 border-white/10 p-5 rounded-[2rem] rarity-{{ m.miner_type.rarity }}"
                     data-id="{{ m.id }}" data-type="miner" data-attempts="{{ m.miner_type.attempts }}"
+                    data-multiplier="{{ m.miner_type.points_multiplier }}"
+                    data-season="{{ m.miner_type.season_id|default:'' }}"
                     data-free="{{ m.miner_type.is_free|yesno:'True,False' }}"
                     data-image="{% if m.miner_type.image %}{{ m.miner_type.image.url }}{% endif %}"
                     onclick="selectAsset(this, 'miner')">
@@ -214,6 +216,19 @@
                             <span class="text-[9px] text-gray-500 uppercase font-bold">Intentos de minado</span>
                             <span class="text-sm font-black text-accent">{{ m.miner_type.attempts }}</span>
                         </div>
+                        {% if m.miner_type.points_multiplier > 1 %}
+                            {% if not m.miner_type.season or m.miner_type.season.end_date >= now %}
+                            <div class="bg-yellow-500/10 rounded-xl px-4 py-2 flex justify-between items-center border border-yellow-500/20">
+                                <div class="flex flex-col">
+                                    <span class="text-[9px] text-yellow-500 uppercase font-black tracking-tighter">Multiplicador de Puntos</span>
+                                    {% if m.miner_type.season %}
+                                    <span class="text-[7px] text-yellow-600/70 uppercase font-bold">{{ m.miner_type.season.name }}</span>
+                                    {% endif %}
+                                </div>
+                                <span class="text-lg font-black text-yellow-400 stat-glow">x{{ m.miner_type.points_multiplier }}</span>
+                            </div>
+                            {% endif %}
+                        {% endif %}
                     </div>
                 </div>
                 {% empty %}
@@ -483,7 +498,8 @@
         const selection = { miner: null, tool: null, transport: null, planet: null };
         const selectionNames = { miner: '', tool: '', transport: '', planet: '' };
         const selectionImages = { miner: '', tool: '', transport: '', planet: '' };
-        const selectionData = { attempts: 0, multiplier: 1, bonus: 0, speed: 100 };
+        const selectionData = { attempts: 0, multiplier: 1, bonus: 0, speed: 100, pointsMultiplier: 1, minerSeason: null };
+        const userSeasons = {{ user_seasons|safe }};
 
         function selectAsset(card, type) {
             // Remove selection from siblings
@@ -499,6 +515,8 @@
             // Store stats from data attributes
             if (type === 'miner') {
                 selectionData.attempts = parseInt(card.dataset.attempts) || 0;
+                selectionData.pointsMultiplier = parseFloat(card.dataset.multiplier) || 1;
+                selectionData.minerSeason = card.dataset.season ? parseInt(card.dataset.season) : null;
                 selectionData.isFree = card.dataset.free; // Store mission mode
                 resetSubsequentSelections(1);
             }
@@ -591,13 +609,24 @@
             const bonus = selectionData.bonus;
             const attempts = selectionData.attempts;
 
+            // Apply points multiplier if enrolled in season
+            let finalPuntos = puntos;
+            let multiplierLabel = "";
+            if (selectionData.pointsMultiplier > 1) {
+                // If no season required, apply it. If season required, must be enrolled.
+                if (!selectionData.minerSeason || userSeasons.includes(selectionData.minerSeason)) {
+                    finalPuntos = Math.floor(puntos * selectionData.pointsMultiplier);
+                    multiplierLabel = ` <span class="text-[8px] text-yellow-500 font-black tracking-tighter ml-1">(x${selectionData.pointsMultiplier})</span>`;
+                }
+            }
+
             // Update preview
             document.getElementById('prevTime').textContent = timeStr.trim();
             document.getElementById('prevTimeNote').textContent = baseTravel + 'h base → velocidad ' + selectionData.speed + '%';
             document.getElementById('prevSuccess').textContent = adjustedSuccess + '%';
             document.getElementById('prevAttempts').textContent = attempts;
             document.getElementById('prevMulti').textContent = bonus + '%';
-            document.getElementById('prevPuntos').innerHTML = '<i class="fas fa-star"></i> ' + puntos + ' pts fijos';
+            document.getElementById('prevPuntos').innerHTML = '<i class="fas fa-star"></i> ' + finalPuntos + ' pts' + multiplierLabel;
 
             // Minerals with adjusted ranges
             const mineralsDiv = document.getElementById('prevMinerals');
