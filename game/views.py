@@ -24,6 +24,7 @@ def register_view(request):
 def home_view(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
     minerals = request.user.inventory_minerals.filter(amount__gt=0).select_related('mineral').all()
+    
     return render(request, "game/home.html", {
         "profile": profile,
         "minerals": minerals
@@ -33,19 +34,38 @@ def home_view(request):
 def chests_public_view(request):
     from .models import OilCentralType
     from .models_packs import StorePack
+    from .models_blessings import Blessing, StaticBlessing, UserBlessingClaim
+    
     chests = Chest.objects.filter(is_in_store=True).select_related("category").prefetch_related("rewards")
     oil_centrals = OilCentralType.objects.filter(is_active=True)
     profile, _ = Profile.objects.get_or_create(user=request.user)
     user_chests = UserChest.objects.filter(owner=profile, opened=False).select_related("chest")
     packs = StorePack.objects.filter(is_active=True).prefetch_related(
-        "miner_rewards__miner", "tool_rewards__tool", "transport_rewards__transport"
+        "miner_rewards__miner", "tool_rewards__tool", 
+        "transport_rewards__transport", "blessing_rewards__blessing"
     ).order_by("-created_at")
+
+    # Blessings
+    static_blessings = StaticBlessing.objects.all().select_related('required_pack')
+    dynamic_blessings = Blessing.objects.filter(is_active=True).order_by('created_at')
+    
+    # Pre-check if claimed for this user
+    user_claims = UserBlessingClaim.objects.filter(user=request.user)
+    claimed_static_ids = set(user_claims.values_list('static_blessing_id', flat=True))
+    
+    from .models_blessings import UserDynamicBlessing
+    claimed_dynamic_ids = set(UserDynamicBlessing.objects.filter(user=request.user).values_list('blessing_id', flat=True))
+
     return render(request, "game/chests_public.html", {
         "chests": chests,
         "oil_centrals": oil_centrals,
         "user_chests": user_chests,
         "profile": profile,
         "packs": packs,
+        "static_blessings": static_blessings,
+        "dynamic_blessings": dynamic_blessings,
+        "claimed_static_ids": claimed_static_ids,
+        "claimed_dynamic_ids": claimed_dynamic_ids,
     })
 
 @require_POST

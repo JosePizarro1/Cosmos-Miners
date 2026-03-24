@@ -4,8 +4,9 @@ from django.views.decorators.http import require_POST
 from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.db import transaction
-from .models_packs import StorePack, PackMinerReward, PackToolReward, PackTransportReward
+from .models_packs import StorePack, PackMinerReward, PackToolReward, PackTransportReward, PackBlessingReward, PackPurchaseLog
 from .models import Mineral, MinerType, ToolType, TransportType, Profile, UserMiner, UserTool, UserTransport
+from .models_blessings import Blessing, UserBlessingClaim
 from decimal import Decimal
 import random
 
@@ -19,14 +20,19 @@ def packs_admin_view(request):
     miners = MinerType.objects.filter(is_active=True).order_by('name')
     tools = ToolType.objects.filter(is_active=True).order_by('name')
     transports = TransportType.objects.filter(is_active=True).order_by('name')
+    blessings = Blessing.objects.filter(is_active=True).order_by('name')
+    
     miners_json = json.dumps([{"id": m.id, "name": m.name} for m in miners])
     tools_json = json.dumps([{"id": t.id, "name": t.name} for t in tools])
     transports_json = json.dumps([{"id": t.id, "name": t.name} for t in transports])
+    blessings_json = json.dumps([{"id": b.id, "name": b.name} for b in blessings])
+    
     return render(request, "game/packs_admin.html", {
         "minerals": minerals,
         "miners_json": miners_json,
         "tools_json": tools_json,
         "transports_json": transports_json,
+        "blessings_json": blessings_json,
     })
 
 
@@ -67,6 +73,16 @@ def packs_list(request):
             }
             for r in p.transport_rewards.select_related("transport").all()
         ]
+        blessing_rewards = [
+            {
+                "id": r.id,
+                "blessing_id": r.blessing_id,
+                "blessing_name": r.blessing.name,
+                "chance": float(r.chance),
+                "probability_label": r.probability_label,
+            }
+            for r in p.blessing_rewards.select_related("blessing").all()
+        ]
         items.append({
             "id": p.id,
             "name": p.name,
@@ -80,6 +96,7 @@ def packs_list(request):
             "miner_rewards": miner_rewards,
             "tool_rewards": tool_rewards,
             "transport_rewards": transport_rewards,
+            "blessing_rewards": blessing_rewards,
         })
     return JsonResponse({"success": True, "items": items})
 
@@ -165,18 +182,17 @@ def _save_pack_from_request(request, pack):
     # Clear old rewards and re-apply
     pack.miner_rewards.all().delete()
     pack.tool_rewards.all().delete()
+    pack.transport_rewards.all().delete()
+    pack.blessing_rewards.all().delete()
 
-    # Miner rewards (expected keys: miner_id[], miner_chance[], miner_label[])
+    # Miner rewards
     miner_ids = data.getlist("miner_id[]")
     miner_chances = data.getlist("miner_chance[]")
     miner_labels = data.getlist("miner_label[]")
     for mid, chance, label in zip(miner_ids, miner_chances, miner_labels):
         if mid and chance:
             PackMinerReward.objects.create(
-                pack=pack,
-                miner_id=int(mid),
-                chance=Decimal(chance),
-                probability_label=label
+                pack=pack, miner_id=int(mid), chance=Decimal(chance), probability_label=label
             )
 
     # Tool rewards
@@ -186,10 +202,7 @@ def _save_pack_from_request(request, pack):
     for tid, chance, label in zip(tool_ids, tool_chances, tool_labels):
         if tid and chance:
             PackToolReward.objects.create(
-                pack=pack,
-                tool_id=int(tid),
-                chance=Decimal(chance),
-                probability_label=label
+                pack=pack, tool_id=int(tid), chance=Decimal(chance), probability_label=label
             )
 
     # Transport rewards
@@ -199,10 +212,17 @@ def _save_pack_from_request(request, pack):
     for tid, chance, label in zip(transport_ids, transport_chances, transport_labels):
         if tid and chance:
             PackTransportReward.objects.create(
-                pack=pack,
-                transport_id=int(tid),
-                chance=Decimal(chance),
-                probability_label=label
+                pack=pack, transport_id=int(tid), chance=Decimal(chance), probability_label=label
+            )
+
+    # Blessing rewards
+    blessing_ids = data.getlist("blessing_id[]")
+    blessing_chances = data.getlist("blessing_chance[]")
+    blessing_labels = data.getlist("blessing_label[]")
+    for bid, chance, label in zip(blessing_ids, blessing_chances, blessing_labels):
+        if bid and chance:
+            PackBlessingReward.objects.create(
+                pack=pack, blessing_id=int(bid), chance=Decimal(chance), probability_label=label
             )
 
     return pack
@@ -213,7 +233,8 @@ def _save_pack_from_request(request, pack):
 @login_required
 def packs_public_view(request):
     packs = StorePack.objects.filter(is_active=True).prefetch_related(
-        "miner_rewards__miner", "tool_rewards__tool", "transport_rewards__transport"
+        "miner_rewards__miner", "tool_rewards__tool", 
+        "transport_rewards__transport", "blessing_rewards__blessing"
     ).order_by("-created_at")
     return render(request, "game/packs_public.html", {"packs": packs})
 
@@ -225,7 +246,6 @@ def buy_pack(request, pk):
     try:
         pack = StorePack.objects.get(pk=pk, is_active=True)
 
-        # If external link, this endpoint shouldn't be called — but guard anyway
         if pack.external_link:
             return JsonResponse({"error": "Este paquete usa enlace externo"}, status=400)
 
@@ -250,9 +270,12 @@ def buy_pack(request, pk):
                 profile.cosmos_gold -= pack.price_gold
                 profile.save()
 
+            # Record purchase for requirements (e.g. blessings)
+            PackPurchaseLog.objects.create(user=request.user, pack=pack)
+
             rewards = []
 
-            # Draw miner reward (if any configured)
+            # Draw miner reward
             miner_pool = list(pack.miner_rewards.select_related("miner").all())
             if miner_pool:
                 drawn_miner = _draw(miner_pool)
@@ -260,7 +283,7 @@ def buy_pack(request, pk):
                     UserMiner.objects.create(owner=profile, miner_type=drawn_miner.miner)
                     rewards.append({"type": "miner", "name": drawn_miner.miner.name})
 
-            # Draw tool reward (if any configured)
+            # Draw tool reward
             tool_pool = list(pack.tool_rewards.select_related("tool").all())
             if tool_pool:
                 drawn_tool = _draw(tool_pool)
@@ -268,13 +291,21 @@ def buy_pack(request, pk):
                     UserTool.objects.create(owner=profile, tool_type=drawn_tool.tool)
                     rewards.append({"type": "tool", "name": drawn_tool.tool.name})
 
-            # Draw transport reward (if any configured)
+            # Draw transport reward
             transport_pool = list(pack.transport_rewards.select_related("transport").all())
             if transport_pool:
                 drawn_transport = _draw(transport_pool)
                 if drawn_transport:
                     UserTransport.objects.create(owner=profile, transport_type=drawn_transport.transport)
                     rewards.append({"type": "transport", "name": drawn_transport.transport.name})
+
+            # Draw blessing reward
+            blessing_pool = list(pack.blessing_rewards.select_related("blessing").all())
+            if blessing_pool:
+                drawn_blessing = _draw(blessing_pool)
+                if drawn_blessing:
+                    UserBlessingClaim.objects.create(user=request.user, blessing=drawn_blessing.blessing)
+                    rewards.append({"type": "blessing", "name": drawn_blessing.blessing.name})
 
         return JsonResponse({"success": True, "rewards": rewards})
 
@@ -292,4 +323,4 @@ def _draw(pool):
         cumulative += float(item.chance)
         if rand <= cumulative:
             return item
-    return pool[-1]  # fallback to last if floating point rounding
+    return pool[-1] if pool else None

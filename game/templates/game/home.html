@@ -199,11 +199,7 @@
     <p class="text-gray-300 text-base mb-8">
       Mina recursos, mejora tu nave y conquista planetas lejanos.
     </p>
-
-
   </section>
-
-
 
   <!-- 🎮 GAME MENU -->
   <section class="relative z-10 mt-12 px-6 grid gap-4 max-w-md mx-auto">
@@ -214,6 +210,15 @@
       <div>
         <h3 class="font-bold text-lg">Mineros</h3>
         <p class="text-sm text-gray-300">Gestiona tu tripulación</p>
+      </div>
+    </a>
+
+    <a href="/my-blessings/"
+      class="flex items-center gap-4 bg-card backdrop-blur-xl border border-purple-500/20 rounded-2xl p-5 hover:border-purple-500/40 hover:bg-white/5 transition cursor-pointer group">
+      <i class="fas fa-magic text-purple-500 text-2xl group-hover:scale-110 transition-transform"></i>
+      <div>
+        <h3 class="font-bold text-lg">Bendiciones</h3>
+        <p class="text-sm text-gray-300">Gestiona tus bendiciones</p>
       </div>
     </a>
 
@@ -612,6 +617,26 @@
           popup: 'rounded-3xl border border-white/10'
         }
       });
+    }
+
+    async function farmBlessing(ubId) {
+      Swal.fire({ title: 'Cosechando...', didOpen: () => Swal.showLoading() });
+      const csrftoken = (document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)') || [])[2] || '';
+      try {
+        const res = await fetch(`/blessings/farm/${ubId}/`, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': csrftoken, 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        if (data.success) {
+          Swal.fire({ icon: 'success', title: '¡Éxito!', text: data.message, confirmButtonColor: '#00e0ff', background: '#0a0a20', color: '#fff' })
+          .then(() => location.reload());
+        } else {
+          Swal.fire({ icon: 'error', title: 'Fallo al farmear', text: data.error, confirmButtonColor: '#ff4d8d', background: '#0a0a20', color: '#fff' });
+        }
+      } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Error de red', background: '#0a0a20', color: '#fff' });
+      }
     }
   </script>
 

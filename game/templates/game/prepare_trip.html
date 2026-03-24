@@ -431,9 +431,10 @@
                             <p class="text-lg font-black text-accent stat-glow" id="prevTime">--</p>
                             <p class="text-[8px] text-gray-600 mt-0.5" id="prevTimeNote"></p>
                         </div>
-                        <div class="bg-space/50 rounded-xl p-3 text-center border border-white/5">
-                            <p class="text-[8px] text-gray-500 uppercase font-black mb-1">% Victoria (Base)</p>
+                        <div class="bg-space/50 rounded-xl p-3 text-center border border-white/5 relative">
+                            <p class="text-[8px] text-gray-500 uppercase font-black mb-1">% Victoria (Real)</p>
                             <p class="text-lg font-black text-green-400 stat-glow" id="prevSuccess">--</p>
+                            <div id="blessingBadge" class="absolute -top-2 -right-2 hidden bg-pink text-[8px] font-black px-2 py-1 rounded-full shadow-lg animate-pulse">+0% BENDICIÓN</div>
                         </div>
                         <div class="bg-space/50 rounded-xl p-3 text-center border border-white/5">
                             <p class="text-[8px] text-gray-500 uppercase font-black mb-1">Intentos</p>
@@ -500,6 +501,7 @@
         const selectionImages = { miner: '', tool: '', transport: '', planet: '' };
         const selectionData = { attempts: 0, multiplier: 1, bonus: 0, speed: 100, pointsMultiplier: 1, minerSeason: null };
         const userSeasons = {{ user_seasons|safe }};
+        const blessingBonus = {{ blessing_bonus|default:0 }};
 
         function selectAsset(card, type) {
             // Remove selection from siblings
@@ -604,7 +606,8 @@
             if (hours > 0) timeStr += `${hours}h `;
             if (minutes > 0 || hours === 0) timeStr += `${minutes}m`;
 
-            const adjustedSuccess = baseSuccess;
+            let adjustedSuccess = baseSuccess + blessingBonus;
+            if (adjustedSuccess > 100) adjustedSuccess = 100;
             const multi = selectionData.multiplier;
             const bonus = selectionData.bonus;
             const attempts = selectionData.attempts;
@@ -624,6 +627,15 @@
             document.getElementById('prevTime').textContent = timeStr.trim();
             document.getElementById('prevTimeNote').textContent = baseTravel + 'h base → velocidad ' + selectionData.speed + '%';
             document.getElementById('prevSuccess').textContent = adjustedSuccess + '%';
+            
+            const bBadge = document.getElementById('blessingBadge');
+            if (blessingBonus > 0) {
+                bBadge.textContent = `+${blessingBonus}% BENDICIÓN`;
+                bBadge.classList.remove('hidden');
+            } else {
+                bBadge.classList.add('hidden');
+            }
+
             document.getElementById('prevAttempts').textContent = attempts;
             document.getElementById('prevMulti').textContent = bonus + '%';
             document.getElementById('prevPuntos').innerHTML = '<i class="fas fa-star"></i> ' + finalPuntos + ' pts' + multiplierLabel;

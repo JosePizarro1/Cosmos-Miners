@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Bendiciones · Cosmos Miners</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            space: "#05050f",
+            card: "rgba(20,30,60,0.75)",
+            accent: "#00e0ff",
+            pink: "#ff4d8d",
+            blueglow: "#0077ff"
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #00e0ff; border-radius: 10px; }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .animate-float { animation: float 3s ease-in-out infinite; }
+  </style>
+</head>
+
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative">
+  <!-- Background Decor -->
+  <div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.1)_1px,_transparent_1px)] bg-[size:40px_40px] opacity-20"></div>
+  <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-blueglow/5 via-transparent to-pink/5 pointer-events-none"></div>
+
+  <!-- Header -->
+  <header class="relative z-10 px-6 py-6 flex items-center justify-between max-w-6xl mx-auto">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-wand-sparkles text-accent text-2xl animate-pulse"></i>
+      <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">COSMOS</span>
+      <span class="text-xs text-gray-400 ml-2 font-bold uppercase tracking-widest">Admin · Bendiciones</span>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="/dashboard/admin/" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all">Dashboard</a>
+      <a href="/home/" class="px-4 py-2 rounded-xl bg-white/5 border border-white/10 text-xs font-black uppercase tracking-widest hover:bg-white/10 transition-all">Volver</a>
+    </div>
+  </header>
+
+  <main class="relative z-10 px-6 pb-20 max-w-6xl mx-auto space-y-12">
+    <!-- Hero Section -->
+    <div class="flex items-center justify-between">
+      <div>
+        <h1 class="text-4xl font-black text-white uppercase tracking-tighter italic">Gestión de Bendiciones</h1>
+        <p class="text-gray-400 text-sm mt-1">Configura las bendiciones fijas del sistema y crea nuevas dinámicas.</p>
+      </div>
+      <button onclick="openDynamicModal()" class="px-6 py-3 rounded-2xl bg-accent text-black font-black uppercase text-xs tracking-widest hover:brightness-110 transition-all shadow-[0_0_20px_rgba(0,224,255,0.3)]">
+        <i class="fas fa-plus mr-2"></i> Nueva Dinámica
+      </button>
+    </div>
+
+    <!-- Bendiciones Estáticas (Fijas) -->
+    <section>
+      <div class="flex items-center gap-2 mb-6">
+        <div class="h-px flex-1 bg-white/5"></div>
+        <h2 class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Bendiciones del Sistema (Fijas)</h2>
+        <div class="h-px flex-1 bg-white/5"></div>
+      </div>
+      
+      <div class="grid gap-6 md:grid-cols-2">
+        {% for sb in static_blessings %}
+        <div class="glass-card rounded-[32px] p-8 border border-white/5 relative overflow-hidden group">
+          <div class="absolute -top-12 -right-12 w-32 h-32 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/10 transition-all"></div>
+          
+          <div class="relative z-10">
+            <div class="flex items-center justify-between mb-6">
+              <span class="px-3 py-1 rounded-full bg-accent/10 border border-accent/20 text-accent text-[10px] font-black uppercase tracking-tighter">Tipo: {{ sb.type }}</span>
+              <button onclick="openStaticModal('{{ sb.id }}', '{{ sb.name|escapejs }}', '{{ sb.bonus_percentage }}', '{{ sb.type }}', '{{ sb.required_pack_id|default:'' }}')" 
+                class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center text-gray-400 hover:text-accent border border-white/10 transition-all">
+                <i class="fas fa-pen-nib text-sm"></i>
+              </button>
+            </div>
+            
+            <h3 class="text-2xl font-black text-white mb-2 italic tracking-tight uppercase">{{ sb.name }}</h3>
+            <p class="text-gray-400 text-xs mb-6 leading-relaxed">
+              {% if sb.type == 'oil' %}Requisito: Tener al menos una central petrolera en posesión.{% endif %}
+              {% if sb.type == 'vip' %}Requisito: Inscribirse en al menos un ranking de temporada.{% endif %}
+              {% if sb.type == 'cosmos' %}Requisito: Adquirir el paquete especial <span class="text-accent underline font-bold">{% if sb.required_pack %}{{ sb.required_pack.name }}{% else %}No configurado{% endif %}</span>.{% endif %}
+              {% if sb.type == 'extra' %}Visual: Bendición informativa o de evento.{% endif %}
+            </p>
+            
+            <div class="flex items-end gap-3">
+                <span class="text-4xl font-black text-accent leading-none">{{ sb.bonus_percentage }}%</span>
+                <span class="text-[10px] text-gray-600 uppercase font-black tracking-widest mb-1">Bonus Visual</span>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Bendiciones Dinámicas -->
+    <section>
+      <div class="flex items-center gap-2 mb-6">
+        <div class="h-px flex-1 bg-white/5"></div>
+        <h2 class="text-[10px] font-black uppercase tracking-[0.3em] text-gray-500">Bendiciones Adquiribles (Dinámicas)</h2>
+        <div class="h-px flex-1 bg-white/5"></div>
+      </div>
+
+      <div class="glass-card rounded-[40px] border border-white/5 overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse">
+            <thead class="bg-white/[0.02] text-[10px] uppercase text-gray-500 font-bold tracking-[0.2em]">
+              <tr>
+                <th class="px-8 py-5">Visual</th>
+                <th class="px-8 py-5">Identificación</th>
+                <th class="px-8 py-5">Precio</th>
+                <th class="px-8 py-5">Recarga</th>
+                <th class="px-8 py-5">Estado</th>
+                <th class="px-8 py-5 text-right">Acciones</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/5 text-sm">
+              {% for b in dynamic_blessings %}
+              <tr class="hover:bg-white/[0.02] transition-colors group">
+                <td class="px-8 py-5">
+                  <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden relative group">
+                    {% if b.image %}
+                    <img src="{{ b.image.url }}" class="w-full h-full object-cover">
+                    {% else %}
+                    <i class="fas fa-magic text-accent/20 text-xl"></i>
+                    {% endif %}
+                    <div class="absolute inset-0 bg-accent/20 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  </div>
+                </td>
+                <td class="px-8 py-5">
+                  <div class="font-black text-white text-base uppercase tracking-tight italic">{{ b.name }}</div>
+                  <div class="text-[10px] text-gray-500 font-bold">ID: #{{ b.id }} · Creado {{ b.created_at|date:"d/m/Y" }}</div>
+                </td>
+                <td class="px-8 py-5">
+                  {% if b.price_mineral %}
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-pink/10 text-pink text-[10px] font-black uppercase tracking-tighter border border-pink/20">Mineral</span>
+                    <span class="font-black text-white">{{ b.price_mineral_qty }} {{ b.price_mineral.name }}</span>
+                  </div>
+                  {% else %}
+                  <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-accent/10 text-accent text-[10px] font-black uppercase tracking-tighter border border-accent/20">Gold</span>
+                    <span class="font-mono font-black text-white text-base">{{ b.price_gold }}</span>
+                  </div>
+                  {% endif %}
+                </td>
+                <td class="px-8 py-5">
+                  <span class="text-gray-300 font-bold">{{ b.cooldown_hours }}</span>
+                  <span class="text-[10px] text-gray-600 font-black uppercase ml-1">Horas</span>
+                </td>
+                <td class="px-8 py-5">
+                  {% if b.is_active %}
+                  <div class="flex items-center gap-2 text-green-400">
+                    <div class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
+                    <span class="text-[10px] font-black uppercase tracking-widest">Activo</span>
+                  </div>
+                  {% else %}
+                  <div class="flex items-center gap-2 text-gray-500">
+                    <div class="w-2 h-2 rounded-full bg-gray-500"></div>
+                    <span class="text-[10px] font-black uppercase tracking-widest">Inactivo</span>
+                  </div>
+                  {% endif %}
+                </td>
+                <td class="px-8 py-4 text-right">
+                <div class="flex items-center justify-end gap-2">
+                    <button onclick="openDynamicModal('{{ b.id }}', '{{ b.name|escapejs }}', '{{ b.price_gold }}', '{{ b.cooldown_hours }}', '{{ b.price_mineral_id|default:'' }}', '{{ b.price_mineral_qty }}', '{{ b.is_active|yesno:'true,false' }}', '{% if b.image %}{{ b.image.url }}{% endif %}', '{{ b.reward_mineral_id|default:'' }}', '{{ b.reward_mineral_qty }}', '{{ b.reward_gold }}')" 
+                      class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-500 hover:text-accent border border-white/10 transition-all">
+                        <i class="fas fa-edit text-xs"></i>
+                    </button>
+                    <button onclick="deleteBlessing('{{ b.id }}')" 
+                      class="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-gray-500 hover:text-pink border border-white/10 transition-all">
+                        <i class="fas fa-trash text-xs"></i>
+                    </button>
+                </div>
+            </td>
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="6" class="px-8 py-20 text-center">
+                  <i class="fas fa-sparkles text-4xl text-gray-800 mb-4 block"></i>
+                  <p class="text-gray-500 font-bold uppercase tracking-widest text-xs">No hay bendiciones dinámicas configuradas</p>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal Estática -->
+  <div id="staticModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 backdrop-blur-xl bg-black/60">
+    <div class="glass-card w-full max-w-lg rounded-[40px] border border-white/10 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+        <div class="px-8 py-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
+            <h3 class="text-xl font-black text-white uppercase italic tracking-tighter">Editar Bendición Fija</h3>
+            <button onclick="closeStaticModal()" class="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-gray-500 hover:text-white transition-all"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="staticForm" class="p-10 space-y-8">
+            {% csrf_token %}
+            <input type="hidden" name="id" id="staticId">
+            <div class="space-y-4">
+              <div>
+                  <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Nombre Visual</label>
+                  <input type="text" name="name" id="staticName" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:border-accent focus:outline-none transition-all placeholder:text-gray-700" required placeholder="Ej: Bendición de Oro">
+              </div>
+              <div>
+                  <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Porcentaje de Bonus (%)</label>
+                  <input type="number" step="0.01" name="bonus_percentage" id="staticBonus" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:border-accent focus:outline-none transition-all" required>
+              </div>
+              <div id="cosmosFieldGroup" class="hidden">
+                  <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Paquete Requerido (Meta)</label>
+                  <div class="relative">
+                    <select name="required_pack_id" id="staticPack" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:border-accent focus:outline-none appearance-none cursor-pointer">
+                        <option value="">-- Sin Paquete --</option>
+                        {% for p in packs %}
+                        <option value="{{ p.id }}">{{ p.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <i class="fas fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-xs"></i>
+                  </div>
+              </div>
+            </div>
+            <button type="submit" class="w-full py-5 rounded-3xl bg-accent text-black font-black uppercase tracking-widest hover:brightness-110 shadow-[0_0_20px_rgba(0,224,255,0.2)] transition-all active:scale-[0.98]">Guardar Configuración</button>
+        </form>
+    </div>
+  </div>
+
+  <!-- Modal Dinámica -->
+  <div id="dynamicModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 backdrop-blur-xl bg-black/60">
+    <div class="glass-card w-full max-w-xl rounded-[40px] border border-white/10 overflow-hidden shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+        <div class="px-8 py-6 border-b border-white/5 bg-white/5 flex items-center justify-between">
+            <h3 id="dynamicModalTitle" class="text-xl font-black text-white uppercase italic tracking-tighter">Nueva Bendición Dinámica</h3>
+            <button onclick="closeDynamicModal()" class="text-gray-500 hover:text-white"><i class="fas fa-times"></i></button>
+        </div>
+        <form id="dynamicForm" class="p-8 space-y-6 h-[70vh] overflow-y-auto custom-scrollbar">
+            {% csrf_token %}
+            <input type="hidden" name="id" id="dynamicId">
+            <div>
+                <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Nombre Descriptivo</label>
+                <input type="text" name="name" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:border-accent focus:outline-none transition-all" required placeholder="Ej: Aura Galáctica">
+            </div>
+            
+            <div class="grid grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Costo en Gold</label>
+                    <input type="number" step="0.01" name="price_gold" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:border-accent focus:outline-none" value="0">
+                </div>
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Cooldown (Horas)</label>
+                    <input type="number" name="cooldown_hours" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:border-accent focus:outline-none" value="24">
+                </div>
+            </div>
+
+            <div class="p-6 rounded-3xl border border-white/5 bg-white/[0.02] space-y-6">
+              <p class="text-[9px] font-black uppercase text-accent tracking-[0.2em]">Opcional: Requerir Mineral</p>
+              <div class="grid grid-cols-2 gap-6">
+                  <div>
+                      <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Mineral</label>
+                      <div class="relative">
+                        <select name="price_mineral_id" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:border-accent focus:outline-none appearance-none">
+                            <option value="">-- Ninguno --</option>
+                            {% for m in minerals %}
+                            <option value="{{ m.id }}">{{ m.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-xs"></i>
+                      </div>
+                  </div>
+                  <div>
+                      <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Cantidad de Costo</label>
+                      <input type="number" step="0.01" name="price_mineral_qty" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:border-accent focus:outline-none" value="0">
+                  </div>
+              </div>
+            </div>
+
+            <div class="p-6 rounded-3xl border border-white/5 bg-white/[0.02] space-y-6 mt-4">
+              <p class="text-[9px] font-black uppercase text-accent tracking-[0.2em]">Recompensa (Farmeo)</p>
+              <div class="grid grid-cols-2 gap-6">
+                  <div>
+                      <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Mineral Dado</label>
+                      <div class="relative">
+                        <select name="reward_mineral_id" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:border-accent focus:outline-none appearance-none">
+                            <option value="">-- Ninguno --</option>
+                            {% for m in minerals %}
+                            <option value="{{ m.id }}">{{ m.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <i class="fas fa-chevron-down absolute right-6 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none text-xs"></i>
+                      </div>
+                  </div>
+                  <div>
+                      <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Ctd. de Mineral</label>
+                      <input type="number" step="0.01" name="reward_mineral_qty" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:border-accent focus:outline-none" value="0">
+                  </div>
+              </div>
+              <div>
+                  <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Oro Dado (Cosmos Gold)</label>
+                  <input type="number" step="0.01" name="reward_gold" class="w-full bg-white/5 border border-white/10 rounded-2xl px-6 py-4 text-white font-bold focus:border-accent focus:outline-none" value="0">
+              </div>
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-black text-gray-500 uppercase tracking-[0.2em] mb-3 ml-1">Identidad Visual (Imagen/GIF)</label>
+                <div id="dynamicImagePreview" class="relative border-2 border-dashed border-white/10 rounded-3xl p-8 text-center hover:border-accent/40 transition-colors group cursor-pointer overflow-hidden min-h-[160px] flex flex-col items-center justify-center">
+                  <input type="file" name="image" id="dynamicImageInput" class="absolute inset-0 opacity-0 z-20 cursor-pointer" onchange="previewImage(this)">
+                  <div id="previewDefault" class="z-10">
+                    <i class="fas fa-cloud-upload-alt text-3xl text-gray-600 group-hover:text-accent transition-colors mb-2"></i>
+                    <p class="text-xs text-gray-500 font-bold uppercase tracking-widest">Click o arrastra para subir</p>
+                  </div>
+                  <div id="previewImageArea" class="absolute inset-0 hidden z-10">
+                    <img id="previewImg" src="" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <span class="text-[10px] font-black uppercase text-white tracking-widest">Cambiar Imagen</span>
+                    </div>
+                  </div>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
+                <input type="checkbox" name="is_active" id="activeChk" checked class="w-4 h-4 rounded bg-white/5 border-white/10 text-accent">
+                <label for="activeChk" class="text-xs text-gray-300 font-bold uppercase">Bendición Activa</label>
+            </div>
+            <button type="submit" id="dynamicSubmit" class="w-full py-4 rounded-2xl bg-accent text-black font-black uppercase tracking-widest hover:brightness-110 shadow-lg transition-all">Crear Nueva Bendición</button>
+        </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    function openStaticModal(id, name, bonus, type, packId) {
+        document.getElementById('staticId').value = id;
+        document.getElementById('staticName').value = name;
+        document.getElementById('staticBonus').value = bonus;
+        if (type === 'cosmos') {
+            document.getElementById('cosmosFieldGroup').classList.remove('hidden');
+            document.getElementById('staticPack').value = packId;
+        } else {
+            document.getElementById('cosmosFieldGroup').classList.add('hidden');
+        }
+        document.getElementById('staticModal').classList.remove('hidden');
+        document.getElementById('staticModal').classList.add('flex');
+    }
+    function closeStaticModal() {
+        document.getElementById('staticModal').classList.add('hidden');
+        document.getElementById('staticModal').classList.remove('flex');
+    }
+    function openDynamicModal(id, name, gold, cooldown, mineralId, mineralQty, isActive, imageUrl, rewardId, rewardQty, rewardGold) {
+        if (id) {
+            document.getElementById('dynamicModalTitle').innerText = 'Editar Bendición';
+            document.getElementById('dynamicSubmit').innerText = 'Guardar Cambios';
+            document.getElementById('dynamicId').value = id;
+            document.querySelector('#dynamicForm [name="name"]').value = name;
+            document.querySelector('#dynamicForm [name="price_gold"]').value = gold;
+            document.querySelector('#dynamicForm [name="cooldown_hours"]').value = cooldown;
+            document.querySelector('#dynamicForm [name="price_mineral_id"]').value = mineralId;
+            document.querySelector('#dynamicForm [name="price_mineral_qty"]').value = mineralQty;
+            document.querySelector('#dynamicForm [name="reward_mineral_id"]').value = rewardId;
+            document.querySelector('#dynamicForm [name="reward_mineral_qty"]').value = rewardQty;
+            document.querySelector('#dynamicForm [name="reward_gold"]').value = rewardGold || '0';
+            document.querySelector('#dynamicForm [name="is_active"]').checked = isActive === 'true';
+
+            if (imageUrl) {
+                document.getElementById('previewImg').src = imageUrl;
+                document.getElementById('previewImageArea').classList.remove('hidden');
+                document.getElementById('previewDefault').classList.add('hidden');
+            } else {
+                document.getElementById('previewImageArea').classList.add('hidden');
+                document.getElementById('previewDefault').classList.remove('hidden');
+            }
+        } else {
+            document.getElementById('dynamicModalTitle').innerText = 'Nueva Bendición';
+            document.getElementById('dynamicSubmit').innerText = 'Crear Nueva Bendición';
+            document.getElementById('dynamicForm').reset();
+            document.getElementById('dynamicId').value = '';
+            document.getElementById('previewImageArea').classList.add('hidden');
+            document.getElementById('previewDefault').classList.remove('hidden');
+        }
+        document.getElementById('dynamicModal').classList.remove('hidden');
+        document.getElementById('dynamicModal').classList.add('flex');
+    }
+
+    function previewImage(input) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('previewImg').src = e.target.result;
+                document.getElementById('previewImageArea').classList.remove('hidden');
+                document.getElementById('previewDefault').classList.add('hidden');
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    function closeDynamicModal() {
+        document.getElementById('dynamicModal').classList.add('hidden');
+        document.getElementById('dynamicModal').classList.remove('flex');
+    }
+
+    async function deleteBlessing(id) {
+        const result = await Swal.fire({
+            title: '¿Estás seguro?',
+            text: "Esta acción no se puede deshacer.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar'
+        });
+        if (result.isConfirmed) {
+            const res = await fetch(`/dashboard/blessings/delete/${id}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            const data = await res.json();
+            if (data.success) location.reload(); else alert(data.error);
+        }
+    }
+
+    document.getElementById('staticForm').onsubmit = async (e) => {
+        e.preventDefault();
+        Swal.fire({ title: 'Guardando...', didOpen: () => Swal.showLoading() });
+        const id = document.getElementById('staticId').value;
+        try {
+          const res = await fetch(`/dashboard/blessings/static/update/${id}/`, {
+              method: 'POST',
+              body: new FormData(e.target)
+          });
+          const data = await res.json();
+          if (data.success) {
+            Swal.fire('¡Éxito!', 'Configuración actualizada.', 'success').then(() => location.reload());
+          } else {
+            Swal.fire('Error', data.error, 'error');
+          }
+        } catch(err) { Swal.fire('Error', 'No se pudo conectar.', 'error'); }
+    };
+
+    document.getElementById('dynamicForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const id = document.getElementById('dynamicId').value;
+        const isEdit = id !== '';
+        const url = isEdit ? `/dashboard/blessings/update/${id}/` : '/dashboard/blessings/create/';
+        const loadingText = isEdit ? 'Guardando...' : 'Creando...';
+        const successText = isEdit ? 'Bendición actualizada correctamente.' : 'Bendición creada correctamente.';
+        
+        Swal.fire({ title: loadingText, didOpen: () => Swal.showLoading() });
+        try {
+          const res = await fetch(url, {
+              method: 'POST',
+              body: new FormData(e.target)
+          });
+          const data = await res.json();
+          if (data.success) {
+            Swal.fire('¡Éxito!', successText, 'success').then(() => location.reload());
+          } else {
+            Swal.fire('Error', data.error || 'Error desconocido.', 'error');
+          }
+        } catch(err) { Swal.fire('Error', 'No se pudo conectar.', 'error'); }
+    };
+  </script>
+</body>
+</html>

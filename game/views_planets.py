@@ -168,12 +168,21 @@ def prepare_trip(request):
         season__end_date__gte=now_dt
     ).values_list('season_id', flat=True))
 
+    # Calculate total victory bonus from active blessings
+    # We only sum static blessings as per user request ("las que creamos a codigo")
+    blessing_bonus = 0.0
+    from .models_blessings import UserBlessingClaim
+    claims = UserBlessingClaim.objects.filter(user=request.user, static_blessing__isnull=False)
+    for c in claims:
+        blessing_bonus += float(c.static_blessing.bonus_percentage)
+
     return render(request, 'game/prepare_trip.html', {
         'miners': miners,
         'tools': tools,
         'transports': transports,
         'planets': planets,
         'user_seasons': user_seasons,
+        'blessing_bonus': blessing_bonus,
         'now': now_dt,
     })
 

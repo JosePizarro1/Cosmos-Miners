@@ -9,12 +9,15 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script>
     tailwind.config = {
-      theme: { extend: { colors: { space: "#05050f", card: "rgba(20,30,60,0.75)", accent: "#00e0ff", pink: "#ff4d8d", blueglow: "#0077ff" } } }
+      theme: { extend: { colors: { space: "#05050f", card: "rgba(20,30,60,0.75)", accent: "#00e0ff", pink: "#ff4d8d", blueglow: "#0077ff", gold: "#ffca28" } } }
     }
   </script>
   <style>
     option { background-color: #0c1a3a; }
     .reward-row { border-bottom: 1px solid rgba(255,255,255,0.05); }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+    ::-webkit-scrollbar-thumb { background: #00e0ff; border-radius: 10px; }
   </style>
 </head>
 <body class="min-h-screen bg-space text-white overflow-x-hidden relative">
@@ -35,32 +38,31 @@
 
   <section class="relative z-10 px-6 mt-2 mb-6 max-w-6xl mx-auto">
     <h1 class="text-3xl font-black leading-tight bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">Gestión de Paquetes</h1>
-    <p class="text-sm text-gray-300 mt-1">Crea paquetes con mineros y herramientas que los jugadores podrán comprar.</p>
+    <p class="text-sm text-gray-300 mt-1">Configura paquetes con pools de activos y bendiciones dinámicas.</p>
   </section>
 
   <main class="relative z-10 px-6 pb-20 max-w-6xl mx-auto">
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="font-bold text-lg flex items-center gap-2"><i class="fas fa-cubes text-accent text-sm"></i> Paquetes</h3>
-      <button id="btnNewPack" class="px-4 py-2 rounded bg-accent text-black font-bold text-sm flex items-center gap-2">
-        <i class="fas fa-plus"></i> Nuevo Paquete
+    <div class="flex items-center justify-between mb-3 text-white">
+      <h3 class="font-bold text-lg flex items-center gap-2"><i class="fas fa-cubes text-accent text-sm"></i> Paquetes Registrados</h3>
+      <button id="btnNewPack" class="px-4 py-2 rounded-xl bg-accent text-black font-black text-xs uppercase tracking-widest shadow-lg shadow-accent/20 hover:scale-105 transition-all">
+        <i class="fas fa-plus mr-1"></i> Crear Paquete
       </button>
     </div>
-    <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6">
+    <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-2xl">
       <div class="overflow-x-auto">
         <table class="w-full text-left text-sm">
-          <thead class="text-gray-400 text-xs border-b border-white/5">
+          <thead class="text-gray-400 text-xs border-b border-white/5 uppercase tracking-tighter font-black">
             <tr>
-              <th class="py-3">Nombre</th>
-              <th>Precio</th>
-              <th>Mineros</th>
-              <th>Herramientas</th>
-              <th>Link</th>
+              <th class="py-4">Paquete</th>
+              <th>Precio / Pago</th>
+              <th>Recompensas (Pools)</th>
+              <th>Enlace</th>
               <th>Estado</th>
-              <th></th>
+              <th class="text-right">Acciones</th>
             </tr>
           </thead>
           <tbody id="packsTable">
-            <tr><td colspan="7" class="text-center text-gray-400 text-xs py-6">Cargando...</td></tr>
+            <tr><td colspan="6" class="text-center text-gray-400 text-xs py-12">Cargando paquetes estelares...</td></tr>
           </tbody>
         </table>
       </div>
@@ -68,117 +70,137 @@
   </main>
 
   <!-- MODAL PACK -->
-  <div id="packModal" class="fixed inset-0 hidden items-center justify-center z-50">
-    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="modalBg"></div>
-    <div class="relative bg-[#080d1e] border border-white/10 rounded-3xl p-6 w-[96%] max-w-3xl overflow-y-auto max-h-[95vh] shadow-2xl">
-      <div class="flex items-center justify-between mb-5">
-        <h4 id="modalTitle" class="font-black text-xl bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">Nuevo Paquete</h4>
-        <button id="closePackModal" class="text-gray-400 hover:text-white text-xl"><i class="fas fa-times"></i></button>
+  <div id="packModal" class="fixed inset-0 hidden items-center justify-center z-50 p-4">
+    <div class="absolute inset-0 bg-black/80 backdrop-blur-md" id="modalBg"></div>
+    <div class="relative bg-[#0a0f1e] border border-white/10 rounded-[2.5rem] p-8 w-full max-w-4xl overflow-y-auto max-h-[95vh] shadow-[0_0_50px_rgba(0,0,0,0.5)]">
+      <div class="flex items-center justify-between mb-8">
+        <div>
+          <h4 id="modalTitle" class="font-black text-2xl bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent uppercase tracking-tighter">Nuevo Paquete de Cosmos</h4>
+          <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Configuración técnica de recompensas</p>
+        </div>
+        <button id="closePackModal" class="bg-white/5 w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-white transition-all"><i class="fas fa-times"></i></button>
       </div>
 
-      <form id="packForm" enctype="multipart/form-data" class="space-y-6">
+      <form id="packForm" enctype="multipart/form-data" class="space-y-8">
         <input type="hidden" name="pack_id"/>
 
-        <!-- Información básica -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label class="text-[10px] uppercase text-gray-400 font-bold">Nombre *</label>
-            <input name="name" type="text" required class="w-full mt-1 p-3 rounded-lg bg-white/5 text-white border border-white/10"/>
-          </div>
-          <div>
-            <label class="text-[10px] uppercase text-gray-400 font-bold">Imagen</label>
-            <input name="image" type="file" accept="image/*" class="w-full mt-1 p-2 rounded-lg bg-white/5 text-white border border-white/10 text-sm"/>
-          </div>
-          <div class="md:col-span-2">
-            <label class="text-[10px] uppercase text-gray-400 font-bold">Descripción</label>
-            <textarea name="description" rows="2" class="w-full mt-1 p-3 rounded-lg bg-white/5 text-white border border-white/10"></textarea>
-          </div>
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+          <!-- Col Izquierda: Info básica -->
+          <div class="md:col-span-4 space-y-4">
+            <div class="bg-white/5 p-4 rounded-2xl border border-white/5">
+              <label class="text-[9px] uppercase text-accent font-black tracking-widest block mb-2">Imagen Principal</label>
+              <div class="relative group cursor-pointer h-32 rounded-xl border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden">
+                 <i class="fas fa-cloud-arrow-up text-2xl text-gray-600 group-hover:text-accent transition-all"></i>
+                 <input name="image" type="file" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer"/>
+              </div>
+            </div>
 
-        <!-- Precio -->
-        <div class="border-t border-white/5 pt-4">
-          <p class="text-xs font-bold uppercase text-yellow-400 mb-3"><i class="fas fa-coins mr-1"></i> Precio de Compra</p>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>
-              <label class="text-[10px] uppercase text-gray-400">Cosmos Gold</label>
-              <input name="price_gold" type="number" step="0.01" value="0" class="w-full mt-1 p-3 rounded-lg bg-white/5 text-white border border-white/10"/>
+              <label class="text-[9px] uppercase text-gray-500 font-black tracking-widest ml-1">Nombre</label>
+              <input name="name" type="text" required class="w-full mt-1 p-3 rounded-xl bg-white/5 text-white border border-white/10 focus:border-accent/40 outline-none transition-all"/>
             </div>
+
             <div>
-              <label class="text-[10px] uppercase text-gray-400">Mineral alternativo</label>
-              <select name="purchase_mineral_id" class="w-full mt-1 p-3 rounded-lg bg-white/5 text-white border border-white/10">
-                <option value="">— Ninguno (usar Gold) —</option>
-                {% for m in minerals %}
-                <option value="{{ m.id }}">{{ m.name }}</option>
-                {% endfor %}
-              </select>
-            </div>
-            <div>
-              <label class="text-[10px] uppercase text-gray-400">Cantidad Mineral</label>
-              <input name="purchase_mineral_qty" type="number" min="0" value="0" class="w-full mt-1 p-3 rounded-lg bg-white/5 text-white border border-white/10"/>
+              <label class="text-[9px] uppercase text-gray-500 font-black tracking-widest ml-1">Descripción</label>
+              <textarea name="description" rows="3" class="w-full mt-1 p-3 rounded-xl bg-white/5 text-white border border-white/10 focus:border-accent/40 outline-none transition-all text-xs"></textarea>
             </div>
           </div>
+
+          <!-- Col Derecha: Configuración avanzada -->
+          <div class="md:col-span-8 space-y-6">
+            <!-- Pagos -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-yellow-500/5 p-4 rounded-2xl border border-yellow-500/10">
+                <label class="text-[9px] uppercase text-yellow-500 font-black tracking-widest block mb-2">Costo en Cosmos Gold</label>
+                <div class="flex items-center gap-2 bg-black/40 p-1 px-3 rounded-xl border border-white/5">
+                  <i class="fas fa-coins text-yellow-500"></i>
+                  <input name="price_gold" type="number" step="0.01" value="0" class="w-full bg-transparent p-2 text-white outline-none font-bold"/>
+                </div>
+              </div>
+              <div class="bg-accent/5 p-4 rounded-2xl border border-accent/10">
+                <label class="text-[9px] uppercase text-accent font-black tracking-widest block mb-2">Pago con Mineral</label>
+                <div class="flex gap-2">
+                  <select name="purchase_mineral_id" class="flex-1 bg-black/40 p-2 rounded-xl text-xs text-white outline-none border border-white/5">
+                    <option value="">Ninguno</option>
+                    {% for m in minerals %}
+                    <option value="{{ m.id }}">{{ m.name }}</option>
+                    {% endfor %}
+                  </select>
+                  <input name="purchase_mineral_qty" type="number" min="0" value="0" class="w-20 bg-black/40 p-2 rounded-xl text-xs text-white outline-none border border-white/5" placeholder="Cant."/>
+                </div>
+              </div>
+            </div>
+
+            <!-- Link -->
+            <div class="bg-pink/5 p-4 rounded-2xl border border-pink/10">
+               <label class="text-[9px] uppercase text-pink font-black tracking-widest block mb-2"><i class="fas fa-link mr-1"></i> Enlace Externo (Opcional)</p>
+               <input name="external_link" type="url" placeholder="https://..." class="w-full bg-black/40 p-3 rounded-xl text-xs text-white outline-none border border-white/5 focus:border-pink/40"/>
+               <p class="text-[8px] text-gray-500 mt-2 font-bold uppercase italic">* El enlace anula los precios anteriores y redirige al usuario.</p>
+            </div>
+
+            <!-- Reward Pools -->
+            <div class="space-y-4">
+               <!-- Pool Bendiciones -->
+               <div class="bg-white/5 p-5 rounded-3xl border border-white/5">
+                  <div class="flex items-center justify-between mb-4">
+                    <h5 class="text-[10px] uppercase font-black text-blueglow tracking-widest"><i class="fas fa-wand-sparkles mr-1"></i> Pool de Bendiciones</h5>
+                    <button type="button" id="addBlessingRow" class="text-[9px] bg-blueglow/10 border border-blueglow/20 text-blueglow px-3 py-1.5 rounded-full font-black hover:bg-blueglow/20 transition-all uppercase tracking-widest">+ Añadir</button>
+                  </div>
+                  <div id="blessingRows" class="space-y-2"></div>
+                  <div class="text-right mt-3">
+                    <span class="text-[9px] font-black uppercase text-gray-600">Suma Prob: <span id="blessingSum" class="text-white ml-1">0.0000</span></span>
+                  </div>
+               </div>
+
+               <!-- Pool Mineros -->
+               <div class="bg-white/5 p-5 rounded-3xl border border-white/5">
+                  <div class="flex items-center justify-between mb-4">
+                    <h5 class="text-[10px] uppercase font-black text-accent tracking-widest"><i class="fas fa-user-astronaut mr-1"></i> Pool de Mineros</h5>
+                    <button type="button" id="addMinerRow" class="text-[9px] bg-accent/10 border border-accent/20 text-accent px-3 py-1.5 rounded-full font-black hover:bg-accent/20 transition-all uppercase tracking-widest">+ Añadir</button>
+                  </div>
+                  <div id="minerRows" class="space-y-2"></div>
+                  <div class="text-right mt-3">
+                    <span class="text-[9px] font-black uppercase text-gray-600">Suma Prob: <span id="minerSum" class="text-white ml-1">0.0000</span></span>
+                  </div>
+               </div>
+
+               <!-- Pool Herramientas -->
+               <div class="bg-white/5 p-5 rounded-3xl border border-white/5">
+                  <div class="flex items-center justify-between mb-4">
+                    <h5 class="text-[10px] uppercase font-black text-yellow-500 tracking-widest"><i class="fas fa-screwdriver-wrench mr-1"></i> Pool de Herramientas</h5>
+                    <button type="button" id="addToolRow" class="text-[9px] bg-yellow-500/10 border border-yellow-500/20 text-yellow-500 px-3 py-1.5 rounded-full font-black hover:bg-yellow-500/20 transition-all uppercase tracking-widest">+ Añadir</button>
+                  </div>
+                  <div id="toolRows" class="space-y-2"></div>
+                  <div class="text-right mt-3">
+                    <span class="text-[9px] font-black uppercase text-gray-600">Suma Prob: <span id="toolSum" class="text-white ml-1">0.0000</span></span>
+                  </div>
+               </div>
+
+                <!-- Pool Transportes -->
+                <div class="bg-white/5 p-5 rounded-3xl border border-white/5">
+                  <div class="flex items-center justify-between mb-4">
+                    <h5 class="text-[10px] uppercase font-black text-pink tracking-widest"><i class="fas fa-shuttle-space mr-1"></i> Pool de Transportes</h5>
+                    <button type="button" id="addTransportRow" class="text-[9px] bg-pink/10 border border-pink/20 text-pink px-3 py-1.5 rounded-full font-black hover:bg-pink/20 transition-all uppercase tracking-widest">+ Añadir</button>
+                  </div>
+                  <div id="transportRows" class="space-y-2"></div>
+                  <div class="text-right mt-3">
+                    <span class="text-[9px] font-black uppercase text-gray-600">Suma Prob: <span id="transportSum" class="text-white ml-1">0.0000</span></span>
+                  </div>
+               </div>
+            </div>
+          </div>
         </div>
 
-        <!-- Link externo -->
-        <div class="border-t border-white/5 pt-4">
-          <p class="text-xs font-bold uppercase text-pink mb-1"><i class="fas fa-link mr-1"></i> Link Externo (Prioridad Absoluta)</p>
-          <p class="text-[10px] text-gray-500 mb-3">Si se llena, el botón de compra abrirá esta URL. No se descuenta Gold ni Mineral.</p>
-          <input name="external_link" type="url" placeholder="https://..." class="w-full p-3 rounded-lg bg-white/5 text-white border border-white/10"/>
-        </div>
-
-        <!-- Recompensas Transportes -->
-        <div class="border-t border-white/5 pt-4">
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-xs font-bold uppercase text-pink"><i class="fas fa-shuttle-space mr-1"></i> Pool de Transportes <span class="text-gray-500 font-normal normal-case">(suma debe ser 1)</span></p>
-            <button type="button" id="addTransportRow" class="text-xs bg-pink/10 border border-pink/20 text-pink px-3 py-1 rounded-lg hover:bg-pink/20 transition-all">
-              + Añadir Transporte
-            </button>
-          </div>
-          <div id="transportRows" class="space-y-2"></div>
-          <div class="text-right mt-2">
-            <span class="text-[10px] font-mono text-gray-400">Suma: <span id="transportSum" class="text-white font-bold">0.0000</span></span>
-          </div>
-        </div>
-
-        <!-- Recompensas Mineros -->
-        <div class="border-t border-white/5 pt-4">
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-xs font-bold uppercase text-accent"><i class="fas fa-user-astronaut mr-1"></i> Pool de Mineros <span class="text-gray-500 font-normal normal-case">(la suma de probabilidades debe ser 1)</span></p>
-            <button type="button" id="addMinerRow" class="text-xs bg-accent/10 border border-accent/20 text-accent px-3 py-1 rounded-lg hover:bg-accent/20 transition-all">
-              + Añadir Minero
-            </button>
-          </div>
-          <div id="minerRows" class="space-y-2"></div>
-          <div class="text-right mt-2">
-            <span class="text-[10px] font-mono text-gray-400">Suma: <span id="minerSum" class="text-white font-bold">0.0000</span></span>
-          </div>
-        </div>
-
-        <!-- Recompensas Herramientas -->
-        <div class="border-t border-white/5 pt-4">
-          <div class="flex items-center justify-between mb-3">
-            <p class="text-xs font-bold uppercase text-yellow-400"><i class="fas fa-screwdriver-wrench mr-1"></i> Pool de Herramientas <span class="text-gray-500 font-normal normal-case">(suma debe ser 1)</span></p>
-            <button type="button" id="addToolRow" class="text-xs bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 px-3 py-1 rounded-lg hover:bg-yellow-400/20 transition-all">
-              + Añadir Herramienta
-            </button>
-          </div>
-          <div id="toolRows" class="space-y-2"></div>
-          <div class="text-right mt-2">
-            <span class="text-[10px] font-mono text-gray-400">Suma: <span id="toolSum" class="text-white font-bold">0.0000</span></span>
-          </div>
-        </div>
-
-        <!-- Estado -->
-        <div class="border-t border-white/5 pt-4 flex items-center gap-3">
-          <label class="flex items-center gap-2 text-sm text-gray-300">
-            <input name="is_active" type="checkbox" class="accent-cyan-400" checked/>
-            Paquete Activo y Visible en Tienda
+        <!-- Footer Modal -->
+        <div class="border-t border-white/5 pt-8 flex items-center justify-between">
+          <label class="flex items-center gap-3 cursor-pointer group">
+            <input name="is_active" type="checkbox" class="w-5 h-5 accent-accent border-white/10" checked/>
+            <span class="text-xs font-bold text-gray-400 group-hover:text-white transition-all">Visible en la Tienda Pública</span>
           </label>
-        </div>
-
-        <div class="flex justify-end gap-3 pt-2">
-          <button type="button" id="cancelPackModal" class="px-5 py-2 rounded-lg bg-white/5 text-gray-300 hover:bg-white/10">Cancelar</button>
-          <button type="submit" class="px-6 py-2 rounded-lg bg-accent text-black font-bold hover:brightness-110">Guardar Paquete</button>
+          <div class="flex gap-4">
+            <button type="button" id="cancelPackModal" class="px-8 py-3 rounded-2xl bg-white/5 text-gray-300 font-bold uppercase tracking-widest text-[10px] hover:bg-white/10 transition-all">Cancelar</button>
+            <button type="submit" class="px-10 py-3 rounded-2xl bg-gradient-to-r from-accent to-blueglow text-black font-black uppercase tracking-widest text-[10px] shadow-xl shadow-accent/20 hover:scale-105 transition-all">Guardar Paquete</button>
+          </div>
         </div>
       </form>
     </div>
@@ -188,6 +210,7 @@
     const MINERS = {{ miners_json|safe }};
     const TOOLS = {{ tools_json|safe }};
     const TRANSPORTS = {{ transports_json|safe }};
+    const BLESSINGS = {{ blessings_json|safe }};
 
     const csrftoken = (document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)') || [])[2] || '';
 
@@ -203,22 +226,24 @@
     document.getElementById('btnNewPack').addEventListener('click', () => {
       document.getElementById('packForm').reset();
       document.getElementById('packForm').querySelector('[name="pack_id"]').value = '';
-      document.getElementById('modalTitle').textContent = 'Nuevo Paquete';
+      document.getElementById('modalTitle').textContent = 'Crear Paquete Cósmico';
       document.getElementById('minerRows').innerHTML = '';
       document.getElementById('toolRows').innerHTML = '';
       document.getElementById('transportRows').innerHTML = '';
+      document.getElementById('blessingRows').innerHTML = '';
       updateSums();
       openModal();
     });
+
     document.getElementById('closePackModal').addEventListener('click', closeModal);
     document.getElementById('cancelPackModal').addEventListener('click', closeModal);
     document.getElementById('modalBg').addEventListener('click', closeModal);
 
-    // ─── Reward Rows ────────────────────────────────────────────────────
+    // ─── Reward Rows Builder ──────────────────────────────────────────
     function buildSelect(options, namePrefix, selectedId) {
       const sel = document.createElement('select');
       sel.name = namePrefix;
-      sel.className = 'flex-1 p-2 rounded-lg bg-white/5 text-white border border-white/10 text-sm min-w-0';
+      sel.className = 'flex-1 p-2 rounded-xl bg-black/40 text-white border border-white/5 text-[10px] font-bold outline-none focus:border-accent/30';
       const empty = document.createElement('option');
       empty.value = ''; empty.textContent = '— Seleccionar —';
       sel.appendChild(empty);
@@ -233,27 +258,28 @@
 
     function buildRewardRow(containerId, selectOptions, namePrefix, colorClass, existingData = null) {
       const row = document.createElement('div');
-      row.className = 'flex gap-2 items-start flex-wrap reward-row pb-2';
+      row.className = 'flex gap-2 items-center reward-row pb-2 group';
 
       const sel = buildSelect(selectOptions, namePrefix + '_id[]', existingData?.id);
+      
       const chanceInput = document.createElement('input');
       chanceInput.type = 'number'; chanceInput.step = '0.0001'; chanceInput.min = '0'; chanceInput.max = '1';
       chanceInput.name = namePrefix + '_chance[]';
-      chanceInput.placeholder = 'Prob. (0-1)';
+      chanceInput.placeholder = 'P (0-1)';
       chanceInput.value = existingData?.chance ?? '';
-      chanceInput.className = 'w-28 p-2 rounded-lg bg-white/5 text-white border border-white/10 text-sm';
+      chanceInput.className = 'w-24 p-2 rounded-xl bg-black/40 text-white border border-white/5 text-[10px] font-bold outline-none text-center focus:border-accent/30';
 
       const labelInput = document.createElement('input');
       labelInput.type = 'text';
       labelInput.name = namePrefix + '_label[]';
-      labelInput.placeholder = 'Etiqueta visible';
+      labelInput.placeholder = 'Etiqueta';
       labelInput.value = existingData?.label ?? '';
-      labelInput.className = 'w-32 p-2 rounded-lg bg-white/5 text-white border border-white/10 text-sm';
+      labelInput.className = 'w-28 p-2 rounded-xl bg-black/40 text-white border border-white/5 text-[10px] font-bold outline-none focus:border-accent/30';
 
       const delBtn = document.createElement('button');
       delBtn.type = 'button';
-      delBtn.innerHTML = '<i class="fas fa-trash"></i>';
-      delBtn.className = `p-2 rounded-lg ${colorClass} text-red-400 hover:bg-red-400/20 transition-all`;
+      delBtn.innerHTML = '<i class="fas fa-trash-can"></i>';
+      delBtn.className = `w-8 h-8 rounded-lg flex items-center justify-center text-red-500/40 hover:text-red-500 hover:bg-red-500/10 transition-all text-xs`;
       delBtn.onclick = () => { row.remove(); updateSums(); };
 
       chanceInput.addEventListener('input', updateSums);
@@ -266,28 +292,78 @@
       updateSums();
     }
 
-    document.getElementById('addMinerRow').addEventListener('click', () => {
-      buildRewardRow('minerRows', MINERS, 'miner', 'bg-red-400/10');
-    });
-    document.getElementById('addToolRow').addEventListener('click', () => {
-      buildRewardRow('toolRows', TOOLS, 'tool', 'bg-red-400/10');
-    });
-    document.getElementById('addTransportRow').addEventListener('click', () => {
-      buildRewardRow('transportRows', TRANSPORTS, 'transport', 'bg-red-400/10');
-    });
+    document.getElementById('addMinerRow').addEventListener('click', () => buildRewardRow('minerRows', MINERS, 'miner'));
+    document.getElementById('addToolRow').addEventListener('click', () => buildRewardRow('toolRows', TOOLS, 'tool'));
+    document.getElementById('addTransportRow').addEventListener('click', () => buildRewardRow('transportRows', TRANSPORTS, 'transport'));
+    document.getElementById('addBlessingRow').addEventListener('click', () => buildRewardRow('blessingRows', BLESSINGS, 'blessing'));
 
     function updateSums() {
-      ['miner', 'tool', 'transport'].forEach(prefix => {
+      ['miner', 'tool', 'transport', 'blessing'].forEach(prefix => {
         const inputs = document.querySelectorAll(`input[name="${prefix}_chance[]"]`);
         let sum = 0;
         inputs.forEach(i => sum += parseFloat(i.value || 0));
         const el = document.getElementById(`${prefix}Sum`);
-        el.textContent = sum.toFixed(4);
-        el.className = Math.abs(sum - 1) < 0.001 || sum === 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold';
+        if (el) {
+          el.textContent = sum.toFixed(4);
+          el.className = Math.abs(sum - 1) < 0.001 || sum === 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold';
+        }
       });
     }
 
-    // ─── Submit ────────────────────────────────────────────────────────
+    // ─── Table ───
+    function renderPackRow(p) {
+      const price = p.external_link
+        ? `<span class="bg-pink/10 text-pink text-[9px] font-black px-3 py-1 rounded-full border border-pink/20 uppercase tracking-tighter"><i class="fas fa-link mr-1"></i>Enlace</span>`
+        : p.purchase_mineral_name
+          ? `<div class="flex flex-col"><span class="text-xs font-black text-white">${p.purchase_mineral_qty}</span><span class="text-[8px] text-gray-500 uppercase font-black tracking-tighter">${p.purchase_mineral_name}</span></div>`
+          : `<div class="flex flex-col"><span class="text-xs font-black text-yellow-500">${p.price_gold}</span><span class="text-[8px] text-gray-500 uppercase font-black tracking-tighter">Gold</span></div>`;
+
+      const activeBadge = p.is_active
+        ? '<span class="flex items-center gap-1 text-[9px] font-black uppercase text-green-400"><span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span> Activo</span>'
+        : '<span class="flex items-center gap-1 text-[9px] font-black uppercase text-gray-500"><span class="w-1.5 h-1.5 rounded-full bg-gray-500"></span> Oculto</span>';
+
+      const rewardsInfo = `
+        <div class="flex gap-2">
+          <span class="bg-blueglow/10 text-blueglow text-[8px] font-black px-2 py-0.5 rounded border border-blueglow/10">${p.blessing_rewards.length} B</span>
+          <span class="bg-accent/10 text-accent text-[8px] font-black px-2 py-0.5 rounded border border-accent/10">${p.miner_rewards.length} M</span>
+          <span class="bg-yellow-500/10 text-yellow-500 text-[8px] font-black px-2 py-0.5 rounded border border-yellow-500/10">${p.tool_rewards.length} H</span>
+          <span class="bg-pink/10 text-pink text-[8px] font-black px-2 py-0.5 rounded border border-pink/10">${p.transport_rewards.length} T</span>
+        </div>
+      `;
+
+      return `<tr class="border-t border-white/5 hover:bg-white/5 transition-all group">
+        <td class="py-4">
+          <div class="flex flex-col">
+            <span class="font-black text-white text-base tracking-tighter">${p.name}</span>
+            <span class="text-[9px] text-gray-500 uppercase font-bold truncate max-w-[150px]">${p.description.substring(0,30)}...</span>
+          </div>
+        </td>
+        <td>${price}</td>
+        <td>${rewardsInfo}</td>
+        <td><span class="text-[8px] text-gray-400 font-mono">${p.external_link ? p.external_link.substring(0,20)+'...' : '—'}</span></td>
+        <td>${activeBadge}</td>
+        <td class="text-right py-3">
+          <div class="flex justify-end gap-1 opacity-40 group-hover:opacity-100 transition-all">
+            <button data-id="${p.id}" class="edit-pack w-8 h-8 rounded-xl bg-white/5 hover:bg-accent hover:text-black transition-all flex items-center justify-center"><i class="fas fa-pen text-[10px]"></i></button>
+            <button data-id="${p.id}" class="toggle-pack w-8 h-8 rounded-xl bg-white/5 hover:bg-blueglow hover:text-white transition-all flex items-center justify-center"><i class="fas fa-power-off text-[10px]"></i></button>
+            <button data-id="${p.id}" class="del-pack w-8 h-8 rounded-xl bg-white/5 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"><i class="fas fa-trash text-[10px]"></i></button>
+          </div>
+        </td>
+      </tr>`;
+    }
+
+    async function loadPacks() {
+      const res = await fetch('/dashboard/packs/list/', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken } });
+      const data = await res.json();
+      const tbody = document.getElementById('packsTable');
+      if (!data.items || !data.items.length) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center text-gray-400 text-[10px] py-16 uppercase font-bold tracking-[0.2em]"><i class="fas fa-ghost text-2xl block mb-3 opacity-20"></i>No hay paquetes en órbita</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.items.map(renderPackRow).join('');
+    }
+
+    // ─── Update & Create ───
     document.getElementById('packForm').addEventListener('submit', async (ev) => {
       ev.preventDefault();
       const fd = new FormData(ev.target);
@@ -300,58 +376,16 @@
         if (data.success) {
           closeModal();
           loadPacks();
-          Swal.fire({ icon: 'success', title: 'Guardado', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });
+          Swal.fire({ icon: 'success', title: 'CONFIGURACIÓN GUARDADA', toast: true, position: 'top-end', timer: 2000, showConfirmButton: false, background: '#0a0f1e', color: '#00e0ff' });
         } else {
-          Swal.fire({ icon: 'error', title: data.error || 'Error' });
+          Swal.fire({ icon: 'error', title: 'ERROR', text: data.error, background: '#0a0f1e', color: '#ff4d8d' });
         }
       } catch (e) {
-        Swal.fire({ icon: 'error', title: 'Error de red' });
+        Swal.fire({ icon: 'error', title: 'RED', text: 'No se pudo conectar con el servidor cósmico', background: '#0a0f1e', color: '#ff4d8d' });
       }
     });
 
-    // ─── Table ─────────────────────────────────────────────────────────
-    function renderPackRow(p) {
-      const price = p.external_link
-        ? `<span class="text-pink text-xs font-bold"><i class="fas fa-link mr-1"></i>Link</span>`
-        : p.purchase_mineral_name
-          ? `<span class="text-[10px]">${p.purchase_mineral_qty} ${p.purchase_mineral_name}</span>`
-          : `<span class="text-accent font-mono">${p.price_gold} GOLD</span>`;
-
-      const badge = p.is_active
-        ? '<span class="px-2 py-1 rounded bg-green-400 text-black text-[10px] font-bold">Visible</span>'
-        : '<span class="px-2 py-1 rounded bg-gray-600 text-white text-[10px]">Oculto</span>';
-
-      const linkBadge = p.external_link
-        ? `<a href="${p.external_link}" target="_blank" class="text-accent text-xs truncate max-w-[80px] block hover:underline">${p.external_link.substring(0,25)}...</a>`
-        : '<span class="text-gray-600 text-[10px]">—</span>';
-
-      return `<tr class="border-t border-white/5 hover:bg-white/5 transition-colors">
-        <td class="py-3 font-bold text-white">${p.name}</td>
-        <td>${price}</td>
-        <td><span class="text-[10px] text-accent">${p.miner_rewards.length} minero(s)</span></td>
-        <td><span class="text-[10px] text-yellow-400">${p.tool_rewards.length} herramienta(s)</span></td>
-        <td><span class="text-[10px] text-pink">${(p.transport_rewards||[]).length} transporte(s)</span></td>
-        <td>${linkBadge}</td>
-        <td>${badge}</td>
-        <td class="text-right space-x-2 py-2">
-          <button data-id="${p.id}" class="edit-pack px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 transition-colors"><i class="fas fa-pen text-xs"></i></button>
-          <button data-id="${p.id}" class="toggle-pack px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 transition-colors"><i class="fas fa-power-off text-xs"></i></button>
-          <button data-id="${p.id}" class="del-pack px-3 py-1.5 rounded bg-red-400/10 hover:bg-red-400/20 transition-colors"><i class="fas fa-trash text-red-400 text-xs"></i></button>
-        </td>
-      </tr>`;
-    }
-
-    async function loadPacks() {
-      const res = await fetch('/dashboard/packs/list/', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken } });
-      const data = await res.json();
-      const tbody = document.getElementById('packsTable');
-      if (!data.items || !data.items.length) {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-400 text-xs py-6">Sin paquetes creados</td></tr>';
-        return;
-      }
-      tbody.innerHTML = data.items.map(renderPackRow).join('');
-    }
-
+    // ─── Actions ───
     document.getElementById('packsTable').addEventListener('click', async (ev) => {
       const edit = ev.target.closest('.edit-pack');
       const toggle = ev.target.closest('.toggle-pack');
@@ -377,11 +411,14 @@
         document.getElementById('minerRows').innerHTML = '';
         document.getElementById('toolRows').innerHTML = '';
         document.getElementById('transportRows').innerHTML = '';
-        p.miner_rewards.forEach(r => buildRewardRow('minerRows', MINERS, 'miner', 'bg-red-400/10', { id: r.miner_id, chance: r.chance, label: r.probability_label }));
-        p.tool_rewards.forEach(r => buildRewardRow('toolRows', TOOLS, 'tool', 'bg-red-400/10', { id: r.tool_id, chance: r.chance, label: r.probability_label }));
-        (p.transport_rewards||[]).forEach(r => buildRewardRow('transportRows', TRANSPORTS, 'transport', 'bg-red-400/10', { id: r.transport_id, chance: r.chance, label: r.probability_label }));
+        document.getElementById('blessingRows').innerHTML = '';
+        
+        p.miner_rewards.forEach(r => buildRewardRow('minerRows', MINERS, 'miner', '', { id: r.miner_id, chance: r.chance, label: r.probability_label }));
+        p.tool_rewards.forEach(r => buildRewardRow('toolRows', TOOLS, 'tool', '', { id: r.tool_id, chance: r.chance, label: r.probability_label }));
+        p.transport_rewards.forEach(r => buildRewardRow('transportRows', TRANSPORTS, 'transport', '', { id: r.transport_id, chance: r.chance, label: r.probability_label }));
+        p.blessing_rewards.forEach(r => buildRewardRow('blessingRows', BLESSINGS, 'blessing', '', { id: r.blessing_id, chance: r.chance, label: r.probability_label }));
 
-        document.getElementById('modalTitle').textContent = 'Editar Paquete';
+        document.getElementById('modalTitle').textContent = 'Editar Paquete Cósmico';
         openModal();
       }
 
@@ -394,12 +431,14 @@
       if (del) {
         const id = del.dataset.id;
         const confirm = await Swal.fire({
-          title: '¿Eliminar Paquete?',
-          text: 'Esta acción no se puede deshacer.',
+          title: '¿ELIMINAR PAQUETE?',
+          text: 'Esta acción desintegrará el paquete de la base de datos.',
           icon: 'warning',
           showCancelButton: true,
-          confirmButtonText: 'Eliminar',
-          background: '#0c1a3a', color: '#fff'
+          confirmButtonText: 'DESINTEGRAR',
+          background: '#0a0f1e', color: '#fff',
+          confirmButtonColor: '#ff4d8d',
+          cancelButtonColor: '#1e293b'
         });
         if (confirm.isConfirmed) {
           await fetch(`/dashboard/packs/delete/${id}/`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken } });

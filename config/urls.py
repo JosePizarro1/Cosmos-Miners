@@ -41,6 +41,10 @@ from game.views_packs import (
     packs_admin_view, packs_list, pack_create, pack_update,
     pack_toggle, pack_delete, packs_public_view, buy_pack
 )
+from game.views_blessings import (
+    blessings_admin_view, blessing_create, blessing_update, blessing_delete,
+    static_blessing_update, claim_blessing, farm_dynamic_blessing, my_blessings_view
+)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", login_page, name="login_page"),
@@ -181,6 +185,15 @@ urlpatterns = [
     path("packs/", packs_public_view, name="packs_public"),
     path("packs/buy/<int:pk>/", buy_pack, name="buy_pack"),
 
+    # Blessings Admin & Public
+    path("dashboard/blessings/", blessings_admin_view, name="blessings_admin"),
+    path("dashboard/blessings/create/", blessing_create, name="blessing_create"),
+    path("dashboard/blessings/update/<int:pk>/", blessing_update, name="blessing_update"),
+    path("dashboard/blessings/delete/<int:pk>/", blessing_delete, name="blessing_delete"),
+    path("dashboard/blessings/static/update/<int:pk>/", static_blessing_update, name="static_blessing_update"),
+    path("blessings/claim/<str:blessing_type>/<int:blessing_id>/", claim_blessing, name="claim_blessing"),
+    path("blessings/farm/<int:pk>/", farm_dynamic_blessing, name="farm_blessing"),
+    path("my-blessings/", my_blessings_view, name="my_blessings"),
 ]
 
 if settings.DEBUG:

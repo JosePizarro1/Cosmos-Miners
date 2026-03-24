@@ -99,6 +99,43 @@
       padding: 2px 10px; border-radius: 999px;
       font-size: 10px; font-weight: 700; text-transform: uppercase;
     }
+
+    /* Cinematic Pack Opening */
+    @keyframes pack-vibrate {
+      0%, 100% { transform: scale(1) rotate(0); }
+      20% { transform: scale(1.1) rotate(-3deg); }
+      40% { transform: scale(1.1) rotate(3deg); }
+      60% { transform: scale(1.1) rotate(-3deg); }
+      80% { transform: scale(1.1) rotate(3deg); }
+    }
+    .animate-vibrate { animation: pack-vibrate 0.3s ease-in-out infinite; }
+    
+    @keyframes rays {
+      0% { transform: rotate(0deg) scale(0); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: rotate(180deg) scale(2); opacity: 0; }
+    }
+    .ray {
+      position: absolute; top: 50%; left: 50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, #00e0ff 0%, transparent 70%);
+      clip-path: polygon(50% 50%, 45% 0, 55% 0);
+      transform-origin: center;
+      animation: rays 2s ease-out forwards;
+    }
+
+    @keyframes reward-pop {
+      0% { transform: scale(0.5) translateY(50px); opacity: 0; filter: blur(10px); }
+      100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
+    }
+    .award-card { animation: reward-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+    
+    @keyframes bounce-in {
+      0% { transform: scale(0.5); opacity: 0; }
+      70% { transform: scale(1.05); }
+      100% { transform: scale(1); opacity: 1; }
+    }
+    .animate-bounce-in { animation: bounce-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
   </style>
 </head>
 
@@ -149,6 +186,10 @@
         <button onclick="switchTab('packs')" id="tab-packs"
           class="px-8 py-3 rounded-2xl border border-white/10 font-black text-xs uppercase tracking-widest transition-all">
           Paquetes
+        </button>
+        <button onclick="switchTab('blessings')" id="tab-blessings"
+          class="px-8 py-3 rounded-2xl border border-white/10 font-black text-xs uppercase tracking-widest transition-all">
+          Bendiciones
         </button>
         <button onclick="switchTab('inventory')" id="tab-inventory"
           class="px-8 py-3 rounded-2xl border border-white/10 font-black text-xs uppercase tracking-widest transition-all relative">
@@ -389,6 +430,18 @@
               </div>
             </div>
             {% endif %}
+            {% if pack.blessing_rewards.all %}
+            <div>
+              <p class="text-[10px] font-bold uppercase text-blueglow mb-1"><i class="fas fa-wand-sparkles mr-1"></i>Bendiciones</p>
+              <div class="flex flex-wrap gap-1.5">
+                {% for r in pack.blessing_rewards.all %}
+                <span class="reward-pill bg-blueglow/10 border border-blueglow/20 text-blueglow">
+                  {{ r.blessing.name }} — {{ r.probability_label }}
+                </span>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
           </div>
 
           <!-- Precio y Botón -->
@@ -427,6 +480,104 @@
         <p class="text-gray-500 font-bold">No hay paquetes disponibles por ahora.</p>
       </div>
       {% endif %}
+    </section>
+
+    <!-- BENDICIONES -->
+    <section id="section-blessings" class="tab-content hidden">
+      <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <!-- Bendiciones Estáticas -->
+        {% for sb in static_blessings %}
+        <div class="glass-card rounded-[32px] p-6 flex flex-col items-center text-center gap-4 relative overflow-hidden group border-accent/10">
+          <div class="absolute -top-12 -right-12 w-24 h-24 bg-accent/5 rounded-full blur-2xl group-hover:bg-accent/10 transition-all"></div>
+          
+          {% if sb.id in claimed_static_ids %}
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center">
+             <div class="flex flex-col items-center gap-2">
+               <i class="fas fa-check-circle text-green-400 text-3xl"></i>
+               <span class="bg-green-400 text-black px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest shadow-lg shadow-green-400/20">RECLAMADO</span>
+             </div>
+          </div>
+          {% endif %}
+          
+          <div class="w-20 h-20 rounded-full bg-accent/10 border border-accent/20 flex items-center justify-center text-3xl text-accent animate-float">
+            {% if sb.type == 'oil' %}<i class="fas fa-oil-well"></i>{% endif %}
+            {% if sb.type == 'vip' %}<i class="fas fa-crown"></i>{% endif %}
+            {% if sb.type == 'cosmos' %}<i class="fas fa-shuttle-space"></i>{% endif %}
+            {% if sb.type == 'extra' %}<i class="fas fa-wand-sparkles"></i>{% endif %}
+          </div>
+          
+          <div>
+            <h3 class="font-black text-white text-lg uppercase tracking-tight">{{ sb.name }}</h3>
+            <p class="text-[10px] font-bold text-accent uppercase mb-2">Bonus Visual: +{{ sb.bonus_percentage }}%</p>
+            <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest mb-2">Requisito:</p>
+            <p class="text-gray-400 text-[11px] px-4 leading-relaxed">
+              {% if sb.type == 'oil' %}Tener al menos 1 central petrolera construida.{% endif %}
+              {% if sb.type == 'vip' %}Estar inscrito en al menos 1 Ranking de temporada.{% endif %}
+              {% if sb.type == 'cosmos' %}Tener o adquirir el paquete: <span class="text-pink font-black">{{ sb.required_pack.name|default:'Cosmos' }}</span>.{% endif %}
+              {% if sb.type == 'extra' %}Disponible para todos los exploradores.{% endif %}
+            </p>
+          </div>
+
+          {% if sb.id in claimed_static_ids %}
+          <button disabled class="mt-auto w-full py-3 rounded-2xl bg-white/5 border border-white/10 text-gray-500 font-black uppercase text-[10px] tracking-widest cursor-not-allowed transition-all">
+            Ya Reclamado
+          </button>
+          {% else %}
+          <button onclick="claimBlessing('static', '{{ sb.id }}')" 
+            class="mt-auto w-full py-3 rounded-2xl bg-white/5 border border-white/10 hover:border-accent hover:bg-accent/10 text-white font-black uppercase text-[10px] tracking-widest transition-all">
+            Reclamar Ahora
+          </button>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        <!-- Bendiciones Dinámicas -->
+        {% for b in dynamic_blessings %}
+        <div class="glass-card rounded-[32px] p-6 flex flex-col items-center text-center gap-4 relative overflow-hidden group border-pink/10">
+          <div class="absolute -top-12 -right-12 w-24 h-24 bg-pink/5 rounded-full blur-2xl group-hover:bg-pink/10 transition-all"></div>
+          
+          {% if b.id in claimed_dynamic_ids %}
+          <div class="absolute inset-0 bg-black/60 backdrop-blur-[2px] z-20 flex items-center justify-center">
+             <div class="flex flex-col items-center gap-2">
+               <i class="fas fa-check-circle text-pink text-3xl"></i>
+               <span class="bg-pink/20 text-pink px-4 py-1.5 rounded-full font-black text-[10px] uppercase tracking-widest border border-pink/30">ADQUIRIDA</span>
+             </div>
+          </div>
+          {% endif %}
+
+          <div class="w-20 h-20 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
+            {% if b.image %}
+            <img src="{{ b.image.url }}" class="w-full h-full object-cover group-hover:scale-110 transition-transform">
+            {% else %}
+            <i class="fas fa-magic text-3xl text-pink/50"></i>
+            {% endif %}
+          </div>
+          
+          <div>
+            <h3 class="font-black text-white text-lg uppercase tracking-tight">{{ b.name }}</h3>
+            <div class="mt-2 flex items-center justify-center gap-2">
+              <span class="text-[10px] uppercase text-gray-500 font-bold">Costo:</span>
+              {% if b.price_mineral %}
+              <span class="text-xs font-bold text-pink">{{ b.price_mineral_qty }} {{ b.price_mineral.name }}</span>
+              {% else %}
+              <span class="text-xs font-bold text-accent font-mono">{{ b.price_gold }} GOLD</span>
+              {% endif %}
+            </div>
+          </div>
+
+          {% if b.id in claimed_dynamic_ids %}
+          <button disabled class="mt-auto w-full py-3 rounded-2xl bg-white/5 border border-white/10 text-gray-500 font-black uppercase text-[10px] tracking-widest cursor-not-allowed transition-all">
+            Ya Adquirida
+          </button>
+          {% else %}
+          <button onclick="claimBlessing('dynamic', '{{ b.id }}')" 
+            class="mt-auto w-full py-3 rounded-2xl bg-gradient-to-r from-pink/20 to-pink/10 border border-pink/20 hover:border-pink hover:bg-pink/30 text-white font-black uppercase text-[10px] tracking-widest transition-all shadow-lg shadow-pink/5">
+            Adquirir
+          </button>
+          {% endif %}
+        </div>
+        {% endfor %}
+      </div>
     </section>
 
     <!-- INVENTARIO -->
@@ -493,6 +644,32 @@
       {% endif %}
     </section>
   </main>
+
+  <!-- Opening Cinematic Modal -->
+  <div id="openingModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/95 backdrop-blur-xl">
+    <div class="relative flex flex-col items-center w-full max-w-2xl px-6">
+        <!-- Sun Rays / Light Blast -->
+        <div id="rayContainer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0 h-0 flex items-center justify-center opacity-0 transition-opacity duration-500">
+        </div>
+
+        <!-- The Pack Image -->
+        <div id="openingPackWrapper" class="relative z-20 transition-all duration-700 flex items-center justify-center">
+             <img id="openingPackImg" src="" class="w-64 h-64 object-contain transition-all duration-300 hidden" />
+             <div id="openingPackIcon" class="w-64 h-64 rounded-full bg-white/5 flex items-center justify-center border border-white/10 hidden">
+                 <i class="fas fa-box-open text-[8rem] text-accent/50"></i>
+             </div>
+             <div class="absolute inset-0 bg-accent/30 rounded-full blur-3xl opacity-0 transition-opacity duration-300 transform scale-150 -z-10" id="packGlow"></div>
+        </div>
+
+        <!-- Reward Container -->
+        <div id="rewardReveal" class="mt-4 w-full grid grid-cols-1 gap-4 z-30">
+        </div>
+
+        <button id="closeOpeningBtn" class="mt-12 px-10 py-4 rounded-2xl bg-white/10 hover:bg-accent/20 border border-white/20 text-white font-black uppercase tracking-widest hidden z-30 transition-all shadow-[0_0_30px_rgba(255,255,255,0.05)]">
+             REGRESAR
+        </button>
+    </div>
+  </div>
 
   <script>
     function getCookie(name) {
@@ -677,26 +854,17 @@
 
           if (data.success) {
             // Animación de revelación
-            setTimeout(() => {
-              const rewardsHtml = data.rewards.map(r => `
-                <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10 mb-2">
-                  <div class="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center text-accent text-xl">
-                    <i class="fas ${r.type === 'Miner' ? 'fa-user-ninja' : r.type === 'Transport' ? 'fa-truck' : 'fa-tools'}"></i>
-                  </div>
-                  <div class="text-left">
-                    <p class="text-[10px] uppercase text-gray-500 font-bold">${r.type}</p>
-                    <p class="text-sm font-black uppercase text-accent">${r.name}</p>
-                  </div>
-                </div>
-              `).join('');
-
-              Swal.fire({
-                title: '<span class="text-pink font-black uppercase italic tracking-tighter text-3xl">¡BOTÍN ENCONTRADO!</span>',
-                html: `<div class="mt-6">${rewardsHtml}</div>`,
-                confirmButtonText: '¡EXCELENTE!',
-                didClose: () => location.reload()
-              });
-            }, 1200);
+            const packImgUrl = document.querySelector(`.btn-open[data-id="${userChestId}"]`)?.closest('.glass-card').querySelector('img')?.src;
+            if (packImgUrl) {
+                document.getElementById('openingPackImg').src = packImgUrl;
+                document.getElementById('openingPackImg').classList.remove('hidden');
+                document.getElementById('openingPackIcon').classList.add('hidden');
+            } else {
+                document.getElementById('openingPackImg').classList.add('hidden');
+                document.getElementById('openingPackIcon').classList.remove('hidden');
+            }
+            Swal.close(); 
+            await animateOpening(data.rewards || []);
           } else {
             Swal.fire('Error', data.error || 'No se pudo abrir el cofre', 'error');
           }
@@ -766,20 +934,19 @@
         });
         const data = await res.json();
         if (data.success) {
-          const icons = { miner: '👨\u200d🚀', transport: '🚀', tool: '🔧' };
-          const lines = (data.rewards || []).map(r =>
-            `<div class="flex items-center gap-2 bg-white/5 rounded-xl px-4 py-2 border border-white/10 mb-2">
-               <span class="text-xl">${icons[r.type] || '🎁'}</span>
-               <span class="font-bold text-white">${r.name}</span>
-             </div>`
-          ).join('');
-          await Swal.fire({
-            icon: 'success',
-            title: '¡Paquete Abierto!',
-            html: `Has recibido:<br><br>${lines || '<p class="text-gray-400 text-sm">Sin recompensas configuradas</p>'}`,
-            confirmButtonText: '¡GENIAL!'
-          });
-          location.reload();
+           // Si el pack tiene imagen, la usamos para la animación, sino una genérica
+           const packImgUrl = document.querySelector(`.glass-pack button[data-id="${packId}"]`)?.closest('.glass-pack').querySelector('img')?.src;
+           if (packImgUrl) {
+               document.getElementById('openingPackImg').src = packImgUrl;
+               document.getElementById('openingPackImg').classList.remove('hidden');
+               document.getElementById('openingPackIcon').classList.add('hidden');
+           } else {
+               document.getElementById('openingPackImg').classList.add('hidden');
+               document.getElementById('openingPackIcon').classList.remove('hidden');
+           }
+           
+           Swal.close(); // Cierra el "Procesando..."
+           await animateOpening(data.rewards || []);
         } else {
           Swal.fire('Compra Fallida', data.error || 'Error desconocido.', 'error');
         }
@@ -787,6 +954,107 @@
         Swal.fire('Error', 'Error de red.', 'error');
       }
     }
+
+    async function claimBlessing(type, id) {
+      Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      try {
+        const res = await fetch(`/blessings/claim/${type}/${id}/`, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        const data = await res.json();
+        if (data.success) {
+          await Swal.fire('¡Éxito!', data.message, 'success');
+          location.reload();
+        } else {
+          Swal.fire('Error', data.error || 'No se pudo reclamar.', 'error');
+        }
+      } catch (e) {
+        Swal.fire('Error', 'Error de red.', 'error');
+      }
+    }
+
+    async function animateOpening(rewards) {
+      const modal = document.getElementById('openingModal');
+      const packImg = document.getElementById('openingPackImg');
+      const packWrapper = document.getElementById('openingPackWrapper');
+      const rayContainer = document.getElementById('rayContainer');
+      const rewardReveal = document.getElementById('rewardReveal');
+      const closeBtn = document.getElementById('closeOpeningBtn');
+      const packGlow = document.getElementById('packGlow');
+      
+      // Reset state
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      rewardReveal.classList.add('hidden');
+      rewardReveal.innerHTML = '';
+      closeBtn.classList.add('hidden');
+      packWrapper.classList.remove('opacity-0', 'scale-0', 'scale-150');
+      packWrapper.classList.add('scale-100');
+      packImg.classList.remove('animate-vibrate');
+      document.getElementById('openingPackIcon').classList.remove('animate-vibrate');
+      rayContainer.innerHTML = '';
+      rayContainer.classList.add('opacity-0');
+
+      // Step 1: Aparecer cofre
+      await new Promise(r => setTimeout(r, 200));
+      packImg.classList.add('animate-vibrate');
+      document.getElementById('openingPackIcon').classList.add('animate-vibrate');
+      packGlow.classList.remove('opacity-0');
+      
+      // Step 2: Explosión
+      await new Promise(r => setTimeout(r, 1500));
+      packImg.classList.remove('animate-vibrate');
+      document.getElementById('openingPackIcon').classList.remove('animate-vibrate');
+      
+      // Generar rayos
+      for(let i=0; i<15; i++) {
+          const ray = document.createElement('div');
+          ray.className = 'ray';
+          ray.style.transform = `rotate(${i * 24}deg)`;
+          rayContainer.appendChild(ray);
+      }
+      rayContainer.classList.remove('opacity-0');
+      
+      // Desvanecer cofre
+      packWrapper.classList.add('opacity-0', 'scale-150');
+      
+      // Step 3: Mostrar recompensas
+      await new Promise(r => setTimeout(r, 800));
+      rewardReveal.classList.remove('hidden');
+      
+      rewards.forEach((r, idx) => {
+          const card = document.createElement('div');
+          card.className = "award-card flex items-center gap-4 bg-white/5 p-5 rounded-[24px] border border-white/10 shadow-2xl relative overflow-hidden group hover:border-accent/30 transition-all";
+          card.style.animationDelay = `${idx * 0.2}s`;
+          
+          const icon = r.type === 'Miner' ? 'fa-user-ninja' : r.type === 'Transport' ? 'fa-shuttle-space' : r.type === 'Blessing' ? 'fa-wand-sparkles' : 'fa-tools';
+          const colorClass = r.type === 'Miner' ? 'text-accent bg-accent/10 border-accent/20' : r.type === 'Transport' ? 'text-pink bg-pink/10 border-pink/20' : 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20';
+
+          card.innerHTML = `
+              <div class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r from-transparent via-accent/30 to-transparent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500"></div>
+              <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-3xl shadow-inner ${colorClass}">
+                  <i class="fas ${icon}"></i>
+              </div>
+              <div class="flex-1">
+                  <p class="text-[10px] uppercase text-gray-500 font-black tracking-widest mb-1">${r.type}</p>
+                  <p class="text-xl font-black uppercase text-white tracking-tight">${r.name}</p>
+              </div>
+              <div class="px-4 py-2 bg-white/5 rounded-xl border border-white/5">
+                  <span class="text-[9px] font-black text-gray-600 block leading-none uppercase tracking-tighter">Estado</span>
+                  <span class="text-xs font-mono text-accent">NUEVO</span>
+              </div>
+          `;
+          rewardReveal.appendChild(card);
+      });
+
+      // Step 4: Botón cerrar
+      await new Promise(r => setTimeout(r, 1200 + (rewards.length * 200)));
+      closeBtn.classList.remove('hidden');
+      closeBtn.classList.add('animate-bounce-in');
+    }
+
+    document.getElementById('closeOpeningBtn').addEventListener('click', () => location.reload());
   </script>
 </body>
 

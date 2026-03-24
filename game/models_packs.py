@@ -105,3 +105,34 @@ class PackTransportReward(models.Model):
 
     def __str__(self):
         return f"{self.pack.name} | Transporte: {self.transport.name} ({self.chance})"
+
+
+class PackBlessingReward(models.Model):
+    """Una bendición dinámica elegible dentro de un paquete."""
+    pack = models.ForeignKey(StorePack, on_delete=models.CASCADE, related_name="blessing_rewards")
+    blessing = models.ForeignKey(
+        'game.Blessing', on_delete=models.CASCADE,
+        verbose_name="Bendición Dinámica"
+    )
+    chance = models.DecimalField(
+        max_digits=6, decimal_places=4,
+        validators=[MinValueValidator(0), MaxValueValidator(1)],
+        help_text="Probabilidad real entre 0 y 1. La suma del pack debe ser 1."
+    )
+    probability_label = models.CharField(
+        max_length=50,
+        help_text="Texto visible para el usuario. Ej: 'Gesto de Suerte', '1%'"
+    )
+
+    def __str__(self):
+        return f"{self.pack.name} | Bendición: {self.blessing.name} ({self.chance})"
+
+
+class PackPurchaseLog(models.Model):
+    """Registro de compra de paquetes por usuario."""
+    user = models.ForeignKey('auth.User', on_delete=models.CASCADE, related_name="pack_purchases")
+    pack = models.ForeignKey(StorePack, on_delete=models.CASCADE)
+    purchased_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username} compró {self.pack.name} el {self.purchased_at}"
