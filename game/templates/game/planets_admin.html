@@ -113,10 +113,15 @@
                             {% endif %}
                             <div class="flex-1">
                                 <p class="font-black text-sm text-white uppercase tracking-tighter">{{ m.name }}</p>
-                                <p class="text-[9px] text-gray-500 font-bold uppercase">ID: {{ m.id }}</p>
+                                <div class="flex items-center gap-2">
+                                    <p class="text-[9px] text-gray-500 font-bold uppercase">ID: {{ m.id }}</p>
+                                    <span class="text-[9px] bg-yellow-500/10 text-yellow-500 px-1.5 rounded border border-yellow-500/20 font-black">
+                                        <i class="fas fa-coins text-[8px]"></i> {{ m.gold_value }}
+                                    </span>
+                                </div>
                             </div>
                             <div class="flex gap-2">
-                                <button type="button" onclick="openEditMineral('{{ m.id }}', '{{ m.name }}', '{% if m.image %}{{ m.image.url }}{% endif %}')" class="px-2.5 py-1.5 rounded bg-white/5 text-gray-200 text-sm hover:bg-white/10 hover:text-accent transition-colors">
+                                <button type="button" onclick="openEditMineral('{{ m.id }}', '{{ m.name }}', '{% if m.image %}{{ m.image.url }}{% endif %}', '{{ m.gold_value }}')" class="px-2.5 py-1.5 rounded bg-white/5 text-gray-200 text-sm hover:bg-white/10 hover:text-accent transition-colors">
                                     <i class="fas fa-pen"></i>
                                 </button>
                                 <form method="POST" onsubmit="return confirm('¿Eliminar mineral?')">
@@ -283,6 +288,10 @@
                 <div>
                     <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Nombre del Mineral</label>
                     <input type="text" name="name" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-4 focus:border-accent outline-none font-bold text-white">
+                </div>
+                <div>
+                    <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Valor en Oro (1 unidad)</label>
+                    <input type="number" step="0.01" name="gold_value" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-4 focus:border-accent outline-none font-bold text-yellow-400" value="0.00">
                 </div>
                 <button type="submit" class="w-full bg-accent text-space font-black py-5 rounded-3xl uppercase tracking-widest text-xs shadow-xl shadow-accent/20 hover:scale-[1.02] active:scale-95 transition-all">
                     Crear Mineral
@@ -495,6 +504,10 @@
                         <input type="text" name="name" id="editMineralName" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-5 py-3 focus:border-accent outline-none">
                     </div>
                     <div>
+                        <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Valor en Oro</label>
+                        <input type="number" step="0.01" name="gold_value" id="editMineralGold" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-5 py-3 focus:border-accent outline-none text-yellow-400 font-bold">
+                    </div>
+                    <div>
                         <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Cambiar Imagen</label>
                         <div class="image-preview border-accent/20" onclick="this.nextElementSibling.click()">
                             <img id="editMineralImg" src="" class="object-contain w-full h-full">
@@ -550,9 +563,10 @@
             document.body.style.overflow = 'auto';
         }
 
-        function openEditMineral(id, name, imgUrl) {
+        function openEditMineral(id, name, imgUrl, goldVal) {
             document.getElementById('editMineralId').value = id;
             document.getElementById('editMineralName').value = name;
+            document.getElementById('editMineralGold').value = goldVal;
             const img = document.getElementById('editMineralImg');
             const icon = document.getElementById('editMineralIcon');
             if (imgUrl) {

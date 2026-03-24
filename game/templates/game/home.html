@@ -244,6 +244,15 @@
       </div>
     </a>
 
+    <a href="/oil-centrals/"
+      class="flex items-center gap-4 bg-card backdrop-blur-xl border border-blueglow/20 rounded-2xl p-5 hover:border-blueglow/40 hover:bg-white/5 transition cursor-pointer group">
+      <i class="fas fa-oil-well text-blueglow text-2xl group-hover:scale-110 transition-transform"></i>
+      <div>
+        <h3 class="font-bold text-lg">Petroleras</h3>
+        <p class="text-sm text-gray-300">Producción y Refinado</p>
+      </div>
+    </a>
+
     <a href="/rankings/"
       class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5 hover:border-accent/40 hover:bg-white/5 transition cursor-pointer group">
       <i class="fas fa-trophy text-accent text-2xl group-hover:scale-110 transition-transform"></i>
@@ -319,6 +328,13 @@
             <i class="fas fa-id-card text-sm"></i>
         </div>
         <span class="font-bold text-sm text-gray-300 group-hover:text-white">Mi Perfil</span>
+      </a>
+
+      <a href="/oil-centrals/" class="menu-item-anim flex items-center gap-4 px-4 py-4 rounded-2xl hover:bg-white/5 border border-transparent hover:border-white/5 transition-all group">
+        <div class="w-8 h-8 rounded-xl bg-blueglow/10 flex items-center justify-center text-blueglow group-hover:bg-blueglow group-hover:text-white transition-all">
+            <i class="fas fa-oil-well text-sm"></i>
+        </div>
+        <span class="font-bold text-sm text-gray-300 group-hover:text-white">Mis Petroleras</span>
       </a>
 
       {% if user.is_staff %}

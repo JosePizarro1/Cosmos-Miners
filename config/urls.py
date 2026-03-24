@@ -24,6 +24,13 @@ from game.views_planets import (
     planets_admin, mining_dashboard, prepare_trip,
     start_mining_trip, collect_mining_trip
 )
+from game.views_oil import (
+    oil_admin_view, oil_admin_stats, oil_types_list, 
+    oil_type_create, oil_type_update, oil_type_toggle,
+    user_oil_list, user_oil_delete, buy_oil_central, user_oil_view,
+    claim_oil_barrels, user_oil_force_ready, start_refining, claim_refinement,
+    user_oil_force_refine_ready
+)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", login_page, name="login_page"),
@@ -52,6 +59,10 @@ urlpatterns = [
     path("dashboard/user-miners/create/", user_miner_create, name="user_miner_create"),
     path("dashboard/user-miners/delete/<int:pk>/", user_miner_delete, name="user_miner_delete"),
     path("transports/", transports_view, name="transports_view"),
+    path("oil-centrals/", user_oil_view, name="user_oil_view"),
+    path("oil-centrals/claim/<int:pk>/", claim_oil_barrels, name="claim_oil_barrels"),
+    path("oil-centrals/refine/<int:pk>/", start_refining, name="start_refining"),
+    path("oil-centrals/claim-refinement/<int:pk>/", claim_refinement, name="claim_refinement"),
     path("dashboard/transports/", transports_admin_view, name="transports_admin"),
     path("dashboard/transports/stats/", transports_admin_stats, name="transports_admin_stats"),
     path("dashboard/transport-types/list/", transport_types_list, name="transport_types_list"),
@@ -122,6 +133,19 @@ urlpatterns = [
     path("mining/prepare/", prepare_trip, name="prepare_trip"),
     path("mining/start/", start_mining_trip, name="start_mining_trip"),
     path("mining/collect/<int:trip_id>/", collect_mining_trip, name="collect_mining_trip"),
+
+    # Oil Centrals Admin
+    path("dashboard/oil/", oil_admin_view, name="oil_admin"),
+    path("dashboard/oil/stats/", oil_admin_stats, name="oil_admin_stats"),
+    path("dashboard/oil-types/list/", oil_types_list, name="oil_types_list"),
+    path("dashboard/oil-types/create/", oil_type_create, name="oil_type_create"),
+    path("dashboard/oil-types/update/<int:pk>/", oil_type_update, name="oil_type_update"),
+    path("dashboard/oil-types/toggle/<int:pk>/", oil_type_toggle, name="oil_type_toggle"),
+    path("dashboard/user-oil/list/", user_oil_list, name="user_oil_list"),
+    path("dashboard/user-oil/delete/<int:pk>/", user_oil_delete, name="user_oil_delete"),
+    path("dashboard/user-oil/force-ready/<int:pk>/", user_oil_force_ready, name="user_oil_force_ready"),
+    path("dashboard/user-oil/force-refine-ready/<int:pk>/", user_oil_force_refine_ready, name="user_oil_force_refine_ready"),
+    path("oil/buy/<int:type_id>/", buy_oil_central, name="buy_oil_central"),
 
 ]
 

@@ -31,11 +31,14 @@ def home_view(request):
 
 @login_required
 def chests_public_view(request):
+    from .models import OilCentralType
     chests = Chest.objects.filter(is_in_store=True).select_related("category").prefetch_related("rewards")
+    oil_centrals = OilCentralType.objects.filter(is_active=True)
     profile, _ = Profile.objects.get_or_create(user=request.user)
     user_chests = UserChest.objects.filter(owner=profile, opened=False).select_related("chest")
     return render(request, "game/chests_public.html", {
         "chests": chests, 
+        "oil_centrals": oil_centrals,
         "user_chests": user_chests,
         "profile": profile
     })

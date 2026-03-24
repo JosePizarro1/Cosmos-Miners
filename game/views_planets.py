@@ -27,9 +27,10 @@ def planets_admin(request):
         
         if action == 'add_mineral':
             name = request.POST.get('name')
+            gold_value = request.POST.get('gold_value', 0)
             image = request.FILES.get('image')
-            Mineral.objects.create(name=name, image=image)
-            messages.success(request, f"Mineral {name} creado.")
+            Mineral.objects.create(name=name, image=image, gold_value=gold_value)
+            messages.success(request, f"Mineral {name} creado con valor {gold_value} Gold.")
             
         elif action == 'add_planet':
             name = request.POST.get('name')
@@ -89,6 +90,7 @@ def planets_admin(request):
             mineral_id = request.POST.get('mineral_id')
             mineral = get_object_or_404(Mineral, id=mineral_id)
             mineral.name = request.POST.get('name')
+            mineral.gold_value = request.POST.get('gold_value', 0)
             if request.FILES.get('image'):
                 mineral.image = request.FILES.get('image')
             mineral.save()

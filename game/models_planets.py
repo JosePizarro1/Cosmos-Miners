@@ -6,6 +6,12 @@ class Mineral(models.Model):
     name = models.CharField(max_length=100)
     image = models.ImageField(upload_to="minerals/", null=True, blank=True)
     description = models.TextField(blank=True)
+    gold_value = models.DecimalField(
+        max_digits=12, 
+        decimal_places=2, 
+        default=Decimal('0.00'),
+        help_text="Equivalencia en Cosmos Gold para 1 unidad de este mineral"
+    )
 
     def __str__(self):
         return self.name

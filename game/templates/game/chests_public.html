@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>Cofres | Cosmos Miners</title>
+  <title>Tienda | Cosmos Miners</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -119,12 +119,16 @@
     <div class="text-center mb-10">
       <h1
         class="text-5xl font-black mb-4 bg-gradient-to-r from-accent via-white to-pink bg-clip-text text-transparent uppercase tracking-tight">
-        Cofres Estelares</h1>
+        Suministros Galácticos</h1>
 
-      <div class="flex items-center justify-center gap-3 mt-8">
-        <button onclick="switchTab('store')" id="tab-store"
+      <div class="flex flex-wrap items-center justify-center gap-3 mt-8">
+        <button onclick="switchTab('chests')" id="tab-chests"
           class="px-8 py-3 rounded-2xl border border-white/10 font-black text-xs uppercase tracking-widest transition-all tab-active">
-          Tienda
+          Cofres
+        </button>
+        <button onclick="switchTab('oil')" id="tab-oil"
+          class="px-8 py-3 rounded-2xl border border-white/10 font-black text-xs uppercase tracking-widest transition-all">
+          Petroleras
         </button>
         <button onclick="switchTab('inventory')" id="tab-inventory"
           class="px-8 py-3 rounded-2xl border border-white/10 font-black text-xs uppercase tracking-widest transition-all relative">
@@ -139,8 +143,8 @@
       </div>
     </div>
 
-    <!-- TIENDA -->
-    <section id="section-store" class="tab-content">
+    <!-- COFRES -->
+    <section id="section-chests" class="tab-content">
       {% if chests %}
       <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {% for c in chests %}
@@ -191,7 +195,7 @@
               </div>
 
               <button
-                class="btn-buy w-full py-4 rounded-2xl bg-gradient-to-r from-accent to-blueglow text-black font-black uppercase text-[10px] tracking-widest hover:brightness-110 active:scale-[0.98] transition-all"
+                class="btn-buy-chest w-full py-4 rounded-2xl bg-gradient-to-r from-accent to-blueglow text-black font-black uppercase text-[10px] tracking-widest hover:brightness-110 active:scale-[0.98] transition-all"
                 data-id="{{ c.id }}" data-name="{{ c.name }}" data-price="{{ c.price }}">
                 Comprar Cofre
               </button>
@@ -202,12 +206,85 @@
       </div>
       {% else %}
       <div class="glass-card rounded-[40px] p-20 text-center max-w-2xl mx-auto">
+        <p class="text-gray-500 text-sm italic">No hay cofres disponibles.</p>
+      </div>
+      {% endif %}
+    </section>
+
+    <!-- PETROLERAS -->
+    <section id="section-oil" class="tab-content hidden">
+      {% if oil_centrals %}
+      <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        {% for ot in oil_centrals %}
         <div
-          class="w-20 h-20 rounded-full bg-white/5 border border-white/10 flex items-center justify-center mx-auto mb-6 text-gray-600">
-          <i class="fas fa-store-slash text-3xl"></i>
+          class="glass-card rounded-[32px] p-8 group hover:border-pink/40 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden flex flex-col h-full">
+          <div
+            class="absolute -top-24 -right-24 w-48 h-48 bg-pink/5 rounded-full blur-3xl group-hover:bg-pink/15 transition-colors">
+          </div>
+
+          <div class="relative z-10 flex flex-col h-full">
+            <div class="flex justify-between items-start mb-6">
+              <span class="text-[10px] font-black bg-pink/10 border border-pink/20 px-3 py-1 rounded-full text-pink uppercase tracking-tighter">
+                Central Petrolera
+              </span>
+            </div>
+
+            <div class="mb-8 flex-1 flex flex-col items-center">
+              <div class="relative">
+                <div class="absolute inset-0 bg-pink/20 rounded-full blur-2xl group-hover:blur-3xl transition-all">
+                </div>
+                {% if ot.image %}
+                <img src="{{ ot.image.url }}" alt="{{ ot.name }}"
+                  class="relative w-40 h-40 object-contain animate-float group-hover:scale-110 transition-transform duration-700">
+                {% else %}
+                <div
+                  class="relative w-40 h-40 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
+                  <i class="fas fa-oil-well text-6xl text-pink/20"></i>
+                </div>
+                {% endif %}
+              </div>
+
+              <h3 class="mt-8 font-black text-2xl group-hover:text-pink transition-colors text-center uppercase tracking-tight">{{ ot.name }}</h3>
+              
+              <div class="mt-6 w-full space-y-2">
+                <div class="flex justify-between text-[10px] uppercase font-bold">
+                    <span class="text-gray-500">Vida:</span>
+                    <span class="text-white">{{ ot.min_life_days }} a {{ ot.max_life_days }} días</span>
+                </div>
+                <div class="flex justify-between text-[10px] uppercase font-bold">
+                    <span class="text-gray-500">Barriles/24h:</span>
+                    <span class="text-white">{{ ot.min_barrels_24h|floatformat:0 }} a {{ ot.max_barrels_24h|floatformat:0 }}</span>
+                </div>
+                <div class="flex justify-between text-[10px] uppercase font-bold">
+                    <span class="text-gray-500">Refinado:</span>
+                    <span class="text-white">{{ ot.min_refined_24h|floatformat:0 }} a {{ ot.max_refined_24h|floatformat:0 }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-auto pt-6 border-t border-white/5 text-center">
+              <div class="flex items-center justify-center gap-2 mb-4">
+                <span class="text-2xl font-mono font-black text-pink">{{ ot.price_gold }}</span>
+                <span class="text-[10px] text-gray-500 uppercase font-bold">GOLD</span>
+              </div>
+
+              <button
+                class="btn-buy-oil w-full py-4 rounded-2xl bg-gradient-to-r from-pink to-purple-600 text-white font-black uppercase text-[10px] tracking-widest hover:brightness-110 active:scale-[0.98] transition-all"
+                data-id="{{ ot.id }}" data-name="{{ ot.name }}" data-price="{{ ot.price_gold }}">
+                Comprar Central
+              </button>
+            </div>
+          </div>
         </div>
-        <h3 class="text-xl font-bold mb-2 uppercase">Mercado Cerrado</h3>
-        <p class="text-gray-500 text-sm">No hay cofres disponibles en este momento.</p>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="glass-card rounded-[40px] p-20 text-center max-w-2xl mx-auto">
+        <div class="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mx-auto mb-6 text-gray-600 border border-white/10">
+            <i class="fas fa-oil-well text-3xl opacity-20"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-2 uppercase text-gray-400">Sin Suministros</h3>
+        <p class="text-gray-500 text-sm">No hay centrales petroleras disponibles en este momento.</p>
       </div>
       {% endif %}
     </section>
@@ -270,7 +347,7 @@
         </div>
         <h3 class="text-xl font-bold mb-2 uppercase text-gray-400">Sin Cargamento</h3>
         <p class="text-gray-500 text-sm">Tu inventario de cofres está vacío.</p>
-        <button onclick="switchTab('store')"
+        <button onclick="switchTab('chests')"
           class="mt-6 text-accent text-xs font-black uppercase tracking-widest hover:underline">Ir a la Tienda</button>
       </div>
       {% endif %}
@@ -303,9 +380,12 @@
 
     // Global Event Listeners
     document.addEventListener('click', e => {
-      if (e.target.classList.contains('btn-buy')) {
+      if (e.target.classList.contains('btn-buy-chest')) {
         const btn = e.target;
-        handlePurchase(btn.dataset.id, btn.dataset.name, btn.dataset.price);
+        handleChestPurchase(btn.dataset.id, btn.dataset.name, btn.dataset.price);
+      } else if (e.target.classList.contains('btn-buy-oil')) {
+        const btn = e.target;
+        handleOilPurchase(btn.dataset.id, btn.dataset.name, btn.dataset.price);
       } else if (e.target.classList.contains('btn-info')) {
         const btn = e.target;
         showChestRewards(btn.dataset.name, btn.dataset.desc, btn.dataset.rewards);
@@ -315,7 +395,7 @@
       }
     });
 
-    async function handlePurchase(id, name, price) {
+    async function handleChestPurchase(id, name, price) {
       const result = await Swal.fire({
         title: '¿Confirmar Compra?',
         html: `¿Estás seguro de comprar <b class="text-accent">${name}</b> por <b class="text-accent font-mono">${price} GOLD</b>?`,
@@ -357,6 +437,74 @@
           Swal.fire('Error', 'Error de conexión', 'error');
         }
       }
+    }
+
+    async function handleOilPurchase(id, name, price) {
+        const result = await Swal.fire({
+            title: '¿Construir Central?',
+            html: `¿Deseas adquirir la central <b class="text-pink">${name}</b> por <b class="text-pink font-mono">${price} GOLD</b>?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'ADQUIRIR',
+            cancelButtonText: 'CANCELAR',
+            reverseButtons: true
+        });
+
+        if (result.isConfirmed) {
+            Swal.fire({
+                title: 'Analizando sectores...',
+                html: '<i class="fas fa-oil-well fa-bounce text-6xl text-pink mt-6"></i>',
+                showConfirmButton: false,
+                allowOutsideClick: false
+            });
+
+            try {
+                const response = await fetch(`/oil/buy/${id}/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    const r = data.result;
+                    setTimeout(() => {
+                        Swal.fire({
+                            title: '<span class="text-pink font-black uppercase italic tracking-tighter text-3xl">¡CENTRAL ACTIVA!</span>',
+                            html: `
+                                <div class="mt-6 text-left space-y-4">
+                                    <div class="flex items-center gap-4 bg-white/5 p-4 rounded-2xl border border-white/10">
+                                        <div class="w-16 h-16 rounded-xl bg-pink/20 flex items-center justify-center text-pink text-3xl">
+                                            <i class="fas fa-plug-circle-check"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[10px] uppercase text-gray-500 font-bold">Durabilidad</p>
+                                            <p class="text-xl font-black text-white">${r.life_days} DÍAS</p>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-center">
+                                            <p class="text-[8px] uppercase text-gray-500 font-bold mb-1">Producción / 24h</p>
+                                            <p class="text-lg font-black text-accent">${r.barrels_24h} <span class="text-[8px]">BARRILES</span></p>
+                                        </div>
+                                        <div class="bg-white/5 p-4 rounded-2xl border border-white/10 text-center">
+                                            <p class="text-[8px] uppercase text-gray-500 font-bold mb-1">Refinado / 24h</p>
+                                            <p class="text-lg font-black text-blueglow">${r.refined_24h} <span class="text-[8px]">BARRILES</span></p>
+                                        </div>
+                                    </div>
+                                    <p class="text-[9px] text-gray-500 text-center italic">"Tu central ha sido desplegada con éxito en el sector asignado."</p>
+                                </div>
+                            `,
+                            confirmButtonText: '¡A PRODUCIR!',
+                            didClose: () => location.reload()
+                        });
+                    }, 1500);
+                } else {
+                    Swal.fire('Error', data.error || 'No se pudo completar la compra', 'error');
+                }
+            } catch (err) {
+                Swal.fire('Error', 'Error de red', 'error');
+            }
+        }
     }
 
     async function handleOpenChest(userChestId, name) {
