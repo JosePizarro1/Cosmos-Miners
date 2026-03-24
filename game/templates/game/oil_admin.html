@@ -88,7 +88,7 @@
       <div class="flex items-center justify-between mb-3">
         <h3 class="font-bold text-lg">Tipos de Centrales</h3>
         <button id="btnOpenOilTypeModal" class="px-4 py-2 rounded bg-accent text-black font-bold text-sm">
-          + Crear Tipo
+          + Crear Petrolera
         </button>
       </div>
       <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6">
@@ -150,7 +150,7 @@
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
     <div class="relative bg-card border border-white/10 rounded-3xl p-6 w-[92%] max-w-2xl overflow-y-auto max-h-[90vh]">
       <div class="flex items-center justify-between mb-4">
-        <h4 id="oilTypeModalTitle" class="font-bold text-lg">Crear Tipo</h4>
+        <h4 id="oilTypeModalTitle" class="font-bold text-lg">Crear Petrolera</h4>
         <button id="closeOilTypeModal" class="text-gray-300 text-xl"><i class="fas fa-times"></i></button>
       </div>
 
@@ -228,6 +228,26 @@
         </div>
 
         <div class="border-t border-white/5 pt-4 md:col-span-2">
+            <h5 class="text-xs font-bold uppercase tracking-widest text-[#a855f7] mb-2">Compra Alternativa con Mineral</h5>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] uppercase text-gray-400">Mineral</label>
+                    <select name="purchase_mineral_id" class="w-full mt-1 p-3 rounded bg-white/5 text-white border border-white/10">
+                        <option value="">Ninguno (Usa Gold)</option>
+                        {% for m in minerals %}
+                        <option value="{{ m.id }}">{{ m.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-gray-400">Cantidad de Mineral</label>
+                    <input name="purchase_mineral_qty" type="number" min="0" value="0"
+                        class="w-full mt-1 p-3 rounded bg-white/5 text-white border border-white/10" />
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-white/5 pt-4 md:col-span-2">
             <h5 class="text-xs font-bold uppercase tracking-widest text-[#a855f7] mb-2">Recompensa de Refinación</h5>
             <div class="grid grid-cols-1 gap-4">
                 <div>
@@ -284,7 +304,7 @@
     document.getElementById('btnOpenOilTypeModal').addEventListener('click', () => {
       oilTypeForm.reset();
       oilTypeForm.querySelector('[name="id"]').value = '';
-      oilTypeModalTitle.textContent = 'Crear Nueva Central';
+      oilTypeModalTitle.textContent = 'Crear Petrolera';
       imagePreview.innerHTML = 'Sin imagen';
       openModal(oilTypeModal);
     });
@@ -418,9 +438,11 @@
         oilTypeForm.querySelector('[name="min_refined_24h"]').value = ot.min_refined_24h;
         oilTypeForm.querySelector('[name="max_refined_24h"]').value = ot.max_refined_24h;
         oilTypeForm.querySelector('[name="refined_mineral_id"]').value = ot.refined_mineral_id || '';
+        oilTypeForm.querySelector('[name="purchase_mineral_id"]').value = ot.purchase_mineral_id || '';
+        oilTypeForm.querySelector('[name="purchase_mineral_qty"]').value = ot.purchase_mineral_qty || 0;
         oilTypeForm.querySelector('[name="is_active"]').checked = ot.is_active;
         
-        oilTypeModalTitle.textContent = 'Editar Central';
+        oilTypeModalTitle.textContent = 'Editar Petrolera';
         if (ot.image_url) {
           imagePreview.innerHTML = `<img src="${ot.image_url}" class="w-full h-full object-cover" />`;
         } else {

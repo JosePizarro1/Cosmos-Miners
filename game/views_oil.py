@@ -62,6 +62,9 @@ def oil_types_list(request):
             "max_barrels_24h": float(ot.max_barrels_24h),
             "min_refined_24h": float(ot.min_refined_24h),
             "max_refined_24h": float(ot.max_refined_24h),
+            "purchase_mineral_id": ot.purchase_mineral.id if ot.purchase_mineral else "",
+            "purchase_mineral_name": ot.purchase_mineral.name if ot.purchase_mineral else "",
+            "purchase_mineral_qty": ot.purchase_mineral_qty,
             "refined_mineral_id": ot.refined_mineral.id if ot.refined_mineral else "",
             "refined_mineral_name": ot.refined_mineral.name if ot.refined_mineral else "Ninguno",
             "is_active": ot.is_active,
@@ -96,9 +99,16 @@ def oil_type_create(request):
         if refined_mineral_id:
             mineral = Mineral.objects.filter(id=refined_mineral_id).first()
 
+        purchase_mineral_id = request.POST.get("purchase_mineral_id")
+        purchase_mineral_qty = int(request.POST.get("purchase_mineral_qty") or 0)
+        
+        purchase_m = Mineral.objects.filter(id=purchase_mineral_id).first() if purchase_mineral_id else None
+
         ot = OilCentralType.objects.create(
             name=name,
             price_gold=Decimal(price_gold or '0'),
+            purchase_mineral=purchase_m,
+            purchase_mineral_qty=purchase_mineral_qty,
             min_life_days=int(min_life or 0),
             max_life_days=int(max_life or 0),
             min_barrels_24h=Decimal(min_barrels or '0'),
@@ -155,6 +165,14 @@ def oil_type_update(request, pk):
             ot.refined_mineral = Mineral.objects.filter(id=refined_mineral_id).first()
         else:
             ot.refined_mineral = None
+            
+        purchase_mineral_id = request.POST.get("purchase_mineral_id")
+        if purchase_mineral_id:
+            ot.purchase_mineral = Mineral.objects.filter(id=purchase_mineral_id).first()
+        else:
+            ot.purchase_mineral = None
+            
+        ot.purchase_mineral_qty = int(request.POST.get("purchase_mineral_qty") or 0)
         
         image = request.FILES.get("image")
         if image:
@@ -245,13 +263,24 @@ def buy_oil_central(request, type_id):
         central_type = OilCentralType.objects.get(id=type_id, is_active=True)
         profile = request.user.profile
         
-        if profile.cosmos_gold < central_type.price_gold:
-            return JsonResponse({"error": "No tienes suficiente Cosmos Gold"}, status=400)
-            
+        from .models_planets import UserMineral
         with transaction.atomic():
-            # Deduct gold
-            profile.cosmos_gold -= central_type.price_gold
-            profile.save()
+            profile = Profile.objects.select_for_update().get(id=profile.id)
+            
+            if central_type.purchase_mineral:
+                req_qty = central_type.purchase_mineral_qty
+                user_mineral = UserMineral.objects.select_for_update().filter(user=request.user, mineral=central_type.purchase_mineral).first()
+                if not user_mineral or user_mineral.amount < req_qty:
+                    return JsonResponse({"error": f"No tienes suficiente {central_type.purchase_mineral.name} ({req_qty} requeridos)"}, status=400)
+                
+                user_mineral.amount -= req_qty
+                user_mineral.save()
+            else:
+                if profile.cosmos_gold < central_type.price_gold:
+                    return JsonResponse({"error": "No tienes suficiente Cosmos Gold"}, status=400)
+                    
+                profile.cosmos_gold -= central_type.price_gold
+                profile.save()
             
             # Randomize values based on defined ranges
             life_days = random.randint(central_type.min_life_days, central_type.max_life_days)

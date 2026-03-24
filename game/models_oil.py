@@ -5,6 +5,8 @@ class OilCentralType(models.Model):
     name = models.CharField(max_length=100)
     image = models.ImageField(upload_to="oil_centrals/", null=True, blank=True)
     price_gold = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    purchase_mineral = models.ForeignKey('game.Mineral', related_name='oil_purchase', on_delete=models.SET_NULL, null=True, blank=True)
+    purchase_mineral_qty = models.PositiveIntegerField(default=0)
     
     # Life range (days)
     min_life_days = models.PositiveIntegerField(default=10)

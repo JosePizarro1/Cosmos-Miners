@@ -88,7 +88,7 @@
       <div class="flex items-center justify-between mb-3">
         <h3 class="font-bold text-lg">Tipos de Transporte</h3>
         <button id="btnOpenTransportTypeModal" class="px-4 py-2 rounded bg-accent text-black font-bold text-sm">
-          + Crear Tipo
+          + Crear Transporte
         </button>
       </div>
       <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6">
@@ -149,12 +149,16 @@
     <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
     <div class="relative bg-card border border-white/10 rounded-3xl p-6 w-[92%] max-w-lg">
       <div class="flex items-center justify-between mb-4">
-        <h4 id="transportTypeModalTitle" class="font-bold text-lg">Crear Tipo</h4>
+        <h4 id="transportTypeModalTitle" class="font-bold text-lg">Crear Transporte</h4>
         <button id="closeTransportTypeModal" class="text-gray-300 text-xl">X</button>
       </div>
 
       <form id="transportTypeForm" class="space-y-4">
         <input type="hidden" name="id" />
+
+        <div>
+          <label class="text-sm text-gray-300">Nombre</label>
+          <input name="name" type="text" required class="w-full mt-2 p-3 rounded bg-white/5 text-white border border-white/10 focus:outline-none focus:border-accent transition-colors" />
         </div>
 
         <div>
@@ -216,7 +220,7 @@
     <div class="relative bg-card border border-white/10 rounded-3xl p-6 w-[92%] max-w-lg">
       <div class="flex items-center justify-between mb-4">
         <h4 class="font-bold text-lg">Asignar Transporte</h4>
-        <button id="closeUserTransportModal" class="text-gray-300 text-xl">âœ•</button>
+        <button type="button" id="closeUserTransportModal" class="text-gray-300 text-xl hover:text-white transition-colors">X</button>
       </div>
       <form id="userTransportForm" class="space-y-4">
         <div>
@@ -271,7 +275,7 @@
     document.getElementById('btnOpenTransportTypeModal').addEventListener('click', () => {
       transportTypeForm.reset();
       transportTypeForm.querySelector('[name="id"]').value = '';
-      transportTypeModalTitle.textContent = 'Crear Tipo';
+      transportTypeModalTitle.textContent = 'Crear Transporte';
       imagePreview.innerHTML = 'Sin imagen';
       openModal(transportTypeModal);
     });
@@ -407,7 +411,7 @@
         transportTypeForm.querySelector('[name="speed"]').value = mt.speed;
         transportTypeForm.querySelector('[name="is_active"]').checked = mt.is_active;
         transportTypeForm.querySelector('[name="is_free"]').checked = mt.is_free;
-        transportTypeModalTitle.textContent = 'Editar Tipo';
+        transportTypeModalTitle.textContent = 'Editar Transporte';
         if (mt.image_url) {
           imagePreview.innerHTML = `<img src="${mt.image_url}" class="w-full h-full object-cover" />`;
         } else {
