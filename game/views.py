@@ -48,15 +48,30 @@ def chests_public_view(request):
 @login_required
 def buy_chest(request, chest_id):
     try:
+        from .models_planets import UserMineral
         chest = Chest.objects.get(id=chest_id, is_in_store=True)
         profile = request.user.profile
         
-        if profile.cosmos_gold < chest.price:
-            return JsonResponse({"error": "No tienes suficiente Cosmos Gold"}, status=400)
-            
         with transaction.atomic():
-            profile.cosmos_gold -= chest.price
-            profile.save()
+            # Refresh profile with lock
+            profile = Profile.objects.select_for_update().get(id=profile.id)
+            
+            if chest.purchase_mineral:
+                req_qty = chest.purchase_mineral_qty
+                # Use UserMineral to deduct mineral balance
+                user_mineral = UserMineral.objects.select_for_update().filter(user=request.user, mineral=chest.purchase_mineral).first()
+                if not user_mineral or user_mineral.amount < req_qty:
+                    return JsonResponse({"error": f"No tienes suficiente {chest.purchase_mineral.name} ({req_qty} requeridos)"}, status=400)
+                
+                user_mineral.amount -= req_qty
+                user_mineral.save()
+            else:
+                if profile.cosmos_gold < chest.price:
+                    return JsonResponse({"error": "No tienes suficiente Cosmos Gold"}, status=400)
+                    
+                profile.cosmos_gold -= chest.price
+                profile.save()
+                
             UserChest.objects.create(owner=profile, chest=chest)
             
         return JsonResponse({"success": True})

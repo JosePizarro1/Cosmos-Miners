@@ -112,6 +112,26 @@
               <label for="fInStore" class="text-sm font-bold cursor-pointer">Mostrar en tienda</label>
             </div>
           </div>
+          
+          <div class="col-span-1 md:col-span-2 space-y-4 border-t border-white/10 pt-4 mt-2">
+            <div>
+              <h3 class="font-bold text-sm text-accent uppercase tracking-widest">Compra Alternativa con Mineral</h3>
+              <p class="text-[10px] text-gray-400 mt-1">Si seleccionas un mineral, el cofre se comprará EXCLUSIVAMENTE con el mineral y el oro configurado arriba será ignorado.</p>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs uppercase text-gray-400 font-bold mb-1">Mineral Requerido</label>
+                <select name="purchase_mineral_id" id="fPurchaseMineral" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-accent outline-none">
+                  <option value="">Ninguno (Usa Gold)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs uppercase text-gray-400 font-bold mb-1">Cantidad (Precio en Mineral)</label>
+                <input type="number" min="0" value="0" name="purchase_mineral_qty" id="fPurchaseMineralQty" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-sm focus:border-accent outline-none">
+              </div>
+            </div>
+          </div>
+          
         </div>
 
         <div class="border-t border-white/10 pt-6">
@@ -237,6 +257,10 @@
       const select = document.getElementById('categorySelect');
       select.innerHTML = '<option value="">Selecciona categoría...</option>' + 
         deps.categories.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+        
+      const mSelect = document.getElementById('fPurchaseMineral');
+      mSelect.innerHTML = '<option value="">Ninguno (Usa Gold)</option>' +
+        (deps.items.mineral || []).map(m => `<option value="${m.id}">${m.name}</option>`).join('');
     }
 
     // Category Management Logic
@@ -436,6 +460,8 @@
         document.getElementById('fDescription').value = c.description;
         document.getElementById('fRewardsPerOpen').value = c.rewards_per_open;
         document.getElementById('categorySelect').value = c.category_id;
+        document.getElementById('fPurchaseMineral').value = c.purchase_mineral_id || '';
+        document.getElementById('fPurchaseMineralQty').value = c.purchase_mineral_qty || 0;
         document.getElementById('fInStore').checked = c.is_in_store;
         
         document.getElementById('imageInput').required = false;
@@ -466,6 +492,8 @@
         document.getElementById('imagePreviewContainer').classList.add('hidden');
         document.getElementById('imageInput').required = true;
         document.getElementById('imageHelp').textContent = "";
+        document.getElementById('fPurchaseMineral').value = "";
+        document.getElementById('fPurchaseMineralQty').value = 0;
         calculateTotalProb();
         openModal();
     }

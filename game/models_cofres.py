@@ -17,7 +17,11 @@ class Chest(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     image = models.ImageField(upload_to="chests/", help_text="Imagen o GIF del cofre")
-    price = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))])
+    price = models.DecimalField(max_digits=12, decimal_places=2, validators=[MinValueValidator(Decimal('0.00'))], help_text="Precio en Cosmos Gold (si no hay mineral seleccionado)")
+    
+    purchase_mineral = models.ForeignKey('game.Mineral', on_delete=models.SET_NULL, null=True, blank=True, help_text="Si se selecciona un mineral, este cofre se comprará con ese mineral en lugar de Cosmos Gold.")
+    purchase_mineral_qty = models.PositiveIntegerField(default=0, help_text="Cantidad de mineral extra necesario.")
+    
     is_in_store = models.BooleanField(default=True, verbose_name="¿Aparece en tienda?")
     category = models.ForeignKey(ChestCategory, on_delete=models.SET_NULL, null=True, related_name="chests")
     

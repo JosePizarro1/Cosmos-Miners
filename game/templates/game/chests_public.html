@@ -190,13 +190,23 @@
 
             <div class="mt-auto pt-6 border-t border-white/5 text-center">
               <div class="flex items-center justify-center gap-2 mb-4">
+                {% if c.purchase_mineral %}
+                <span class="text-2xl font-mono font-black text-pink">{{ c.purchase_mineral_qty }}</span>
+                <span class="text-[10px] text-gray-500 uppercase font-bold" title="{{ c.purchase_mineral.name }}">{{ c.purchase_mineral.name|truncatechars:15 }}</span>
+                {% else %}
                 <span class="text-2xl font-mono font-black text-accent">{{ c.price }}</span>
                 <span class="text-[10px] text-gray-500 uppercase font-bold">GOLD</span>
+                {% endif %}
               </div>
 
               <button
                 class="btn-buy-chest w-full py-4 rounded-2xl bg-gradient-to-r from-accent to-blueglow text-black font-black uppercase text-[10px] tracking-widest hover:brightness-110 active:scale-[0.98] transition-all"
-                data-id="{{ c.id }}" data-name="{{ c.name }}" data-price="{{ c.price }}">
+                data-id="{{ c.id }}" data-name="{{ c.name }}" 
+                {% if c.purchase_mineral %}
+                data-price="{{ c.purchase_mineral_qty }}" data-currency="{{ c.purchase_mineral.name }}"
+                {% else %}
+                data-price="{{ c.price }}" data-currency="GOLD"
+                {% endif %}>
                 Comprar Cofre
               </button>
             </div>
@@ -382,7 +392,7 @@
     document.addEventListener('click', e => {
       if (e.target.classList.contains('btn-buy-chest')) {
         const btn = e.target;
-        handleChestPurchase(btn.dataset.id, btn.dataset.name, btn.dataset.price);
+        handleChestPurchase(btn.dataset.id, btn.dataset.name, btn.dataset.price, btn.dataset.currency);
       } else if (e.target.classList.contains('btn-buy-oil')) {
         const btn = e.target;
         handleOilPurchase(btn.dataset.id, btn.dataset.name, btn.dataset.price);
@@ -395,10 +405,10 @@
       }
     });
 
-    async function handleChestPurchase(id, name, price) {
+    async function handleChestPurchase(id, name, price, currency) {
       const result = await Swal.fire({
         title: '¿Confirmar Compra?',
-        html: `¿Estás seguro de comprar <b class="text-accent">${name}</b> por <b class="text-accent font-mono">${price} GOLD</b>?`,
+        html: `¿Estás seguro de comprar <b class="text-accent">${name}</b> por <b class="text-accent font-mono">${price} ${currency}</b>?`,
         icon: 'question',
         showCancelButton: true,
         confirmButtonText: 'CONFIRMAR',

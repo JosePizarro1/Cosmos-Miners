@@ -53,6 +53,9 @@ def chests_list(request):
             "is_in_store": c.is_in_store,
             "category_name": c.category.name if c.category else "Sin categoría",
             "category_id": c.category.id if c.category else None,
+            "purchase_mineral_id": c.purchase_mineral.id if c.purchase_mineral else "",
+            "purchase_mineral_name": c.purchase_mineral.name if c.purchase_mineral else "",
+            "purchase_mineral_qty": c.purchase_mineral_qty,
             "image_url": c.image.url if c.image else "",
             "rewards_per_open": c.rewards_per_open,
             "rewards": rewards
@@ -71,6 +74,10 @@ def chest_create(request):
         category_id = request.POST.get("category_id")
         is_in_store = request.POST.get("is_in_store") in ["true", "on"]
         rewards_per_open = request.POST.get("rewards_per_open", 1)
+        
+        purchase_mineral_id = request.POST.get("purchase_mineral_id")
+        purchase_mineral_qty = int(request.POST.get("purchase_mineral_qty") or 0)
+        
         image = request.FILES.get("image")
         
         # Rewards is a JSON string of objects
@@ -89,6 +96,8 @@ def chest_create(request):
                 category=category,
                 is_in_store=is_in_store,
                 rewards_per_open=int(rewards_per_open),
+                purchase_mineral_id=purchase_mineral_id if purchase_mineral_id else None,
+                purchase_mineral_qty=purchase_mineral_qty,
                 image=image
             )
             
@@ -167,6 +176,10 @@ def chest_update(request, pk):
             chest.category = ChestCategory.objects.get(id=category_id)
             
         chest.is_in_store = request.POST.get("is_in_store") in ["true", "on"]
+        
+        purchase_mineral_id = request.POST.get("purchase_mineral_id")
+        chest.purchase_mineral_id = purchase_mineral_id if purchase_mineral_id else None
+        chest.purchase_mineral_qty = int(request.POST.get("purchase_mineral_qty") or 0)
         
         if request.FILES.get("image"):
             chest.image = request.FILES.get("image")
