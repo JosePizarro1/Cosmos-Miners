@@ -3,6 +3,7 @@ from .models_cofres import *
 from .models_rankings import *
 from .models_planets import *
 from .models_oil import *
+from .models_trades import *
 
 from django.db import models
 from django.utils import timezone

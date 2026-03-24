@@ -31,6 +31,12 @@ from game.views_oil import (
     claim_oil_barrels, user_oil_force_ready, start_refining, claim_refinement,
     user_oil_force_refine_ready
 )
+from game.views_trades import (
+    trades_admin_view, trade_offers_list, trade_offer_create,
+    trade_offer_update, trade_offer_toggle, user_trades_list,
+    user_trade_delete, trades_public_view, start_trade,
+    claim_trade, force_ready_trade
+)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", login_page, name="login_page"),
@@ -146,6 +152,20 @@ urlpatterns = [
     path("dashboard/user-oil/force-ready/<int:pk>/", user_oil_force_ready, name="user_oil_force_ready"),
     path("dashboard/user-oil/force-refine-ready/<int:pk>/", user_oil_force_refine_ready, name="user_oil_force_refine_ready"),
     path("oil/buy/<int:type_id>/", buy_oil_central, name="buy_oil_central"),
+
+    # Trades Admin & Public
+    path("dashboard/trades/", trades_admin_view, name="trades_admin"),
+    path("dashboard/trades/offers/list/", trade_offers_list, name="trade_offers_list"),
+    path("dashboard/trades/offers/create/", trade_offer_create, name="trade_offer_create"),
+    path("dashboard/trades/offers/update/<int:pk>/", trade_offer_update, name="trade_offer_update"),
+    path("dashboard/trades/offers/toggle/<int:pk>/", trade_offer_toggle, name="trade_offer_toggle"),
+    path("dashboard/trades/users/list/", user_trades_list, name="user_trades_list"),
+    path("dashboard/trades/users/delete/<int:pk>/", user_trade_delete, name="user_trade_delete"),
+    path("dashboard/trades/users/force-ready/<int:pk>/", force_ready_trade, name="force_ready_trade"),
+    
+    path("trades/", trades_public_view, name="trades_public"),
+    path("trades/start/<int:offer_id>/", start_trade, name="start_trade"),
+    path("trades/claim/<int:trade_id>/", claim_trade, name="claim_trade"),
 
 ]
 

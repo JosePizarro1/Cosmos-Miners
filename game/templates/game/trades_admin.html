@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Trades · Cosmos Miners</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <!-- Tailwind CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    option {
+      background-color: #0c1a3a;
+    }
+  </style>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            space: "#05050f",
+            card: "rgba(20,30,60,0.75)",
+            accent: "#00e0ff",
+            pink: "#ff4d8d",
+            blueglow: "#0077ff"
+          }
+        }
+      }
+    }
+  </script>
+</head>
+
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative">
+
+  <!-- Background -->
+  <div
+    class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.15)_1px,_transparent_1px)] bg-[size:32px_32px] opacity-20">
+  </div>
+  <div class="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-transparent to-pink-900/20"></div>
+
+  <!-- Header -->
+  <header class="relative z-10 px-6 py-6 flex items-center justify-between max-w-6xl mx-auto">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-handshake text-accent text-2xl"></i>
+      <span
+        class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">COSMOS</span>
+      <span class="text-xs text-gray-300 ml-2">ADMIN · MERCADO</span>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <a href="/dashboard/admin/"
+        class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
+        Dashboard
+      </a>
+      <a href="/home/"
+        class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">
+        Volver
+      </a>
+    </div>
+  </header>
+
+  <!-- Title -->
+  <section class="relative z-10 px-6 mt-4 mb-6 max-w-6xl mx-auto">
+    <h1 class="text-3xl font-black leading-tight bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">
+      CRUD de Ofertas de Mercado
+    </h1>
+    <p class="text-sm text-gray-300 mt-1">Administra los trades/ventas de minerales por Cosmos Gold.</p>
+  </section>
+
+  <main class="relative z-10 px-6 pb-12 max-w-6xl mx-auto space-y-8">
+    <!-- Offers -->
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-lg">Ofertas de Venta</h3>
+        <button id="btnOpenModal" class="px-4 py-2 rounded bg-accent text-black font-bold text-sm">
+          + Crear Oferta
+        </button>
+      </div>
+      <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="text-gray-400 text-xs">
+              <tr>
+                <th class="py-2">Mineral</th>
+                <th>Requisito (Cant.)</th>
+                <th>Recompensa (Gold)</th>
+                <th>Duración (Horas)</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="offersTable">
+              <tr>
+                <td colspan="6" class="text-gray-400 text-xs py-4 text-center">Cargando...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- User Active Trades -->
+    <section>
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="font-bold text-lg">Ventas en Progreso (Usuarios)</h3>
+      </div>
+      <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6">
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm">
+            <thead class="text-gray-400 text-xs">
+              <tr>
+                <th class="py-2">Usuario</th>
+                <th>Oferta</th>
+                <th>Tiempo Estimado</th>
+                <th>Estado</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="userTradesTable">
+              <tr>
+                <td colspan="5" class="text-gray-400 text-xs py-4 text-center">Cargando...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Modal TradeOffer -->
+  <div id="offerModal" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+    <div class="relative bg-card border border-white/10 rounded-3xl p-6 w-[92%] max-w-2xl overflow-y-auto max-h-[90vh]">
+      <div class="flex items-center justify-between mb-4">
+        <h4 id="modalTitle" class="font-bold text-lg">Crear Oferta</h4>
+        <button id="closeModal" class="text-gray-300 text-xl"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="offerForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <input type="hidden" name="id" />
+        
+        <div class="md:col-span-2">
+            <h5 class="text-xs font-bold uppercase tracking-widest text-[#a855f7] mb-2">Requisito (Lo que paga el usuario)</h5>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] uppercase text-gray-400">Mineral Objetivo</label>
+                    <select name="mineral_id" required class="w-full mt-1 p-3 rounded bg-white/5 text-white border border-white/10">
+                        <option value="">Seleccione Mineral</option>
+                        {% for m in minerals %}
+                        <option value="{{ m.id }}">{{ m.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-gray-400">Cantidad Exigida</label>
+                    <input name="mineral_qty" type="number" min="1" required
+                        class="w-full mt-1 p-3 rounded bg-white/5 text-white border border-white/10" />
+                </div>
+            </div>
+        </div>
+
+        <div class="border-t border-white/5 pt-4 md:col-span-2">
+            <h5 class="text-xs font-bold uppercase tracking-widest text-pink mb-2">Recompensa (Lo que recibe el usuario)</h5>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="text-[10px] uppercase text-gray-400">Cosmos Gold</label>
+                    <input name="gold_reward" type="number" step="0.01" required
+                        class="w-full mt-1 p-3 rounded bg-white/5 text-white border border-white/10" />
+                </div>
+                <div>
+                    <label class="text-[10px] uppercase text-gray-400">Duración del Viaje (Horas)</label>
+                    <input name="duration_hours" type="number" min="0" required
+                        class="w-full mt-1 p-3 rounded bg-white/5 text-white border border-white/10" help-text="Ej: 360 para 15 días" />
+                </div>
+            </div>
+        </div>
+
+        <div>
+          <label class="text-sm text-gray-300 block mt-4">Estado de la Oferta</label>
+          <div class="mt-2 flex items-center gap-6">
+            <label class="flex items-center gap-2 text-sm text-gray-300">
+              <input name="is_active" type="checkbox" class="accent-cyan-400" checked />
+              Activa y Visible
+            </label>
+          </div>
+        </div>
+
+        <div class="md:col-span-2 flex justify-end gap-3 pt-4 border-t border-white/5 mt-4">
+          <button type="button" id="cancelOffer"
+            class="px-4 py-2 rounded bg-white/5 text-gray-200">Cancelar</button>
+          <button type="submit" class="px-6 py-2 rounded bg-accent text-black font-bold">Guardar Oferta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    function getCookie(name) {
+      let v = document.cookie.match('(^|;)\\s*' + name + '\\s*=\\s*([^;]+)');
+      return v ? v.pop() : '';
+    }
+
+    const csrftoken = getCookie('csrftoken');
+    const offersTable = document.getElementById('offersTable');
+    const userTradesTable = document.getElementById('userTradesTable');
+
+    const offerModal = document.getElementById('offerModal');
+    const offerForm = document.getElementById('offerForm');
+    const modalTitle = document.getElementById('modalTitle');
+
+    function openModal(el) { el.classList.remove('hidden'); el.classList.add('flex'); }
+    function closeModal(el) { el.classList.add('hidden'); el.classList.remove('flex'); }
+
+    document.getElementById('btnOpenModal').addEventListener('click', () => {
+      offerForm.reset();
+      offerForm.querySelector('[name="id"]').value = '';
+      modalTitle.textContent = 'Nueva Oferta de Venta';
+      openModal(offerModal);
+    });
+    document.getElementById('closeModal').addEventListener('click', () => closeModal(offerModal));
+    document.getElementById('cancelOffer').addEventListener('click', () => closeModal(offerModal));
+
+    function renderOfferRow(o) {
+      const badge = o.is_active
+        ? '<span class="px-2 py-1 rounded bg-green-400 text-black text-xs font-bold">Visible</span>'
+        : '<span class="px-2 py-1 rounded bg-gray-500 text-white text-xs">Oculta</span>';
+      
+      const days = (o.duration_hours / 24).toFixed(1);
+      
+      return `<tr class="border-t border-white/5 hover:bg-white/5 transition-colors">
+    <td class="font-bold py-3 text-pink">${o.mineral_name}</td>
+    <td class="font-mono text-gray-200">${o.mineral_qty}</td>
+    <td class="text-accent font-black">${o.gold_reward} <span class="text-[10px]">GOLD</span></td>
+    <td>${o.duration_hours} h <span class="text-[10px] text-gray-500">(${days}d)</span></td>
+    <td>${badge}</td>
+    <td class="text-right space-x-2">
+      <button data-id="${o.id}" class="edit-offer px-3 py-1.5 rounded bg-white/5 text-gray-200 hover:bg-white/10 transition-colors"><i class="fas fa-pen"></i></button>
+      <button data-id="${o.id}" class="toggle-offer px-3 py-1.5 rounded bg-white/5 text-gray-200 hover:bg-white/10 transition-colors"><i class="fas fa-power-off"></i></button>
+    </td>
+  </tr>`;
+    }
+
+    function renderUserTradeRow(ut) {
+      let stateInfo = "";
+      if (ut.is_claimed) {
+        stateInfo = '<span class="px-2 py-1 rounded bg-accent/20 text-accent text-xs font-bold border border-accent/20"><i class="fas fa-check-circle mr-1"></i> Reclamado</span>';
+      } else if (ut.is_finished) {
+        stateInfo = '<span class="px-2 py-1 rounded bg-green-500/20 text-green-400 text-xs font-bold border border-green-500/20"><i class="fas fa-coins mr-1"></i> Listo p/Reclamar</span>';
+      } else {
+        stateInfo = '<span class="px-2 py-1 rounded bg-white/5 text-gray-300 text-xs border border-white/10"><i class="fas fa-hourglass-half mr-1"></i> En Espera</span>';
+      }
+      
+      const forceReadyBtn = (!ut.is_claimed && !ut.is_finished)
+        ? `<button data-id="${ut.id}" class="force-ready-uo px-3 py-1.5 rounded bg-white/5 text-accent hover:bg-accent/10 transition-colors" title="Forzar Fin"><i class="fas fa-bolt"></i></button>`
+        : '';
+        
+      return `<tr class="border-t border-white/5 hover:bg-white/5 transition-colors">
+    <td class="py-3 px-2">
+        <div class="text-white font-bold">${ut.username}</div>
+    </td>
+    <td><span class="text-[10px] text-gray-400 mr-2">Vende:</span><span class="text-pink font-bold">${ut.qty} ${ut.mineral}</span> -> <span class="text-accent">${ut.gold} GOLD</span></td>
+    <td class="text-gray-400 text-xs">${new Date(ut.end_time).toLocaleString()}</td>
+    <td>${stateInfo}</td>
+    <td class="text-right space-x-2 flex justify-end items-center py-2 h-full">
+      ${forceReadyBtn}
+      <button data-id="${ut.id}" class="delete-trade px-3 py-1.5 rounded bg-red-400/10 text-red-400 hover:bg-red-400/20 transition-colors"><i class="fas fa-trash"></i></button>
+    </td>
+  </tr>`;
+    }
+
+    async function loadOffers() {
+      const res = await fetch('/dashboard/trades/offers/list/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        offersTable.innerHTML = data.items.map(renderOfferRow).join('') || '<tr><td colspan="6" class="text-gray-400 text-xs py-4 text-center">Sin ofertas configuradas</td></tr>';
+      }
+    }
+
+    async function loadUserTrades() {
+      const res = await fetch('/dashboard/trades/users/list/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        userTradesTable.innerHTML = data.items.map(renderUserTradeRow).join('') || '<tr><td colspan="5" class="text-gray-400 text-xs py-4 text-center">Nadie ha realizado ventas aún</td></tr>';
+      }
+    }
+
+    offerForm.addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const fd = new FormData(offerForm);
+      const id = fd.get('id');
+      const url = id ? `/dashboard/trades/offers/update/${id}/` : '/dashboard/trades/offers/create/';
+      
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': csrftoken },
+        body: fd
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        closeModal(offerModal);
+        await loadOffers();
+        Swal.fire({ icon: 'success', title: 'Guardado correctamente', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });
+      } else {
+        Swal.fire({ icon: 'error', title: data.error || 'Error' });
+      }
+    });
+
+    offersTable.addEventListener('click', async (ev) => {
+      const editBtn = ev.target.closest('.edit-offer');
+      const toggleBtn = ev.target.closest('.toggle-offer');
+
+      if (editBtn) {
+        const id = editBtn.dataset.id;
+        const res = await fetch('/dashboard/trades/offers/list/', {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+        });
+        const data = await res.json();
+        const o = data.items.find(i => String(i.id) === String(id));
+        if (!o) return;
+
+        offerForm.reset();
+        offerForm.querySelector('[name="id"]').value = o.id;
+        offerForm.querySelector('[name="mineral_id"]').value = o.mineral_id;
+        offerForm.querySelector('[name="mineral_qty"]').value = o.mineral_qty;
+        offerForm.querySelector('[name="gold_reward"]').value = o.gold_reward;
+        offerForm.querySelector('[name="duration_hours"]').value = o.duration_hours;
+        offerForm.querySelector('[name="is_active"]').checked = o.is_active;
+        
+        modalTitle.textContent = 'Editar Oferta';
+        openModal(offerModal);
+      }
+
+      if (toggleBtn) {
+        const id = toggleBtn.dataset.id;
+        const res = await fetch(`/dashboard/trades/offers/toggle/${id}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+        });
+        const data = await res.json();
+        if (data.success) {
+          await loadOffers();
+          Swal.fire({ icon: 'success', title: 'Estado actualizado', toast: true, position: 'top-end', timer: 1000, showConfirmButton: false });
+        }
+      }
+    });
+
+    userTradesTable.addEventListener('click', async (ev) => {
+      const delBtn = ev.target.closest('.delete-trade');
+      const forceBtn = ev.target.closest('.force-ready-uo');
+      
+      if (forceBtn) {
+        const id = forceBtn.dataset.id;
+        const res = await fetch(`/dashboard/trades/users/force-ready/${id}/`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+        });
+        const data = await res.json();
+        if (data.success) {
+            Swal.fire({ icon: 'success', title: 'Completado y Listo', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });
+            await loadUserTrades();
+        }
+        return;
+      }
+
+      if (!delBtn) return;
+      const id = delBtn.dataset.id;
+      
+      const confirm = await Swal.fire({
+        title: '¿Eliminar Venta Histórica?',
+        text: 'Se borrará el registro de la venta.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Eliminar',
+        cancelButtonText: 'Cancelar',
+        background: '#0c1a3a',
+        color: '#fff'
+      });
+
+      if (confirm.isConfirmed) {
+        const res = await fetch(`/dashboard/trades/users/delete/${id}/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken }
+        });
+        if (res.ok) {
+          await loadUserTrades();
+          Swal.fire({ icon: 'success', title: 'Eliminado', toast: true, position: 'top-end', timer: 1000, showConfirmButton: false });
+        }
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      await loadOffers();
+      await loadUserTrades();
+    });
+  </script>
+</body>
+</html>

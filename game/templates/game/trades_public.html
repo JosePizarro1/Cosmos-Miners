@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Ventas | Cosmos Miners</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            space: "#05050f",
+            card: "rgba(20,30,60,0.75)",
+            accent: "#00e0ff",
+            pink: "#ff4d8d",
+            blueglow: "#0077ff"
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .swal2-popup {
+      background: #0a0a20 !important;
+      color: white !important;
+      border: 1px solid rgba(255, 255, 255, 0.1) !important;
+      border-radius: 24px !important;
+    }
+    .swal2-title {
+      color: white !important;
+    }
+    .swal2-confirm {
+      background: #00e0ff !important;
+      color: #000 !important;
+      border-radius: 12px !important;
+      font-weight: bold !important;
+    }
+    @keyframes pulse-cyan {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(0, 224, 255, 0.4); }
+      50% { box-shadow: 0 0 15px 5px rgba(0, 224, 255, 0.1); }
+    }
+    .active-trade {
+      border-color: #00e0ff;
+      animation: pulse-cyan 3s infinite;
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative pb-20">
+  <div class="fixed inset-0 z-0 opacity-40">
+    <div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.1)_1px,_transparent_1px)] bg-[size:32px_32px]"></div>
+  </div>
+
+  <header class="relative z-10 px-6 py-6 border-b border-white/5 backdrop-blur-md">
+    <div class="max-w-4xl mx-auto flex items-center justify-between">
+      <a href="/home/" class="flex items-center gap-3 group">
+        <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center border border-white/10 group-hover:border-accent group-hover:bg-accent/10 transition-all">
+          <i class="fas fa-arrow-left text-gray-400 group-hover:text-accent"></i>
+        </div>
+        <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent uppercase tracking-tighter">Mercado</span>
+      </a>
+
+      <div class="flex items-center gap-4 bg-white/5 border border-white/10 px-4 py-2 rounded-2xl">
+        <div class="text-right">
+          <p class="text-[8px] uppercase text-gray-500 font-bold">Saldo Personal</p>
+          <p id="userGold" class="text-xs font-mono font-black text-accent">{{ request.user.profile.cosmos_gold }} GOLD</p>
+        </div>
+        <i class="fas fa-coins text-yellow-400"></i>
+      </div>
+    </div>
+  </header>
+
+  <main class="relative z-10 max-w-4xl mx-auto px-6 mt-12">
+    <div class="text-center mb-10">
+      <h1 class="text-4xl font-black mb-4 bg-gradient-to-r from-accent via-white to-pink bg-clip-text text-transparent uppercase tracking-tight">
+        Venta de Suministros
+      </h1>
+      <p class="text-gray-400 text-sm">Intercambia tus minerales por Cosmos GOLD.</p>
+    </div>
+
+    <div class="space-y-6">
+      {% for offer in offers %}
+      <div class="glass-card rounded-[32px] p-6 relative overflow-hidden flex flex-col md:flex-row items-center gap-6 transition-all {% if active_trade and active_trade.offer.id == offer.id %}active-trade{% endif %}">
+        
+        <div class="flex-1 w-full grid grid-cols-3 gap-4 items-center text-center">
+            <!-- Mineral Side -->
+            <div class="flex flex-col items-center">
+                <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center border border-white/10 mb-2 relative group">
+                    <div class="absolute inset-0 bg-pink/20 rounded-full blur-xl group-hover:blur-2xl transition-all"></div>
+                    {% if offer.mineral.image %}
+                    <img src="{{ offer.mineral.image.url }}" alt="{{ offer.mineral.name }}" class="w-10 h-10 object-contain relative z-10">
+                    {% else %}
+                    <i class="fas fa-gem text-2xl text-pink relative z-10"></i>
+                    {% endif %}
+                </div>
+                <div class="font-mono font-black text-white text-lg">{{ offer.mineral_qty }}</div>
+                <div class="text-[10px] text-gray-500 uppercase font-bold">{{ offer.mineral.name|truncatechars:15 }}</div>
+                <div class="text-[9px] {% if offer.user_qty >= offer.mineral_qty %}text-green-400{% else %}text-red-400{% endif %} mt-1">
+                    Tienes: {{ offer.user_qty }}
+                </div>
+            </div>
+
+            <!-- Arrow/Time Side -->
+            <div class="flex flex-col items-center justify-center">
+                <i class="fas fa-arrow-right-long text-3xl text-gray-600 mb-2 hidden md:block"></i>
+                <i class="fas fa-arrow-down-long text-3xl text-gray-600 mb-2 block md:hidden"></i>
+                <div class="px-3 py-1 rounded bg-white/5 border border-white/10 text-[10px] font-bold text-gray-400 uppercase flex items-center gap-2">
+                    <i class="far fa-clock"></i>
+                    {{ offer.duration_hours }} horas
+                </div>
+            </div>
+
+            <!-- Gold Side -->
+            <div class="flex flex-col items-center">
+                <div class="w-16 h-16 rounded-full bg-white/5 flex items-center justify-center border border-white/10 mb-2 relative group">
+                    <div class="absolute inset-0 bg-accent/20 rounded-full blur-xl group-hover:blur-2xl transition-all"></div>
+                    <i class="fas fa-coins text-3xl text-yellow-400 relative z-10"></i>
+                </div>
+                <div class="font-mono font-black text-accent text-lg">{{ offer.gold_reward }}</div>
+                <div class="text-[10px] text-gray-500 uppercase font-bold">GOLD</div>
+            </div>
+        </div>
+
+        <!-- Action Side -->
+        <div class="w-full md:w-48 flex flex-col justify-center items-center">
+            
+            {% if active_trade %}
+                {% if active_trade.offer.id == offer.id %}
+                    <!-- THIS IS THE ACTIVE TRADE -->
+                    <div class="w-full text-center">
+                        <div id="countdown-{{ active_trade.id }}" class="text-xl font-mono font-black text-white mb-2" data-end="{{ active_trade.end_time|date:'c' }}">
+                            --:--:--
+                        </div>
+                        <button id="btn-claim" class="hidden w-full py-4 rounded-2xl bg-gradient-to-r from-green-400 to-emerald-600 text-black font-black uppercase text-[10px] tracking-widest hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(74,222,128,0.3)]" onclick="claimTrade('{{ active_trade.id }}')">
+                            Reclamar Pago
+                        </button>
+                        <div id="msg-wait" class="text-[10px] text-accent mt-2 bg-accent/10 border border-accent/20 px-3 py-2 rounded-lg">
+                            Venta en progreso...
+                        </div>
+                    </div>
+                {% else %}
+                    <!-- DISABLED OTHER TRADES -->
+                    <button class="w-full py-4 rounded-2xl bg-white/5 text-gray-500 font-black uppercase text-[10px] tracking-widest cursor-not-allowed border border-white/5">
+                        Bloqueado
+                    </button>
+                {% endif %}
+            {% else %}
+                <!-- NO ACTIVE TRADE -->
+                <button class="w-full py-4 rounded-2xl bg-gradient-to-r from-accent to-blueglow text-black font-black uppercase text-[10px] tracking-widest hover:brightness-110 active:scale-[0.98] transition-all shadow-[0_0_15px_rgba(0,224,255,0.2)]" onclick="startTrade('{{ offer.id }}', '{{ offer.mineral.name }}', {{ offer.mineral_qty }}, {{ offer.gold_reward }})">
+                    Vender
+                </button>
+            {% endif %}
+
+        </div>
+
+        {% if active_trade and active_trade.offer.id != offer.id %}
+            <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px] z-20 flex items-center justify-center rounded-[32px] opacity-0 group-hover:opacity-100 md:opacity-100">
+                <div class="text-sm font-bold text-gray-300 tracking-wide uppercase px-4 py-2 bg-black/60 rounded-xl border border-white/10 text-center">
+                    Espera a que termine <br> para realizar otra venta
+                </div>
+            </div>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </main>
+
+  <script>
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+
+    async function startTrade(offerId, mineralName, mineralQty, goldReward) {
+        const result = await Swal.fire({
+            title: '¿Confirmar Venta?',
+            html: `Se descontarán <b class="text-pink font-mono">${mineralQty}</b> de <b class="text-pink">${mineralName}</b>.<br><br>Recibirás <b class="text-accent font-mono">${goldReward} GOLD</b> al finalizar el proceso.`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'INICIAR VENTA',
+            cancelButtonText: 'CANCELAR',
+            reverseButtons: true
+        });
+
+        if(result.isConfirmed) {
+            Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            try {
+                const response = await fetch(`/trades/start/${offerId}/`, {
+                    method: 'POST',
+                    headers: { 'X-CSRFToken': getCookie('csrftoken') }
+                });
+                const data = await response.json();
+                if(data.success) {
+                    location.reload();
+                } else {
+                    Swal.fire('Venta rechazada', data.error || 'Fondos insuficientes o error.', 'error');
+                }
+            } catch(e) {
+                Swal.fire('Error', 'Error de red', 'error');
+            }
+        }
+    }
+
+    async function claimTrade(tradeId) {
+        Swal.fire({ title: 'Procesando pago...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        try {
+            const response = await fetch(`/trades/claim/${tradeId}/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': getCookie('csrftoken') }
+            });
+            const data = await response.json();
+            if(data.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡Pago Recibido!',
+                    html: `Has recibido <b class="text-accent font-mono text-2xl">${data.reward} GOLD</b> en tu saldo personal.`,
+                    confirmButtonText: 'EXCELENTE'
+                });
+                location.reload();
+            } else {
+                Swal.fire('Fallo al reclamar', data.error || 'Aún no expira el tiempo o hubo un error.', 'error');
+            }
+        } catch(e) {
+            Swal.fire('Error', 'Error de red', 'error');
+        }
+    }
+
+    // Timer logic
+    const countdownEl = document.querySelector('[id^="countdown-"]');
+    if (countdownEl) {
+        const endTime = new Date(countdownEl.dataset.end).getTime();
+        const btnClaim = document.getElementById('btn-claim');
+        const msgWait = document.getElementById('msg-wait');
+        
+        function updateTimer() {
+            const now = new Date().getTime();
+            const distance = endTime - now;
+            
+            if (distance < 0) {
+                countdownEl.textContent = "00:00:00";
+                countdownEl.classList.remove('text-white');
+                countdownEl.classList.add('text-green-400');
+                btnClaim.classList.remove('hidden');
+                msgWait.classList.add('hidden');
+                return;
+            }
+            
+            const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            
+            let timeStr = "";
+            if (days > 0) timeStr += days + "d ";
+            timeStr += String(hours).padStart(2, '0') + ":" + 
+                       String(minutes).padStart(2, '0') + ":" + 
+                       String(seconds).padStart(2, '0');
+                       
+            countdownEl.textContent = timeStr;
+            setTimeout(updateTimer, 1000);
+        }
+        updateTimer();
+    }
+  </script>
+</body>
+</html>
