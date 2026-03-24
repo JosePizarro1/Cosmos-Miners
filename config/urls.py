@@ -37,6 +37,10 @@ from game.views_trades import (
     user_trade_delete, trades_public_view, start_trade,
     claim_trade, force_ready_trade
 )
+from game.views_packs import (
+    packs_admin_view, packs_list, pack_create, pack_update,
+    pack_toggle, pack_delete, packs_public_view, buy_pack
+)
 urlpatterns = [
     path('admin/', admin.site.urls),
     path("", login_page, name="login_page"),
@@ -166,6 +170,16 @@ urlpatterns = [
     path("trades/", trades_public_view, name="trades_public"),
     path("trades/start/<int:offer_id>/", start_trade, name="start_trade"),
     path("trades/claim/<int:trade_id>/", claim_trade, name="claim_trade"),
+
+    # Packs Admin & Public
+    path("dashboard/packs/", packs_admin_view, name="packs_admin"),
+    path("dashboard/packs/list/", packs_list, name="packs_list"),
+    path("dashboard/packs/create/", pack_create, name="pack_create"),
+    path("dashboard/packs/update/<int:pk>/", pack_update, name="pack_update"),
+    path("dashboard/packs/toggle/<int:pk>/", pack_toggle, name="pack_toggle"),
+    path("dashboard/packs/delete/<int:pk>/", pack_delete, name="pack_delete"),
+    path("packs/", packs_public_view, name="packs_public"),
+    path("packs/buy/<int:pk>/", buy_pack, name="buy_pack"),
 
 ]
 

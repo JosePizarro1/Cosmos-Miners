@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Admin Paquetes · Cosmos Miners</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { colors: { space: "#05050f", card: "rgba(20,30,60,0.75)", accent: "#00e0ff", pink: "#ff4d8d", blueglow: "#0077ff" } } }
+    }
+  </script>
+  <style>
+    option { background-color: #0c1a3a; }
+    .reward-row { border-bottom: 1px solid rgba(255,255,255,0.05); }
+  </style>
+</head>
+<body class="min-h-screen bg-space text-white overflow-x-hidden relative">
+  <div class="absolute inset-0 bg-[radial-gradient(circle,_rgba(255,255,255,0.15)_1px,_transparent_1px)] bg-[size:32px_32px] opacity-20"></div>
+  <div class="absolute inset-0 bg-gradient-to-b from-blue-900/20 via-transparent to-pink-900/20"></div>
+
+  <header class="relative z-10 px-6 py-6 flex items-center justify-between max-w-6xl mx-auto">
+    <div class="flex items-center gap-3">
+      <i class="fas fa-boxes-stacked text-accent text-2xl"></i>
+      <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">COSMOS</span>
+      <span class="text-xs text-gray-300 ml-2">ADMIN · PAQUETES</span>
+    </div>
+    <div class="flex items-center gap-3">
+      <a href="/dashboard/admin/" class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">Dashboard</a>
+      <a href="/packs/" class="bg-card backdrop-blur-xl border border-white/10 px-4 py-2 rounded-xl text-sm font-semibold">Ver Tienda</a>
+    </div>
+  </header>
+
+  <section class="relative z-10 px-6 mt-2 mb-6 max-w-6xl mx-auto">
+    <h1 class="text-3xl font-black leading-tight bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">Gestión de Paquetes</h1>
+    <p class="text-sm text-gray-300 mt-1">Crea paquetes con mineros y herramientas que los jugadores podrán comprar.</p>
+  </section>
+
+  <main class="relative z-10 px-6 pb-20 max-w-6xl mx-auto">
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="font-bold text-lg flex items-center gap-2"><i class="fas fa-cubes text-accent text-sm"></i> Paquetes</h3>
+      <button id="btnNewPack" class="px-4 py-2 rounded bg-accent text-black font-bold text-sm flex items-center gap-2">
+        <i class="fas fa-plus"></i> Nuevo Paquete
+      </button>
+    </div>
+    <div class="bg-card backdrop-blur-xl border border-white/10 rounded-3xl p-6">
+      <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm">
+          <thead class="text-gray-400 text-xs border-b border-white/5">
+            <tr>
+              <th class="py-3">Nombre</th>
+              <th>Precio</th>
+              <th>Mineros</th>
+              <th>Herramientas</th>
+              <th>Link</th>
+              <th>Estado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="packsTable">
+            <tr><td colspan="7" class="text-center text-gray-400 text-xs py-6">Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- MODAL PACK -->
+  <div id="packModal" class="fixed inset-0 hidden items-center justify-center z-50">
+    <div class="absolute inset-0 bg-black/60 backdrop-blur-sm" id="modalBg"></div>
+    <div class="relative bg-[#080d1e] border border-white/10 rounded-3xl p-6 w-[96%] max-w-3xl overflow-y-auto max-h-[95vh] shadow-2xl">
+      <div class="flex items-center justify-between mb-5">
+        <h4 id="modalTitle" class="font-black text-xl bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">Nuevo Paquete</h4>
+        <button id="closePackModal" class="text-gray-400 hover:text-white text-xl"><i class="fas fa-times"></i></button>
+      </div>
+
+      <form id="packForm" enctype="multipart/form-data" class="space-y-6">
+        <input type="hidden" name="pack_id"/>
+
+        <!-- Información básica -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="text-[10px] uppercase text-gray-400 font-bold">Nombre *</label>
+            <input name="name" type="text" required class="w-full mt-1 p-3 rounded-lg bg-white/5 text-white border border-white/10"/>
+          </div>
+          <div>
+            <label class="text-[10px] uppercase text-gray-400 font-bold">Imagen</label>
+            <input name="image" type="file" accept="image/*" class="w-full mt-1 p-2 rounded-lg bg-white/5 text-white border border-white/10 text-sm"/>
+          </div>
+          <div class="md:col-span-2">
+            <label class="text-[10px] uppercase text-gray-400 font-bold">Descripción</label>
+            <textarea name="description" rows="2" class="w-full mt-1 p-3 rounded-lg bg-white/5 text-white border border-white/10"></textarea>
+          </div>
+        </div>
+
+        <!-- Precio -->
+        <div class="border-t border-white/5 pt-4">
+          <p class="text-xs font-bold uppercase text-yellow-400 mb-3"><i class="fas fa-coins mr-1"></i> Precio de Compra</p>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label class="text-[10px] uppercase text-gray-400">Cosmos Gold</label>
+              <input name="price_gold" type="number" step="0.01" value="0" class="w-full mt-1 p-3 rounded-lg bg-white/5 text-white border border-white/10"/>
+            </div>
+            <div>
+              <label class="text-[10px] uppercase text-gray-400">Mineral alternativo</label>
+              <select name="purchase_mineral_id" class="w-full mt-1 p-3 rounded-lg bg-white/5 text-white border border-white/10">
+                <option value="">— Ninguno (usar Gold) —</option>
+                {% for m in minerals %}
+                <option value="{{ m.id }}">{{ m.name }}</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div>
+              <label class="text-[10px] uppercase text-gray-400">Cantidad Mineral</label>
+              <input name="purchase_mineral_qty" type="number" min="0" value="0" class="w-full mt-1 p-3 rounded-lg bg-white/5 text-white border border-white/10"/>
+            </div>
+          </div>
+        </div>
+
+        <!-- Link externo -->
+        <div class="border-t border-white/5 pt-4">
+          <p class="text-xs font-bold uppercase text-pink mb-1"><i class="fas fa-link mr-1"></i> Link Externo (Prioridad Absoluta)</p>
+          <p class="text-[10px] text-gray-500 mb-3">Si se llena, el botón de compra abrirá esta URL. No se descuenta Gold ni Mineral.</p>
+          <input name="external_link" type="url" placeholder="https://..." class="w-full p-3 rounded-lg bg-white/5 text-white border border-white/10"/>
+        </div>
+
+        <!-- Recompensas Transportes -->
+        <div class="border-t border-white/5 pt-4">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-xs font-bold uppercase text-pink"><i class="fas fa-shuttle-space mr-1"></i> Pool de Transportes <span class="text-gray-500 font-normal normal-case">(suma debe ser 1)</span></p>
+            <button type="button" id="addTransportRow" class="text-xs bg-pink/10 border border-pink/20 text-pink px-3 py-1 rounded-lg hover:bg-pink/20 transition-all">
+              + Añadir Transporte
+            </button>
+          </div>
+          <div id="transportRows" class="space-y-2"></div>
+          <div class="text-right mt-2">
+            <span class="text-[10px] font-mono text-gray-400">Suma: <span id="transportSum" class="text-white font-bold">0.0000</span></span>
+          </div>
+        </div>
+
+        <!-- Recompensas Mineros -->
+        <div class="border-t border-white/5 pt-4">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-xs font-bold uppercase text-accent"><i class="fas fa-user-astronaut mr-1"></i> Pool de Mineros <span class="text-gray-500 font-normal normal-case">(la suma de probabilidades debe ser 1)</span></p>
+            <button type="button" id="addMinerRow" class="text-xs bg-accent/10 border border-accent/20 text-accent px-3 py-1 rounded-lg hover:bg-accent/20 transition-all">
+              + Añadir Minero
+            </button>
+          </div>
+          <div id="minerRows" class="space-y-2"></div>
+          <div class="text-right mt-2">
+            <span class="text-[10px] font-mono text-gray-400">Suma: <span id="minerSum" class="text-white font-bold">0.0000</span></span>
+          </div>
+        </div>
+
+        <!-- Recompensas Herramientas -->
+        <div class="border-t border-white/5 pt-4">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-xs font-bold uppercase text-yellow-400"><i class="fas fa-screwdriver-wrench mr-1"></i> Pool de Herramientas <span class="text-gray-500 font-normal normal-case">(suma debe ser 1)</span></p>
+            <button type="button" id="addToolRow" class="text-xs bg-yellow-400/10 border border-yellow-400/20 text-yellow-400 px-3 py-1 rounded-lg hover:bg-yellow-400/20 transition-all">
+              + Añadir Herramienta
+            </button>
+          </div>
+          <div id="toolRows" class="space-y-2"></div>
+          <div class="text-right mt-2">
+            <span class="text-[10px] font-mono text-gray-400">Suma: <span id="toolSum" class="text-white font-bold">0.0000</span></span>
+          </div>
+        </div>
+
+        <!-- Estado -->
+        <div class="border-t border-white/5 pt-4 flex items-center gap-3">
+          <label class="flex items-center gap-2 text-sm text-gray-300">
+            <input name="is_active" type="checkbox" class="accent-cyan-400" checked/>
+            Paquete Activo y Visible en Tienda
+          </label>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-2">
+          <button type="button" id="cancelPackModal" class="px-5 py-2 rounded-lg bg-white/5 text-gray-300 hover:bg-white/10">Cancelar</button>
+          <button type="submit" class="px-6 py-2 rounded-lg bg-accent text-black font-bold hover:brightness-110">Guardar Paquete</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const MINERS = {{ miners_json|safe }};
+    const TOOLS = {{ tools_json|safe }};
+    const TRANSPORTS = {{ transports_json|safe }};
+
+    const csrftoken = (document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)') || [])[2] || '';
+
+    function openModal() {
+      document.getElementById('packModal').classList.remove('hidden');
+      document.getElementById('packModal').classList.add('flex');
+    }
+    function closeModal() {
+      document.getElementById('packModal').classList.add('hidden');
+      document.getElementById('packModal').classList.remove('flex');
+    }
+
+    document.getElementById('btnNewPack').addEventListener('click', () => {
+      document.getElementById('packForm').reset();
+      document.getElementById('packForm').querySelector('[name="pack_id"]').value = '';
+      document.getElementById('modalTitle').textContent = 'Nuevo Paquete';
+      document.getElementById('minerRows').innerHTML = '';
+      document.getElementById('toolRows').innerHTML = '';
+      document.getElementById('transportRows').innerHTML = '';
+      updateSums();
+      openModal();
+    });
+    document.getElementById('closePackModal').addEventListener('click', closeModal);
+    document.getElementById('cancelPackModal').addEventListener('click', closeModal);
+    document.getElementById('modalBg').addEventListener('click', closeModal);
+
+    // ─── Reward Rows ────────────────────────────────────────────────────
+    function buildSelect(options, namePrefix, selectedId) {
+      const sel = document.createElement('select');
+      sel.name = namePrefix;
+      sel.className = 'flex-1 p-2 rounded-lg bg-white/5 text-white border border-white/10 text-sm min-w-0';
+      const empty = document.createElement('option');
+      empty.value = ''; empty.textContent = '— Seleccionar —';
+      sel.appendChild(empty);
+      options.forEach(o => {
+        const opt = document.createElement('option');
+        opt.value = o.id; opt.textContent = o.name;
+        if (String(o.id) === String(selectedId)) opt.selected = true;
+        sel.appendChild(opt);
+      });
+      return sel;
+    }
+
+    function buildRewardRow(containerId, selectOptions, namePrefix, colorClass, existingData = null) {
+      const row = document.createElement('div');
+      row.className = 'flex gap-2 items-start flex-wrap reward-row pb-2';
+
+      const sel = buildSelect(selectOptions, namePrefix + '_id[]', existingData?.id);
+      const chanceInput = document.createElement('input');
+      chanceInput.type = 'number'; chanceInput.step = '0.0001'; chanceInput.min = '0'; chanceInput.max = '1';
+      chanceInput.name = namePrefix + '_chance[]';
+      chanceInput.placeholder = 'Prob. (0-1)';
+      chanceInput.value = existingData?.chance ?? '';
+      chanceInput.className = 'w-28 p-2 rounded-lg bg-white/5 text-white border border-white/10 text-sm';
+
+      const labelInput = document.createElement('input');
+      labelInput.type = 'text';
+      labelInput.name = namePrefix + '_label[]';
+      labelInput.placeholder = 'Etiqueta visible';
+      labelInput.value = existingData?.label ?? '';
+      labelInput.className = 'w-32 p-2 rounded-lg bg-white/5 text-white border border-white/10 text-sm';
+
+      const delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.innerHTML = '<i class="fas fa-trash"></i>';
+      delBtn.className = `p-2 rounded-lg ${colorClass} text-red-400 hover:bg-red-400/20 transition-all`;
+      delBtn.onclick = () => { row.remove(); updateSums(); };
+
+      chanceInput.addEventListener('input', updateSums);
+
+      row.appendChild(sel);
+      row.appendChild(chanceInput);
+      row.appendChild(labelInput);
+      row.appendChild(delBtn);
+      document.getElementById(containerId).appendChild(row);
+      updateSums();
+    }
+
+    document.getElementById('addMinerRow').addEventListener('click', () => {
+      buildRewardRow('minerRows', MINERS, 'miner', 'bg-red-400/10');
+    });
+    document.getElementById('addToolRow').addEventListener('click', () => {
+      buildRewardRow('toolRows', TOOLS, 'tool', 'bg-red-400/10');
+    });
+    document.getElementById('addTransportRow').addEventListener('click', () => {
+      buildRewardRow('transportRows', TRANSPORTS, 'transport', 'bg-red-400/10');
+    });
+
+    function updateSums() {
+      ['miner', 'tool', 'transport'].forEach(prefix => {
+        const inputs = document.querySelectorAll(`input[name="${prefix}_chance[]"]`);
+        let sum = 0;
+        inputs.forEach(i => sum += parseFloat(i.value || 0));
+        const el = document.getElementById(`${prefix}Sum`);
+        el.textContent = sum.toFixed(4);
+        el.className = Math.abs(sum - 1) < 0.001 || sum === 0 ? 'text-green-400 font-bold' : 'text-red-400 font-bold';
+      });
+    }
+
+    // ─── Submit ────────────────────────────────────────────────────────
+    document.getElementById('packForm').addEventListener('submit', async (ev) => {
+      ev.preventDefault();
+      const fd = new FormData(ev.target);
+      const packId = fd.get('pack_id');
+      const url = packId ? `/dashboard/packs/update/${packId}/` : '/dashboard/packs/create/';
+
+      try {
+        const res = await fetch(url, { method: 'POST', headers: { 'X-CSRFToken': csrftoken }, body: fd });
+        const data = await res.json();
+        if (data.success) {
+          closeModal();
+          loadPacks();
+          Swal.fire({ icon: 'success', title: 'Guardado', toast: true, position: 'top-end', timer: 1500, showConfirmButton: false });
+        } else {
+          Swal.fire({ icon: 'error', title: data.error || 'Error' });
+        }
+      } catch (e) {
+        Swal.fire({ icon: 'error', title: 'Error de red' });
+      }
+    });
+
+    // ─── Table ─────────────────────────────────────────────────────────
+    function renderPackRow(p) {
+      const price = p.external_link
+        ? `<span class="text-pink text-xs font-bold"><i class="fas fa-link mr-1"></i>Link</span>`
+        : p.purchase_mineral_name
+          ? `<span class="text-[10px]">${p.purchase_mineral_qty} ${p.purchase_mineral_name}</span>`
+          : `<span class="text-accent font-mono">${p.price_gold} GOLD</span>`;
+
+      const badge = p.is_active
+        ? '<span class="px-2 py-1 rounded bg-green-400 text-black text-[10px] font-bold">Visible</span>'
+        : '<span class="px-2 py-1 rounded bg-gray-600 text-white text-[10px]">Oculto</span>';
+
+      const linkBadge = p.external_link
+        ? `<a href="${p.external_link}" target="_blank" class="text-accent text-xs truncate max-w-[80px] block hover:underline">${p.external_link.substring(0,25)}...</a>`
+        : '<span class="text-gray-600 text-[10px]">—</span>';
+
+      return `<tr class="border-t border-white/5 hover:bg-white/5 transition-colors">
+        <td class="py-3 font-bold text-white">${p.name}</td>
+        <td>${price}</td>
+        <td><span class="text-[10px] text-accent">${p.miner_rewards.length} minero(s)</span></td>
+        <td><span class="text-[10px] text-yellow-400">${p.tool_rewards.length} herramienta(s)</span></td>
+        <td><span class="text-[10px] text-pink">${(p.transport_rewards||[]).length} transporte(s)</span></td>
+        <td>${linkBadge}</td>
+        <td>${badge}</td>
+        <td class="text-right space-x-2 py-2">
+          <button data-id="${p.id}" class="edit-pack px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 transition-colors"><i class="fas fa-pen text-xs"></i></button>
+          <button data-id="${p.id}" class="toggle-pack px-3 py-1.5 rounded bg-white/5 hover:bg-white/10 transition-colors"><i class="fas fa-power-off text-xs"></i></button>
+          <button data-id="${p.id}" class="del-pack px-3 py-1.5 rounded bg-red-400/10 hover:bg-red-400/20 transition-colors"><i class="fas fa-trash text-red-400 text-xs"></i></button>
+        </td>
+      </tr>`;
+    }
+
+    async function loadPacks() {
+      const res = await fetch('/dashboard/packs/list/', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken } });
+      const data = await res.json();
+      const tbody = document.getElementById('packsTable');
+      if (!data.items || !data.items.length) {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center text-gray-400 text-xs py-6">Sin paquetes creados</td></tr>';
+        return;
+      }
+      tbody.innerHTML = data.items.map(renderPackRow).join('');
+    }
+
+    document.getElementById('packsTable').addEventListener('click', async (ev) => {
+      const edit = ev.target.closest('.edit-pack');
+      const toggle = ev.target.closest('.toggle-pack');
+      const del = ev.target.closest('.del-pack');
+
+      if (edit) {
+        const id = edit.dataset.id;
+        const res = await fetch('/dashboard/packs/list/', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken } });
+        const data = await res.json();
+        const p = data.items.find(x => String(x.id) === String(id));
+        if (!p) return;
+
+        const form = document.getElementById('packForm');
+        form.querySelector('[name="pack_id"]').value = p.id;
+        form.querySelector('[name="name"]').value = p.name;
+        form.querySelector('[name="description"]').value = p.description;
+        form.querySelector('[name="price_gold"]').value = p.price_gold;
+        form.querySelector('[name="purchase_mineral_id"]').value = p.purchase_mineral_id || '';
+        form.querySelector('[name="purchase_mineral_qty"]').value = p.purchase_mineral_qty;
+        form.querySelector('[name="external_link"]').value = p.external_link || '';
+        form.querySelector('[name="is_active"]').checked = p.is_active;
+
+        document.getElementById('minerRows').innerHTML = '';
+        document.getElementById('toolRows').innerHTML = '';
+        document.getElementById('transportRows').innerHTML = '';
+        p.miner_rewards.forEach(r => buildRewardRow('minerRows', MINERS, 'miner', 'bg-red-400/10', { id: r.miner_id, chance: r.chance, label: r.probability_label }));
+        p.tool_rewards.forEach(r => buildRewardRow('toolRows', TOOLS, 'tool', 'bg-red-400/10', { id: r.tool_id, chance: r.chance, label: r.probability_label }));
+        (p.transport_rewards||[]).forEach(r => buildRewardRow('transportRows', TRANSPORTS, 'transport', 'bg-red-400/10', { id: r.transport_id, chance: r.chance, label: r.probability_label }));
+
+        document.getElementById('modalTitle').textContent = 'Editar Paquete';
+        openModal();
+      }
+
+      if (toggle) {
+        const id = toggle.dataset.id;
+        await fetch(`/dashboard/packs/toggle/${id}/`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken } });
+        loadPacks();
+      }
+
+      if (del) {
+        const id = del.dataset.id;
+        const confirm = await Swal.fire({
+          title: '¿Eliminar Paquete?',
+          text: 'Esta acción no se puede deshacer.',
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Eliminar',
+          background: '#0c1a3a', color: '#fff'
+        });
+        if (confirm.isConfirmed) {
+          await fetch(`/dashboard/packs/delete/${id}/`, { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': csrftoken } });
+          loadPacks();
+        }
+      }
+    });
+
+    window.addEventListener('DOMContentLoaded', loadPacks);
+  </script>
+</body>
+</html>

@@ -32,15 +32,20 @@ def home_view(request):
 @login_required
 def chests_public_view(request):
     from .models import OilCentralType
+    from .models_packs import StorePack
     chests = Chest.objects.filter(is_in_store=True).select_related("category").prefetch_related("rewards")
     oil_centrals = OilCentralType.objects.filter(is_active=True)
     profile, _ = Profile.objects.get_or_create(user=request.user)
     user_chests = UserChest.objects.filter(owner=profile, opened=False).select_related("chest")
+    packs = StorePack.objects.filter(is_active=True).prefetch_related(
+        "miner_rewards__miner", "tool_rewards__tool", "transport_rewards__transport"
+    ).order_by("-created_at")
     return render(request, "game/chests_public.html", {
-        "chests": chests, 
+        "chests": chests,
         "oil_centrals": oil_centrals,
         "user_chests": user_chests,
-        "profile": profile
+        "profile": profile,
+        "packs": packs,
     })
 
 @require_POST

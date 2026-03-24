@@ -83,6 +83,22 @@
       border-color: #00e0ff;
       color: #00e0ff;
     }
+    .glass-pack {
+      background: rgba(255, 255, 255, 0.03);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.06);
+      transition: all 0.3s ease;
+    }
+    .glass-pack:hover {
+      border-color: rgba(0,224,255,0.3);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 60px rgba(0,224,255,0.1);
+    }
+    .reward-pill {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 2px 10px; border-radius: 999px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+    }
   </style>
 </head>
 
@@ -129,6 +145,10 @@
         <button onclick="switchTab('oil')" id="tab-oil"
           class="px-8 py-3 rounded-2xl border border-white/10 font-black text-xs uppercase tracking-widest transition-all">
           Petroleras
+        </button>
+        <button onclick="switchTab('packs')" id="tab-packs"
+          class="px-8 py-3 rounded-2xl border border-white/10 font-black text-xs uppercase tracking-widest transition-all">
+          Paquetes
         </button>
         <button onclick="switchTab('inventory')" id="tab-inventory"
           class="px-8 py-3 rounded-2xl border border-white/10 font-black text-xs uppercase tracking-widest transition-all relative">
@@ -305,6 +325,106 @@
         </div>
         <h3 class="text-xl font-bold mb-2 uppercase text-gray-400">Sin Suministros</h3>
         <p class="text-gray-500 text-sm">No hay centrales petroleras disponibles en este momento.</p>
+      </div>
+      {% endif %}
+    </section>
+
+    <!-- INVENTARIO -->
+    <!-- PAQUETES -->
+    <section id="section-packs" class="tab-content hidden">
+      {% if packs %}
+      <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {% for pack in packs %}
+        <div class="glass-pack rounded-[32px] p-6 flex flex-col gap-4">
+          <!-- Header -->
+          <div class="flex items-center gap-4">
+            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-accent/20 to-pink/20 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+              {% if pack.image %}
+              <img src="{{ pack.image.url }}" alt="{{ pack.name }}" class="w-full h-full object-cover">
+              {% else %}
+              <i class="fas fa-cubes text-xl text-accent"></i>
+              {% endif %}
+            </div>
+            <div>
+              <h3 class="font-black text-white text-base">{{ pack.name }}</h3>
+              <p class="text-gray-400 text-xs mt-0.5">{{ pack.description|truncatechars:70 }}</p>
+            </div>
+          </div>
+
+          <!-- Pools de Recompensas -->
+          <div class="space-y-2">
+            {% if pack.miner_rewards.all %}
+            <div>
+              <p class="text-[10px] font-bold uppercase text-accent mb-1"><i class="fas fa-user-astronaut mr-1"></i>Mineros</p>
+              <div class="flex flex-wrap gap-1.5">
+                {% for r in pack.miner_rewards.all %}
+                <span class="reward-pill bg-accent/10 border border-accent/20 text-accent">
+                  {{ r.miner.name }} — {{ r.probability_label }}
+                </span>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+            {% if pack.transport_rewards.all %}
+            <div>
+              <p class="text-[10px] font-bold uppercase text-pink mb-1"><i class="fas fa-shuttle-space mr-1"></i>Transportes</p>
+              <div class="flex flex-wrap gap-1.5">
+                {% for r in pack.transport_rewards.all %}
+                <span class="reward-pill bg-pink/10 border border-pink/20 text-pink">
+                  {{ r.transport.name }} — {{ r.probability_label }}
+                </span>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+            {% if pack.tool_rewards.all %}
+            <div>
+              <p class="text-[10px] font-bold uppercase text-yellow-400 mb-1"><i class="fas fa-screwdriver-wrench mr-1"></i>Herramientas</p>
+              <div class="flex flex-wrap gap-1.5">
+                {% for r in pack.tool_rewards.all %}
+                <span class="reward-pill bg-yellow-400/10 border border-yellow-400/20 text-yellow-400">
+                  {{ r.tool.name }} — {{ r.probability_label }}
+                </span>
+                {% endfor %}
+              </div>
+            </div>
+            {% endif %}
+          </div>
+
+          <!-- Precio y Botón -->
+          <div class="mt-auto pt-3 border-t border-white/5 flex items-center justify-between gap-3">
+            <div>
+              {% if pack.external_link %}
+              <p class="text-[10px] uppercase text-pink font-bold flex items-center gap-1"><i class="fas fa-link"></i> Compra Externa</p>
+              {% elif pack.purchase_mineral and pack.purchase_mineral_qty > 0 %}
+              <p class="text-[10px] uppercase text-gray-400 font-bold">Precio</p>
+              <p class="font-black text-white">{{ pack.purchase_mineral_qty }} <span class="text-pink text-xs">{{ pack.purchase_mineral.name }}</span></p>
+              {% else %}
+              <p class="text-[10px] uppercase text-gray-400 font-bold">Precio</p>
+              <p class="font-black text-accent font-mono">{{ pack.price_gold }} <span class="text-xs text-gray-400">GOLD</span></p>
+              {% endif %}
+            </div>
+
+            {% if pack.external_link %}
+            <a href="{{ pack.external_link }}" target="_blank" rel="noopener noreferrer"
+              class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-pink to-pink/80 text-white font-black uppercase text-[10px] tracking-widest hover:brightness-110 transition-all shadow-[0_0_15px_rgba(255,77,141,0.2)] flex items-center gap-2">
+              <i class="fas fa-external-link-alt"></i> Comprar
+            </a>
+            {% else %}
+            <button
+              onclick="buyPack('{{ pack.id }}', '{{ pack.name|escapejs }}', {% if pack.purchase_mineral and pack.purchase_mineral_qty > 0 %}'{{ pack.purchase_mineral_qty }} {{ pack.purchase_mineral.name }}'{% else %}'{{ pack.price_gold }} GOLD'{% endif %})"
+              class="px-5 py-2.5 rounded-2xl bg-gradient-to-r from-accent to-blueglow text-black font-black uppercase text-[10px] tracking-widest hover:brightness-110 transition-all shadow-[0_0_15px_rgba(0,224,255,0.15)]">
+              <i class="fas fa-shopping-cart mr-1"></i> Comprar
+            </button>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center py-20">
+        <i class="fas fa-box-open text-6xl text-gray-700 mb-5"></i>
+        <p class="text-gray-500 font-bold">No hay paquetes disponibles por ahora.</p>
       </div>
       {% endif %}
     </section>
@@ -626,6 +746,46 @@
         width: '460px',
         confirmButtonText: 'CERRAR',
       });
+    }
+    async function buyPack(packId, packName, priceLabel) {
+      const result = await Swal.fire({
+        title: `Comprar: ${packName}`,
+        html: `Se te cobrará <b class="text-accent font-mono">${priceLabel}</b>.<br><br>Recibirás premios según las probabilidades de cada pool.`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'CONFIRMAR',
+        cancelButtonText: 'CANCELAR',
+        reverseButtons: true
+      });
+      if (!result.isConfirmed) return;
+      Swal.fire({ title: 'Procesando...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      try {
+        const res = await fetch(`/packs/buy/${packId}/`, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCookie('csrftoken') }
+        });
+        const data = await res.json();
+        if (data.success) {
+          const icons = { miner: '👨\u200d🚀', transport: '🚀', tool: '🔧' };
+          const lines = (data.rewards || []).map(r =>
+            `<div class="flex items-center gap-2 bg-white/5 rounded-xl px-4 py-2 border border-white/10 mb-2">
+               <span class="text-xl">${icons[r.type] || '🎁'}</span>
+               <span class="font-bold text-white">${r.name}</span>
+             </div>`
+          ).join('');
+          await Swal.fire({
+            icon: 'success',
+            title: '¡Paquete Abierto!',
+            html: `Has recibido:<br><br>${lines || '<p class="text-gray-400 text-sm">Sin recompensas configuradas</p>'}`,
+            confirmButtonText: '¡GENIAL!'
+          });
+          location.reload();
+        } else {
+          Swal.fire('Compra Fallida', data.error || 'Error desconocido.', 'error');
+        }
+      } catch (e) {
+        Swal.fire('Error', 'Error de red.', 'error');
+      }
     }
   </script>
 </body>
