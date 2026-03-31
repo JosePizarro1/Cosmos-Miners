@@ -6,6 +6,9 @@ from .models_oil import *
 from .models_trades import *
 from .models_packs import *
 from .models_blessings import *
+from .models_alliances import *
+from .models_gifts import *
+from .models_market import *
 
 from django.db import models
 from django.utils import timezone
@@ -24,9 +27,14 @@ class Profile(models.Model):
 
     # Cosmos GOLD balance for the user
     cosmos_gold = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
+    black_gold = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'))
     
     # Points earned from planets
     points = models.IntegerField(default=0)
+
+    # Alliance fields
+    alliance = models.ForeignKey('game.Alliance', on_delete=models.SET_NULL, null=True, blank=True, related_name='members_profiles')
+    alliance_cooldown_until = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
 

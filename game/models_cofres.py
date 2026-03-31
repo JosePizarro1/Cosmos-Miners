@@ -23,6 +23,8 @@ class Chest(models.Model):
     purchase_mineral_qty = models.PositiveIntegerField(default=0, help_text="Cantidad de mineral extra necesario.")
     
     is_in_store = models.BooleanField(default=True, verbose_name="¿Aparece en tienda?")
+    is_black_market = models.BooleanField(default=False, verbose_name="¿Aparece en Mercado Negro?")
+    black_market_discount = models.PositiveIntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(100)], help_text="Descuento en % (0-100) para el Mercado Negro")
     category = models.ForeignKey(ChestCategory, on_delete=models.SET_NULL, null=True, related_name="chests")
     
     rewards_per_open = models.PositiveIntegerField(default=1, help_text="Número de recompensas por cada apertura de cofre")

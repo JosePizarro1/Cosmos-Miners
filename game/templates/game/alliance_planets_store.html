@@ -1,0 +1,204 @@
+{% extends "game/base.html" %}
+{% block title %}Santuario Galáctico | Store Exclusiva de Alianzas{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-space text-white pb-20">
+    <!-- Header -->
+    <header class="px-6 py-6 border-b border-white/5 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <a href="{% url 'alliances_view' %}" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-accent hover:border-accent transition-all group">
+                    <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                </a>
+                <div class="flex flex-col">
+                    <h1 class="font-black tracking-widest text-lg bg-gradient-to-r from-yellow-400 via-amber-200 to-yellow-600 bg-clip-text text-transparent uppercase flex items-center gap-2">
+                        <i class="fas fa-crown text-yellow-500"></i> Santuario Galáctico
+                    </h1>
+                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em]">Expansión Territorial para {{ alliance.name }}</p>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 bg-yellow-500/5 px-6 py-3 rounded-2xl border border-yellow-500/20 shadow-lg shadow-yellow-500/5">
+                <div class="text-right">
+                    <p class="text-[8px] text-yellow-500/60 font-black uppercase tracking-widest">Tus Fondos</p>
+                    <p class="text-xs font-black text-yellow-400">{{ user.profile.cosmos_gold }} <span class="text-[9px]">GOLD</span></p>
+                </div>
+                <div class="w-8 h-8 rounded-full bg-yellow-400 flex items-center justify-center shadow-lg shadow-yellow-400/40">
+                    <i class="fas fa-coins text-space text-xs"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 mt-12">
+        <div class="text-center max-w-2xl mx-auto mb-16">
+            <h2 class="text-4xl font-black text-white mb-4 uppercase italic">Mundos Ancestrales</h2>
+            <p class="text-gray-400 text-sm leading-relaxed">
+                Adquiere el derecho de explotación de planetas exclusivos. Solo las alianzas de élite pueden colonizar estos sectores del universo para obtener recursos únicos.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for planet in planets %}
+            <div class="glass-card rounded-[48px] border {% if planet.is_owned %}border-green-500/30 bg-green-500/5{% else %}border-white/5 bg-white/[0.02]{% endif %} backdrop-blur-xl overflow-hidden group hover:border-yellow-500/30 transition-all duration-500 relative">
+                
+                {% if planet.is_owned %}
+                <div class="absolute top-6 right-6 z-20 bg-green-500 text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl shadow-green-500/40 animate-pulse">
+                    CONQUISTADO
+                </div>
+                {% endif %}
+
+                <!-- Image Area -->
+                <div class="h-64 relative overflow-hidden bg-black/40">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10"></div>
+                    {% if planet.image %}
+                    <img src="{{ planet.image.url }}" class="w-full h-full object-contain p-8 group-hover:scale-110 transition-transform duration-700 relative z-0">
+                    {% else %}
+                    <div class="w-full h-full flex items-center justify-center text-white/5">
+                        <i class="fas fa-globe text-9xl"></i>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Content Area -->
+                <div class="p-8 space-y-6 pt-2">
+                    <div class="text-center">
+                        <h3 class="text-2xl font-black uppercase tracking-tighter text-white italic group-hover:text-yellow-400 transition-colors">{{ planet.name }}</h3>
+                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Sector Inexplorado</p>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-white/5 rounded-2xl p-3 border border-white/5 text-center">
+                            <p class="text-[8px] text-gray-600 font-black uppercase mb-1">Viaje</p>
+                            <p class="text-xs font-black text-accent">{{ planet.travel_time_base }}h</p>
+                        </div>
+                        <div class="bg-white/5 rounded-2xl p-3 border border-white/5 text-center">
+                            <p class="text-[8px] text-gray-600 font-black uppercase mb-1">Éxito</p>
+                            <p class="text-xs font-black text-green-400">{{ planet.success_rate_base }}%</p>
+                        </div>
+                        <div class="bg-white/5 rounded-2xl p-3 border border-white/5 text-center">
+                            <p class="text-[8px] text-gray-600 font-black uppercase mb-1">Points</p>
+                            <p class="text-xs font-black text-yellow-400">{{ planet.puntos }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Resources -->
+                    <div class="space-y-3">
+                        <p class="text-[9px] text-gray-500 font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                            <span class="h-px w-8 bg-white/5 text-space"></span>
+                            Riqueza Estimada
+                            <span class="h-px w-8 bg-white/5 text-space"></span>
+                        </p>
+                        <div class="flex flex-wrap justify-center gap-2">
+                            {% for pm in planet.produced_minerals.all %}
+                            <div class="bg-black/40 px-3 py-1.5 rounded-full border border-white/10 text-[9px] font-bold text-gray-400 flex items-center gap-2">
+                                <i class="fas fa-gem text-accent"></i> {{ pm.mineral.name }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Purchase Button -->
+                    <div class="pt-4">
+                        {% if planet.is_owned %}
+                        <div class="w-full bg-green-500/10 border border-green-500/20 text-green-500 font-black py-4 rounded-[24px] text-center text-[10px] uppercase tracking-[0.25em]">
+                            ACTIVO EN LA ALIANZA
+                        </div>
+                        {% else %}
+                            {% if is_privileged %}
+                            <button onclick="handlePurchase('{{ planet.id }}', '{{ planet.name|escapejs }}', '{{ planet.price_gold }}', '{{ planet.price_mineral.name|default:'' }}', '{{ planet.price_mineral_quantity|floatformat:0 }}')" 
+                                    class="w-full bg-gradient-to-r from-yellow-600 to-amber-400 hover:from-yellow-500 hover:to-amber-300 text-space font-black py-4 rounded-[24px] shadow-lg shadow-yellow-500/20 flex flex-col items-center justify-center transition-all hover:scale-[1.02] active:scale-95 group/btn">
+                                <span class="text-[10px] uppercase tracking-widest font-black">ADQUIRIR DOMINIO</span>
+                                <span class="text-xs font-black flex items-center gap-1 mt-0.5">
+                                    {% if planet.price_mineral %}
+                                        <i class="fas fa-gem text-[10px] group-hover/btn:animate-bounce text-space/60"></i> {{ planet.price_mineral_quantity|floatformat:0 }} {{ planet.price_mineral.name }}
+                                    {% else %}
+                                        <i class="fas fa-coins text-[10px] group-hover/btn:animate-bounce"></i> {{ planet.price_gold }} GOLD
+                                    {% endif %}
+                                </span>
+                            </button>
+                            {% else %}
+                            <div class="w-full bg-white/5 border border-white/10 text-gray-600 font-black py-4 rounded-[24px] text-center text-[9px] uppercase tracking-widest">
+                                SOLO LÍDER O MANO DERECHA
+                            </div>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full py-20 text-center bg-white/[0.02] rounded-[48px] border border-dashed border-white/10">
+                <i class="fas fa-radar text-6xl text-gray-800 mb-6"></i>
+                <h3 class="text-xl font-black uppercase text-gray-600">No hay sectores inexplorados disponibles</h3>
+                <p class="text-sm text-gray-700 mt-2">Próximas expansiones territoriales en camino...</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+
+<script>
+    async function handlePurchase(planetId, planetName, priceGold, minName, minQty) {
+        let priceText = `${priceGold} GOLD`;
+        if (minName) {
+            priceText = `${minQty} ${minName}`;
+        }
+
+        const res = await Swal.fire({
+            title: '¿ADQUIRIR PLANETA?',
+            html: `<p class="text-sm text-gray-300">Estás a punto de gastar <span class="text-yellow-400 font-black">${priceText}</span> para anexar <b class="text-white uppercase">${planetName}</b> a tu alianza.</p>`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'CONFIRMAR COMPRA',
+            cancelButtonText: 'CANCELAR',
+            confirmButtonColor: '#fbbf24',
+            background: '#050514',
+            color: '#fff',
+            customClass: {
+                popup: 'rounded-[32px] border border-white/10'
+            }
+        });
+
+        if (res.isConfirmed) {
+            Swal.fire({
+                title: 'Conquistando sector...',
+                didOpen: () => Swal.showLoading(),
+                allowOutsideClick: false,
+                background: '#050514',
+                color: '#fff'
+            });
+
+            try {
+                const resp = await fetch(`/alliances/buy-planet/${planetId}/`, {
+                    method: "POST",
+                    headers: { "X-CSRFToken": "{{ csrf_token }}" }
+                });
+                const data = await resp.json();
+                
+                if (data.success) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡DOMINIO ADQUIRIDO!',
+                        text: data.message,
+                        confirmButtonColor: '#22c55e',
+                        background: '#050514',
+                        color: '#fff'
+                    });
+                    location.reload();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'MISIÓN FALLIDA',
+                        text: data.error,
+                        confirmButtonColor: '#ef4444',
+                        background: '#050514',
+                        color: '#fff'
+                    });
+                }
+            } catch (err) {
+                Swal.fire('Error', 'Se perdió la señal con el comando central.', 'error');
+            }
+        }
+    }
+</script>
+{% endblock %}

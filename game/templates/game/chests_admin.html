@@ -32,6 +32,10 @@
     .swal2-title { color: white !important; }
     .swal2-confirm { background: #ff4d8d !important; border-radius: 12px !important; }
     .swal2-cancel { background: rgba(255,255,255,0.1) !important; border-radius: 12px !important; }
+    
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.05); }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
   </style>
 </head>
 <body class="min-h-screen bg-space text-white overflow-x-hidden relative">
@@ -86,7 +90,7 @@
               </select>
             </div>
             <div>
-              <label class="block text-xs uppercase text-gray-400 font-bold mb-1">Precio (Decimal)</label>
+              <label class="block text-xs uppercase text-gray-400 font-bold mb-1">Precio CosmosGold (Antes de descuento)</label>
               <input type="number" step="0.01" name="price" id="fPrice" required class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-accent outline-none">
             </div>
             <div>
@@ -97,26 +101,36 @@
           <div class="space-y-4">
             <div>
               <label class="block text-xs uppercase text-gray-400 font-bold mb-1">Descripción</label>
-              <textarea name="description" id="fDescription" required rows="3" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-accent outline-none"></textarea>
+              <textarea name="description" id="fDescription" required rows="2" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 focus:border-accent outline-none"></textarea>
             </div>
             <div>
               <label class="block text-xs uppercase text-gray-400 font-bold mb-1">Imagen / GIF <span id="imageHelp" class="text-[9px] lowercase text-gray-500 font-normal"></span></label>
               <input type="file" name="image" id="imageInput" class="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:bg-white/10 file:text-accent hover:file:bg-white/20">
               <div id="imagePreviewContainer" class="mt-4 hidden border border-white/10 rounded-2xl p-2 bg-white/5">
-                <p class="text-[10px] uppercase text-gray-500 mb-2 text-center">Previsualización</p>
-                <img id="imagePreview" src="#" class="max-h-32 mx-auto object-contain">
+                <p class="text-[10px] uppercase text-gray-500 mb-1 text-center">Previsualización</p>
+                <img id="imagePreview" src="#" class="max-h-24 mx-auto object-contain">
               </div>
             </div>
-            <div class="flex items-center gap-2">
-              <input type="checkbox" name="is_in_store" checked id="fInStore" class="w-5 h-5 accent-accent cursor-pointer">
-              <label for="fInStore" class="text-sm font-bold cursor-pointer">Mostrar en tienda</label>
+            <div class="flex flex-wrap gap-4">
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" name="is_in_store" checked id="fInStore" class="w-5 h-5 accent-accent cursor-pointer">
+                  <label for="fInStore" class="text-sm font-bold cursor-pointer">Mostrar en tienda</label>
+                </div>
+                <div class="flex items-center gap-2">
+                  <input type="checkbox" name="is_black_market" id="fIsBlackMarket" class="w-5 h-5 accent-pink cursor-pointer">
+                  <label for="fIsBlackMarket" class="text-sm font-bold cursor-pointer text-pink">Activar en Mercado Negro</label>
+                </div>
+            </div>
+            <div id="blackMarketDiscountGroup" class="hidden">
+                 <label class="block text-[10px] uppercase text-pink font-bold mb-1">Descuento Black Market (%)</label>
+                 <input type="number" name="black_market_discount" id="fBlackMarketDiscount" min="0" max="100" value="0" class="w-full bg-pink/5 border border-pink/20 rounded-xl px-4 py-2 focus:border-pink outline-none text-pink placeholder-pink/30" placeholder="0 - 100">
             </div>
           </div>
           
           <div class="col-span-1 md:col-span-2 space-y-4 border-t border-white/10 pt-4 mt-2">
             <div>
               <h3 class="font-bold text-sm text-accent uppercase tracking-widest">Compra Alternativa con Mineral</h3>
-              <p class="text-[10px] text-gray-400 mt-1">Si seleccionas un mineral, el cofre se comprará EXCLUSIVAMENTE con el mineral y el oro configurado arriba será ignorado.</p>
+              <p class="text-[10px] text-gray-400 mt-1">Si seleccionas un mineral, el cofre se comprará EXCLUSIVAMENTE con el mineral (aplica para tienda estándar).</p>
             </div>
             <div class="grid grid-cols-2 gap-4">
               <div>
@@ -221,22 +235,28 @@
 
         container.innerHTML = data.items.map(c => `
           <div class="bg-card border border-white/10 rounded-3xl p-6 relative overflow-hidden group">
-            <div class="absolute top-0 right-0 p-4 flex gap-2">
+            <div class="absolute top-0 right-0 p-4 flex gap-2 z-20">
               <button onclick='toggleChest(${c.id})' title="Alternar visibilidad en tienda" 
                 class="w-8 h-8 rounded-lg flex items-center justify-center ${c.is_in_store ? 'bg-green-500/10 text-green-400' : 'bg-white/5 text-gray-600'} hover:scale-110 transition-all">
                 <i class="fas ${c.is_in_store ? 'fa-eye' : 'fa-eye-slash'}"></i>
               </button>
-              <button onclick='editChest(${JSON.stringify(c).replace(/'/g, "&apos;")})' class="bg-white/5 w-8 h-8 rounded-lg text-gray-400 hover:text-accent hover:scale-110 transition-all"><i class="fas fa-edit"></i></button>
-              <button onclick='showInfo(${JSON.stringify(c).replace(/'/g, "&apos;")})' class="bg-white/5 w-8 h-8 rounded-lg text-gray-400 hover:text-accent hover:scale-110 transition-all"><i class="fas fa-info-circle"></i></button>
-              <button onclick="deleteChest(${c.id})" class="bg-white/5 w-8 h-8 rounded-lg text-gray-500 hover:text-red-500 hover:scale-110 transition-all"><i class="fas fa-trash"></i></button>
+              <button onclick='editChest(${JSON.stringify(c).replace(/'/g, "&apos;")})' class="bg-white/5 w-8 h-8 rounded-lg text-gray-400 hover:text-accent hover:scale-110 transition-all text-xs"><i class="fas fa-edit"></i></button>
+              <button onclick='showInfo(${JSON.stringify(c).replace(/'/g, "&apos;")})' class="bg-white/5 w-8 h-8 rounded-lg text-gray-400 hover:text-accent hover:scale-110 transition-all text-xs"><i class="fas fa-info-circle"></i></button>
+              <button onclick="deleteChest(${c.id})" class="bg-white/5 w-8 h-8 rounded-lg text-gray-500 hover:text-red-500 hover:scale-110 transition-all text-xs"><i class="fas fa-trash"></i></button>
             </div>
+            ${c.is_black_market ? `
+              <div class="absolute -left-10 top-5 -rotate-45 bg-pink px-10 py-1 text-[8px] font-black uppercase text-black shadow-lg">Black Market</div>
+              <div class="absolute left-4 top-14 text-pink font-black text-[10px] bg-pink/10 px-2 py-0.5 rounded-lg">-${c.black_market_discount}% OFF</div>
+            ` : ''}
             <img src="${c.image_url}" class="w-28 h-28 mx-auto object-contain mb-4 group-hover:scale-110 transition-transform duration-500">
             <div class="text-center">
               <span class="text-[10px] uppercase font-black bg-accent/20 text-accent px-2 py-1 rounded-full mb-3 inline-block tracking-tighter">${c.category_name}</span>
               <h3 class="text-lg font-black uppercase tracking-tight line-clamp-1">${c.name}</h3>
               <p class="text-gray-400 text-xs mt-2 line-clamp-2 h-8">${c.description}</p>
               <div class="mt-4 pt-4 border-t border-white/5 flex items-center justify-between">
-                <span class="text-accent font-mono font-black uppercase text-sm">${c.price} GOLD</span>
+                <div>
+                    <span class="text-accent font-mono font-black uppercase text-sm">${c.price} GOLD</span>
+                </div>
                 <span class="text-[9px] text-gray-500 font-bold uppercase">${c.rewards.length} Premios</span>
               </div>
             </div>
@@ -279,8 +299,8 @@
                 <td class="px-6 py-4 text-xs font-black tracking-tight">${c.name}</td>
                 <td class="px-6 py-4 text-right">
                     <div class="flex justify-end gap-2">
-                        <button onclick='editCategory(${c.id}, "${c.name}")' class="w-8 h-8 rounded-lg bg-white/5 text-gray-400 hover:text-accent transition-all flex items-center justify-center"><i class="fas fa-edit"></i></button>
-                        <button onclick='deleteCategory(${c.id})' class="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"><i class="fas fa-trash"></i></button>
+                        <button onclick='editCategory(${c.id}, "${c.name}")' class="w-8 h-8 rounded-lg bg-white/5 text-gray-400 hover:text-accent transition-all flex items-center justify-center"><i class="fas fa-edit text-[10px]"></i></button>
+                        <button onclick='deleteCategory(${c.id})' class="w-8 h-8 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all flex items-center justify-center"><i class="fas fa-trash text-[10px]"></i></button>
                     </div>
                 </td>
             </tr>
@@ -363,7 +383,7 @@
           <input type="number" step="0.0001" value="${data ? data.code_probability : ''}" placeholder="Cód" class="reward-code-prob w-full bg-space border border-white/10 rounded-lg px-2 py-2 text-[10px] text-center font-mono outline-none" oninput="calculateTotalProb()">
         </div>
         <div class="col-span-1 text-right">
-          <button type="button" onclick="this.parentElement.parentElement.remove(); calculateTotalProb();" class="text-gray-600 hover:text-red-500 transition-colors"><i class="fas fa-times"></i></button>
+          <button type="button" onclick="this.parentElement.parentElement.remove(); calculateTotalProb();" class="text-gray-600 hover:text-red-500 transition-colors"><i class="fas fa-times text-[10px]"></i></button>
         </div>
       `;
       container.appendChild(div);
@@ -422,47 +442,13 @@
         document.getElementById('fDescription').value = c.description;
         document.getElementById('fRewardsPerOpen').value = c.rewards_per_open;
         document.getElementById('categorySelect').value = c.category_id;
-        document.getElementById('fInStore').checked = c.is_in_store;
-        
-        // Image logic: not required anymore since we keep old one if empty
-        document.getElementById('imageInput').required = false;
-        document.getElementById('imageHelp').textContent = "(Opcional si no deseas cambiarla)";
-        
-        if (c.image_url) {
-            document.getElementById('imagePreview').src = c.image_url;
-            document.getElementById('imagePreviewContainer').classList.remove('hidden');
-        }
-
-        // Clean and fill rewards
-        const container = document.getElementById('rewardsContainer');
-        container.innerHTML = "";
-        c.rewards.forEach(r => {
-            // Adjust r to match addRewardRow expectations (item_id is needed)
-            // Note: our chests_list view returns ID of ChestReward in r.id, 
-            // but we need the ID of the specific item (MinerType/TransportType/etc)
-            // I'll need to update chests_list view if item_id isn't there.
-            // Looking at chests_list view, I didn't add item_id there. Let me fix that.
-        });
-        
-        // WAIT: I noticed I don't have item_id in the JSON returned by chests_list. 
-        // Let me manually find the row based on name if I have to, or better 
-        // I will fix the view first.
-        // For now, I'll stop here and fix the view_chests.py
-        openModal();
-    }
-
-    // UPDATED editChest with the fixed view data
-    function editChestFinal(c) {
-        document.getElementById('editId').value = c.id;
-        document.getElementById('modalTitle').textContent = `Editar: ${c.name}`;
-        document.getElementById('fName').value = c.name;
-        document.getElementById('fPrice').value = c.price;
-        document.getElementById('fDescription').value = c.description;
-        document.getElementById('fRewardsPerOpen').value = c.rewards_per_open;
-        document.getElementById('categorySelect').value = c.category_id;
         document.getElementById('fPurchaseMineral').value = c.purchase_mineral_id || '';
         document.getElementById('fPurchaseMineralQty').value = c.purchase_mineral_qty || 0;
         document.getElementById('fInStore').checked = c.is_in_store;
+        
+        document.getElementById('fIsBlackMarket').checked = c.is_black_market;
+        document.getElementById('fBlackMarketDiscount').value = c.black_market_discount || 0;
+        toggleBlackMarketFields();
         
         document.getElementById('imageInput').required = false;
         document.getElementById('imageHelp').textContent = "(Opcional)";
@@ -480,9 +466,6 @@
         calculateTotalProb();
         openModal();
     }
-    
-    // Wire editChest to editChestFinal
-    function editChest(c) { editChestFinal(c); }
 
     function openCreateModal() {
         document.getElementById('editId').value = "";
@@ -494,27 +477,20 @@
         document.getElementById('imageHelp').textContent = "";
         document.getElementById('fPurchaseMineral').value = "";
         document.getElementById('fPurchaseMineralQty').value = 0;
+        document.getElementById('fIsBlackMarket').checked = false;
+        toggleBlackMarketFields();
         calculateTotalProb();
         openModal();
     }
 
     async function deleteChest(id) {
-      const result = await Swal.fire({
-        title: '¿Estás seguro?',
-        text: "Esta acción eliminará el cofre permanentemente.",
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'SÍ, ELIMINAR',
-        cancelButtonText: 'CANCELAR'
-      });
-
-      if (result.isConfirmed) {
+      if (await Swal.fire({ title: '¿Estás seguro?', text: "Se eliminará permanentemente.", icon: 'warning', showCancelButton: true }).then(r => r.isConfirmed)) {
         await fetch(`/dashboard/chests/delete/${id}/`, {
           method: 'POST',
           headers: { 'X-CSRFToken': getCookie('csrftoken') }
         });
         loadChests();
-        Swal.fire('Eliminado', 'El cofre ha sido eliminado.', 'success');
+        Swal.fire('Eliminado', '', 'success');
       }
     }
 
@@ -523,29 +499,25 @@
       const container = document.getElementById('infoContent');
       
       if (!chest.rewards || chest.rewards.length === 0) {
-        container.innerHTML = '<p class="text-gray-500 text-center py-10 font-bold uppercase text-[10px] tracking-widest">Sin premios configurados.</p>';
+        container.innerHTML = '<p class="text-gray-500 text-center py-10 font-bold uppercase text-[10px] tracking-widest">Sin premios.</p>';
       } else {
         container.innerHTML = `
           <div class="grid grid-cols-2 gap-2 text-[10px] uppercase font-black text-gray-500 px-2 tracking-widest">
-            <div>Carga Útil</div>
-            <div class="text-right">Probabilidad</div>
+            <div>Carga</div>
+            <div class="text-right">Prob</div>
           </div>
-          <div class="space-y-2 max-h-[400px] overflow-y-auto pr-1">
+          <div class="space-y-1.5 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
           ${chest.rewards.map(r => `
-            <div class="flex items-center justify-between bg-white/5 p-4 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors">
-              <div class="flex items-center gap-4">
-                <div class="w-10 h-10 rounded-xl bg-accent/10 flex items-center justify-center text-accent text-lg">
+            <div class="flex items-center justify-between bg-white/5 p-3 rounded-2xl border border-white/5">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center text-accent text-xs">
                   <i class="fas ${r.type === 'miner' ? 'fa-user-ninja' : r.type === 'transport' ? 'fa-truck' : 'fa-tools'}"></i>
                 </div>
                 <div>
-                  <p class="font-black text-sm uppercase tracking-tight">${r.name}</p>
-                  <p class="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">${r.type}</p>
+                  <p class="font-black text-xs uppercase truncate w-32">${r.name}</p>
                 </div>
               </div>
-              <div class="text-right">
-                <p class="font-mono text-accent font-black text-xs shadow-[0_0_10px_rgba(0,224,255,0.2)]">${r.display_probability}%</p>
-                <p class="text-[8px] text-gray-700 font-mono">${r.code_probability}</p>
-              </div>
+              <p class="font-mono text-accent font-black text-xs">${r.display_probability}%</p>
             </div>
           `).join('')}
           </div>
@@ -561,85 +533,54 @@
       e.preventDefault();
       const editId = document.getElementById('editId').value;
       const url = editId ? `/dashboard/chests/update/${editId}/` : '/dashboard/chests/create/';
-      
       const formData = new FormData(e.target);
       const rewards = [];
       document.querySelectorAll('.reward-row').forEach(row => {
         const type = row.querySelector('.reward-type').value;
         const itemId = row.querySelector('.reward-item').value;
-        const disp = row.querySelector('.reward-disp-prob').value;
-        const code = row.querySelector('.reward-code-prob').value;
-        
         if (type && itemId) {
           rewards.push({
-            type: type,
-            item_id: itemId,
-            display_probability: disp,
-            code_probability: code
+            type, item_id: itemId,
+            display_probability: row.querySelector('.reward-disp-prob').value,
+            code_probability: row.querySelector('.reward-code-prob').value
           });
         }
       });
-      
       formData.append('rewards', JSON.stringify(rewards));
       
       const btn = document.getElementById('submitBtn');
-      const oldText = btn.textContent;
       btn.disabled = true;
-      btn.textContent = "PROCESANDO...";
-
       try {
-        const res = await fetch(url, {
-          method: 'POST',
-          headers: { 'X-CSRFToken': getCookie('csrftoken') },
-          body: formData
-        });
+        const res = await fetch(url, { method: 'POST', headers: { 'X-CSRFToken': getCookie('csrftoken') }, body: formData });
         const data = await res.json();
-        if (data.success) {
-          closeModal();
-          loadChests();
-          Swal.fire('¡Éxito!', editId ? 'Cofre actualizado' : 'Cofre creado', 'success');
-        } else {
-          Swal.fire('Error', data.error, 'error');
-        }
-      } catch (err) {
-        Swal.fire('Error', 'Error de conexión', 'error');
-      } finally {
-        btn.disabled = false;
-        btn.textContent = oldText;
-      }
+        if (data.success) { closeModal(); loadChests(); Swal.fire('Éxito', '', 'success'); }
+        else { Swal.fire('Error', data.error, 'error'); }
+      } finally { btn.disabled = false; }
     };
+
+    function toggleBlackMarketFields() {
+        const check = document.getElementById('fIsBlackMarket');
+        const group = document.getElementById('blackMarketDiscountGroup');
+        group.classList.toggle('hidden', !check.checked);
+    }
+    document.getElementById('fIsBlackMarket').onchange = toggleBlackMarketFields;
 
     document.getElementById('imageInput').onchange = (e) => {
       const [file] = e.target.files;
       if (file) {
-        const preview = document.getElementById('imagePreview');
-        preview.src = URL.createObjectURL(file);
+        document.getElementById('imagePreview').src = URL.createObjectURL(file);
         document.getElementById('imagePreviewContainer').classList.remove('hidden');
       }
     };
 
     function openModal() { document.getElementById('modal').classList.remove('hidden'); }
     function closeModal() { document.getElementById('modal').classList.add('hidden'); }
-
     function getCookie(name) {
-      let cookieValue = null;
-      if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-          const cookie = cookies[i].trim();
-          if (cookie.substring(0, name.length + 1) === (name + '=')) {
-            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-            break;
-          }
-        }
-      }
-      return cookieValue;
+      let v = document.cookie.match('(^|;) ?' + name + '=([^;]*)(;|$)');
+      return v ? v[2] : null;
     }
 
-    window.onload = () => {
-      loadChests();
-      loadDeps();
-    };
+    window.onload = () => { loadChests(); loadDeps(); };
   </script>
 </body>
 </html>

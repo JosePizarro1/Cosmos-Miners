@@ -38,6 +38,10 @@ def planets_admin(request):
             success = request.POST.get('success_rate')
             puntos = request.POST.get('puntos', 0)
             is_free = _parse_bool(request.POST.get('is_free'))
+            is_alliance = _parse_bool(request.POST.get('is_alliance'))
+            price_gold = request.POST.get('price_gold', 0)
+            price_mineral_id = request.POST.get('price_mineral')
+            price_mineral_qty = request.POST.get('price_mineral_quantity', 0)
             image = request.FILES.get('image')
             Planet.objects.create(
                 name=name,
@@ -45,6 +49,10 @@ def planets_admin(request):
                 success_rate_base=success,
                 puntos=puntos,
                 is_free=is_free,
+                is_alliance=is_alliance,
+                price_gold=price_gold,
+                price_mineral_id=price_mineral_id if price_mineral_id else None,
+                price_mineral_quantity=price_mineral_qty if price_mineral_qty else 0,
                 image=image
             )
             messages.success(request, f"Planeta {name} creado.")
@@ -74,6 +82,13 @@ def planets_admin(request):
             planet.success_rate_base = request.POST.get('success_rate')
             planet.puntos = request.POST.get('puntos', 0)
             planet.is_free = _parse_bool(request.POST.get('is_free'))
+            planet.is_alliance = _parse_bool(request.POST.get('is_alliance'))
+            planet.price_gold = request.POST.get('price_gold', 0)
+            
+            p_mineral_id = request.POST.get('price_mineral')
+            planet.price_mineral_id = p_mineral_id if p_mineral_id else None
+            planet.price_mineral_quantity = request.POST.get('price_mineral_quantity', 0) or 0
+            
             if request.FILES.get('image'):
                 planet.image = request.FILES.get('image')
             planet.save()
@@ -158,8 +173,34 @@ def prepare_trip(request):
     miners = UserMiner.objects.filter(owner=profile, status=MinerStatus.IDLE)
     tools = UserTool.objects.filter(owner=profile, status=ToolStatus.IDLE)
     transports = UserTransport.objects.filter(owner=profile, status=TransportStatus.IDLE)
-    planets = Planet.objects.prefetch_related('produced_minerals__mineral').filter(is_active=True)
+    # Filter planets: public planets + exclusive planets owned by user's alliance
+    from django.db.models import Q
+    from .models_alliances import AlliancePlanet
     
+    if profile.alliance:
+        owned_ids = AlliancePlanet.objects.filter(alliance=profile.alliance).values_list('planet_id', flat=True)
+        planets = Planet.objects.prefetch_related('produced_minerals__mineral').filter(
+            is_active=True
+        ).filter(
+            Q(is_alliance=False) | Q(id__in=owned_ids)
+        )
+    else:
+        planets = Planet.objects.prefetch_related('produced_minerals__mineral').filter(
+            is_active=True, is_alliance=False
+        )
+    
+    # Check if alliance is already on a mission to an alliance planet
+    # ONLY one alliance planet can be mined at a time per alliance
+    alliance_busy = False
+    if profile.alliance:
+        # Check if ANY member of the same alliance is in an 'ongoing' trip to any 'is_alliance' planet
+        from .models_planets import MiningTrip
+        alliance_busy = MiningTrip.objects.filter(
+            user__profile__alliance=profile.alliance,
+            planet__is_alliance=True,
+            status='ongoing'
+        ).exists()
+
     # Get active seasons where the user is enrolled
     now_dt = timezone.now()
     user_seasons = list(UserSeasonEntry.objects.filter(
@@ -183,6 +224,7 @@ def prepare_trip(request):
         'planets': planets,
         'user_seasons': user_seasons,
         'blessing_bonus': blessing_bonus,
+        'alliance_busy': alliance_busy,
         'now': now_dt,
     })
 
@@ -203,13 +245,25 @@ def start_mining_trip(request):
         transport = UserTransport.objects.get(id=transport_id, owner=profile, status=TransportStatus.IDLE)
         planet = Planet.objects.get(id=planet_id, is_active=True)
         
-        # Check compatibility (Free vs Paid)
-        planet_free = planet.is_free
-        if miner.miner_type.is_free != planet_free or \
-           tool.tool_type.is_free != planet_free or \
-           transport.transport_type.is_free != planet_free:
-            messages.error(request, "Compatibilidad de misión fallida: Los mundos GRATIS solo se exploran con activos GRATIS. Activos premium requieren mundos premium.")
-            return redirect('mining_dashboard')
+        # Concurrency limit for Alliance Planets
+        from .models_planets import MiningTrip
+        if planet.is_alliance and profile.alliance:
+            if MiningTrip.objects.filter(
+                user__profile__alliance=profile.alliance,
+                planet__is_alliance=True,
+                status='ongoing'
+            ).exists():
+                messages.error(request, "Tu alianza ya tiene una expedición activa en un planeta especial. Deben esperar a que regrese para enviar otra.")
+                return redirect('mining_dashboard')
+        
+        # Check compatibility (Free vs Paid) — Alliance planets are exempt
+        if not planet.is_alliance:
+            planet_free = planet.is_free
+            if miner.miner_type.is_free != planet_free or \
+               tool.tool_type.is_free != planet_free or \
+               transport.transport_type.is_free != planet_free:
+                messages.error(request, "Compatibilidad de misión fallida: Los mundos GRATIS solo se exploran con activos GRATIS. Activos premium requieren mundos premium.")
+                return redirect('mining_dashboard')
 
         # Calculations
         # 1. Travel Time (modified by transport speed)

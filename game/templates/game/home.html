@@ -189,17 +189,7 @@
     </div>
   </section>
 
-  <!-- 🚀 HERO -->
-  <section class="relative z-10 px-6 mt-10 text-center">
-    <h1
-      class="text-4xl font-black leading-tight mb-4 bg-gradient-to-r from-accent to-pink bg-clip-text text-transparent">
-      Explora el Universo
-    </h1>
 
-    <p class="text-gray-300 text-base mb-8">
-      Mina recursos, mejora tu nave y conquista planetas lejanos.
-    </p>
-  </section>
 
   <!-- 🎮 GAME MENU -->
   <section class="relative z-10 mt-12 px-6 grid gap-4 max-w-md mx-auto">
@@ -210,6 +200,15 @@
       <div>
         <h3 class="font-bold text-lg">Mineros</h3>
         <p class="text-sm text-gray-300">Gestiona tu tripulación</p>
+      </div>
+    </a>
+
+    <a href="/alliances/"
+      class="flex items-center gap-4 bg-card backdrop-blur-xl border border-green-500/20 rounded-2xl p-5 hover:border-green-500/40 hover:bg-white/5 transition cursor-pointer group">
+      <i class="fa-solid fa-shield-halved text-green-500 text-2xl group-hover:scale-110 transition-transform"></i>
+      <div>
+        <h3 class="font-bold text-lg">Alianzas</h3>
+        <p class="text-sm text-gray-300">Forja pactos galácticos</p>
       </div>
     </a>
 
@@ -258,12 +257,12 @@
       </div>
     </a>
 
-    <a href="/trades/"
-      class="flex items-center gap-4 bg-card backdrop-blur-xl border border-accent/20 rounded-2xl p-5 group hover:border-accent/40 hover:bg-white/5 transition cursor-pointer">
-      <i class="fas fa-handshake text-accent text-2xl group-hover:scale-110 transition-transform"></i>
+    <a href="{% url 'market_view' %}"
+      class="flex items-center gap-4 bg-card backdrop-blur-xl border border-yellow-500/20 rounded-2xl p-5 group hover:border-yellow-500/40 hover:bg-white/5 transition cursor-pointer">
+      <i class="fas fa-handshake-angle text-gold text-2xl group-hover:scale-110 transition-transform"></i>
       <div>
         <h3 class="font-bold text-lg">Mercado</h3>
-        <p class="text-sm text-gray-300">Vende tus suministros</p>
+        <p class="text-sm text-gray-300">Próximamente comercio abierto</p>
       </div>
     </a>
 

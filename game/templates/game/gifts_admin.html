@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Regalos de Alianza</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        space: "#05050f",
+                        card: "rgba(20,30,60,0.75)",
+                        accent: "#00e0ff",
+                        pink: "#ff4d8d",
+                        gold: "#ffca28"
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="min-h-screen bg-space text-white">
+    <div class="max-w-6xl mx-auto px-6 py-10">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-10">
+            <div class="flex items-center gap-4">
+                <a href="/dashboard/admin/" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-accent hover:border-accent transition-all">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h1 class="text-2xl font-black uppercase tracking-tight bg-gradient-to-r from-pink to-gold bg-clip-text text-transparent">Regalos de Alianza</h1>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Panel de Administración</p>
+                </div>
+            </div>
+            <button onclick="document.getElementById('createModal').classList.remove('hidden'); document.getElementById('createModal').classList.add('flex')" 
+                    class="px-6 py-3 rounded-xl bg-gradient-to-r from-pink to-accent text-space font-black text-xs uppercase tracking-widest hover:scale-105 transition-all shadow-lg">
+                <i class="fas fa-plus mr-2"></i> Crear Regalo
+            </button>
+        </div>
+
+        <!-- Grid: Assign + Gifts -->
+        <div class="grid lg:grid-cols-3 gap-8 mb-12">
+            
+            <!-- Assign Section -->
+            <div class="lg:col-span-1">
+                <div class="bg-card border border-white/10 rounded-3xl p-6 backdrop-blur-xl">
+                    <h3 class="text-sm font-black uppercase tracking-widest text-gold mb-6 flex items-center gap-2">
+                        <i class="fas fa-paper-plane"></i> Asignar Regalo
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-[9px] uppercase font-black text-gray-500 mb-2 tracking-widest">Regalo</label>
+                            <select id="assignGiftId" class="w-full bg-space/80 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold appearance-none outline-none focus:border-accent">
+                                <option value="">-- Seleccionar Regalo --</option>
+                                {% for g in gifts %}
+                                <option value="{{ g.id }}">{{ g.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[9px] uppercase font-black text-gray-500 mb-2 tracking-widest">Alianza</label>
+                            <select id="assignAllianceId" class="w-full bg-space/80 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold appearance-none outline-none focus:border-accent">
+                                <option value="">-- Seleccionar Alianza --</option>
+                                {% for a in alliances %}
+                                <option value="{{ a.id }}">{{ a.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button onclick="assignGift()" class="w-full py-3 rounded-xl bg-gold text-space font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all shadow-lg shadow-yellow-500/20">
+                            <i class="fas fa-gift mr-2"></i> Asignar
+                        </button>
+                    </div>
+
+                    <!-- Recent Assignments -->
+                    <div class="mt-8 border-t border-white/10 pt-6">
+                        <h4 class="text-[10px] font-black uppercase text-gray-500 tracking-widest mb-4">Asignaciones Recientes</h4>
+                        <div class="space-y-3 max-h-64 overflow-y-auto">
+                            {% for a in assignments %}
+                            <div class="p-3 rounded-xl bg-white/[0.03] border border-white/5 text-[10px]">
+                                <div class="flex justify-between items-center">
+                                    <span class="font-black text-white">{{ a.gift.name }}</span>
+                                    <span class="{% if a.is_raffled %}text-green-400{% else %}text-yellow-400{% endif %} font-bold">
+                                        {% if a.is_raffled %}SORTEADO{% else %}DISPONIBLE{% endif %}
+                                    </span>
+                                </div>
+                                <p class="text-gray-500 mt-1">→ {{ a.alliance.name }} • {{ a.assigned_at|timesince }} ago</p>
+                                {% if a.is_raffled and a.winner_record %}
+                                <p class="text-green-400 mt-1"><i class="fas fa-trophy mr-1"></i> {{ a.winner_record.winner.username }}</p>
+                                {% endif %}
+                            </div>
+                            {% empty %}
+                            <p class="text-gray-600 text-[10px] italic">Sin asignaciones aún...</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Gift List -->
+            <div class="lg:col-span-2">
+                <h3 class="text-sm font-black uppercase tracking-widest text-gray-500 mb-6 flex items-center gap-2">
+                    <i class="fas fa-boxes-stacked"></i> Catálogo de Regalos ({{ gifts|length }})
+                </h3>
+                <div class="grid sm:grid-cols-2 gap-4">
+                    {% for g in gifts %}
+                    <div class="bg-card border border-white/10 rounded-3xl p-5 backdrop-blur-xl hover:border-pink/30 transition-all group relative">
+                        <button onclick="deleteGift({{ g.id }}, '{{ g.name|escapejs }}')" 
+                                class="absolute top-4 right-4 w-7 h-7 rounded-lg bg-red-500/10 text-red-500 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 hover:text-white">
+                            <i class="fas fa-trash text-[10px]"></i>
+                        </button>
+                        <div class="flex items-center gap-4 mb-4">
+                            <div class="w-14 h-14 rounded-2xl bg-space/60 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                                {% if g.image %}
+                                <img src="{{ g.image.url }}" class="w-full h-full object-cover">
+                                {% else %}
+                                <i class="fas fa-gift text-pink text-2xl"></i>
+                                {% endif %}
+                            </div>
+                            <div class="overflow-hidden">
+                                <h4 class="font-black text-white text-sm truncate">{{ g.name }}</h4>
+                                <p class="text-[9px] text-gray-500 truncate">{{ g.description|default:'Sin descripción' }}</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2">
+                            {% if g.gold_amount %}
+                            <span class="text-[8px] font-black px-2 py-1 rounded-lg bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+                                <i class="fas fa-coins mr-1"></i> {{ g.gold_amount }} Gold
+                            </span>
+                            {% endif %}
+                            {% if g.mineral and g.mineral_quantity %}
+                            <span class="text-[8px] font-black px-2 py-1 rounded-lg bg-accent/10 text-accent border border-accent/20">
+                                <i class="fas fa-gem mr-1"></i> {{ g.mineral_quantity }} {{ g.mineral.name }}
+                            </span>
+                            {% endif %}
+                            {% if g.miner_type %}
+                            <span class="text-[8px] font-black px-2 py-1 rounded-lg bg-pink/10 text-pink border border-pink/20">
+                                <i class="fas fa-user-astronaut mr-1"></i> {{ g.miner_type.name }}
+                            </span>
+                            {% endif %}
+                            {% if g.tool_type %}
+                            <span class="text-[8px] font-black px-2 py-1 rounded-lg bg-green-500/10 text-green-400 border border-green-500/20">
+                                <i class="fas fa-wrench mr-1"></i> {{ g.tool_type.name }}
+                            </span>
+                            {% endif %}
+                            {% if g.transport_type %}
+                            <span class="text-[8px] font-black px-2 py-1 rounded-lg bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                <i class="fas fa-shuttle-space mr-1"></i> {{ g.transport_type.name }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="sm:col-span-2 text-center py-16 bg-card/30 border border-dashed border-white/10 rounded-3xl">
+                        <i class="fas fa-gift text-4xl text-gray-600 mb-4"></i>
+                        <p class="text-gray-500 text-xs font-bold uppercase">No hay regalos creados aún</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CREATE MODAL -->
+    <div id="createModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-6 bg-space/80 backdrop-blur-md">
+        <div class="bg-[rgba(10,15,40,0.95)] border border-white/10 w-full max-w-lg rounded-3xl p-8 shadow-2xl relative animate__animated animate__zoomIn animate__faster max-h-[90vh] overflow-y-auto">
+            <button onclick="document.getElementById('createModal').classList.add('hidden')" class="absolute top-6 right-6 text-gray-500 hover:text-white transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+            <h2 class="text-lg font-black uppercase tracking-widest text-white mb-6 flex items-center gap-3">
+                <i class="fas fa-gift text-pink"></i> Nuevo Regalo
+            </h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-[9px] uppercase font-black text-accent mb-2 tracking-widest">Nombre *</label>
+                    <input type="text" id="giftName" class="w-full bg-space/80 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-accent" placeholder="Ej: Cofre Legendario">
+                </div>
+                <div>
+                    <label class="block text-[9px] uppercase font-black text-accent mb-2 tracking-widest">Descripción</label>
+                    <textarea id="giftDesc" rows="2" class="w-full bg-space/80 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none focus:border-accent resize-none" placeholder="Descripción del contenido..."></textarea>
+                </div>
+                <div>
+                    <label class="block text-[9px] uppercase font-black text-accent mb-2 tracking-widest">Imagen/GIF</label>
+                    <input type="file" id="giftImage" accept="image/*" class="w-full bg-space/80 border border-white/10 rounded-xl px-4 py-3 text-sm font-bold outline-none file:mr-4 file:py-1 file:px-3 file:rounded-lg file:border-0 file:bg-accent/20 file:text-accent file:font-bold file:text-[10px]">
+                </div>
+
+                <div class="border-t border-white/10 pt-4">
+                    <p class="text-[9px] uppercase font-black text-gray-500 tracking-widest mb-3">Contenido del Regalo</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-[8px] uppercase font-black text-yellow-400 mb-1">Cosmos Gold</label>
+                            <input type="number" id="giftGold" min="0" value="0" class="w-full bg-space/80 border border-white/10 rounded-xl px-4 py-2 text-sm font-bold outline-none focus:border-yellow-400">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3 mt-3">
+                        <div>
+                            <label class="block text-[8px] uppercase font-black text-accent mb-1">Mineral</label>
+                            <select id="giftMineral" class="w-full bg-space/80 border border-white/10 rounded-xl px-4 py-2 text-sm font-bold appearance-none outline-none focus:border-accent">
+                                <option value="">Ninguno</option>
+                                {% for m in minerals %}
+                                <option value="{{ m.id }}">{{ m.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-[8px] uppercase font-black text-accent mb-1">Cantidad</label>
+                            <input type="number" id="giftMineralQty" min="0" value="0" class="w-full bg-space/80 border border-white/10 rounded-xl px-4 py-2 text-sm font-bold outline-none focus:border-accent">
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="block text-[8px] uppercase font-black text-pink mb-1">Minero</label>
+                        <select id="giftMiner" class="w-full bg-space/80 border border-white/10 rounded-xl px-4 py-2 text-sm font-bold appearance-none outline-none focus:border-pink">
+                            <option value="">Ninguno</option>
+                            {% for mt in miner_types %}
+                            <option value="{{ mt.id }}">{{ mt.name }} ({{ mt.get_rarity_display }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mt-3">
+                        <label class="block text-[8px] uppercase font-black text-green-400 mb-1">Herramienta</label>
+                        <select id="giftTool" class="w-full bg-space/80 border border-white/10 rounded-xl px-4 py-2 text-sm font-bold appearance-none outline-none focus:border-green-400">
+                            <option value="">Ninguna</option>
+                            {% for tt in tool_types %}
+                            <option value="{{ tt.id }}">{{ tt.name }} ({{ tt.get_rarity_display }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mt-3">
+                        <label class="block text-[8px] uppercase font-black text-blue-400 mb-1">Transporte</label>
+                        <select id="giftTransport" class="w-full bg-space/80 border border-white/10 rounded-xl px-4 py-2 text-sm font-bold appearance-none outline-none focus:border-blue-400">
+                            <option value="">Ninguno</option>
+                            {% for tr in transport_types %}
+                            <option value="{{ tr.id }}">{{ tr.name }} ({{ tr.get_rarity_display }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+
+                <button onclick="createGift()" class="w-full py-4 rounded-xl bg-gradient-to-r from-pink to-accent text-space font-black text-xs uppercase tracking-widest hover:scale-[1.02] transition-all shadow-lg mt-4">
+                    <i class="fas fa-plus mr-2"></i> Crear Regalo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const csrfToken = '{{ csrf_token }}';
+
+        async function createGift() {
+            const formData = new FormData();
+            formData.append('name', document.getElementById('giftName').value);
+            formData.append('description', document.getElementById('giftDesc').value);
+            formData.append('gold_amount', document.getElementById('giftGold').value);
+            formData.append('mineral_id', document.getElementById('giftMineral').value);
+            formData.append('mineral_quantity', document.getElementById('giftMineralQty').value);
+            formData.append('miner_type_id', document.getElementById('giftMiner').value);
+            formData.append('tool_type_id', document.getElementById('giftTool').value);
+            formData.append('transport_type_id', document.getElementById('giftTransport').value);
+            const img = document.getElementById('giftImage').files[0];
+            if (img) formData.append('image', img);
+
+            try {
+                const resp = await fetch('/dashboard/gifts/create/', { method: 'POST', body: formData, headers: { 'X-CSRFToken': csrfToken } });
+                const data = await resp.json();
+                if (data.success) {
+                    await Swal.fire('¡Creado!', data.message, 'success');
+                    location.reload();
+                } else {
+                    Swal.fire('Error', data.error, 'error');
+                }
+            } catch (e) { Swal.fire('Error', 'Error de conexión', 'error'); }
+        }
+
+        async function assignGift() {
+            const giftId = document.getElementById('assignGiftId').value;
+            const allianceId = document.getElementById('assignAllianceId').value;
+            if (!giftId || !allianceId) return Swal.fire('Error', 'Selecciona regalo y alianza.', 'warning');
+
+            const formData = new FormData();
+            formData.append('gift_id', giftId);
+            formData.append('alliance_id', allianceId);
+
+            try {
+                const resp = await fetch('/dashboard/gifts/assign/', { method: 'POST', body: formData, headers: { 'X-CSRFToken': csrfToken } });
+                const data = await resp.json();
+                if (data.success) {
+                    await Swal.fire('¡Asignado!', data.message, 'success');
+                    location.reload();
+                } else {
+                    Swal.fire('Error', data.error, 'error');
+                }
+            } catch (e) { Swal.fire('Error', 'Error de conexión', 'error'); }
+        }
+
+        async function deleteGift(id, name) {
+            const res = await Swal.fire({
+                title: `¿Eliminar "${name}"?`,
+                text: 'Se eliminarán también las asignaciones pendientes.',
+                icon: 'warning', showCancelButton: true, confirmButtonText: 'ELIMINAR', confirmButtonColor: '#ef4444'
+            });
+            if (res.isConfirmed) {
+                try {
+                    const resp = await fetch(`/dashboard/gifts/delete/${id}/`, { method: 'POST', headers: { 'X-CSRFToken': csrfToken } });
+                    const data = await resp.json();
+                    if (data.success) { await Swal.fire('Eliminado', data.message, 'success'); location.reload(); }
+                    else Swal.fire('Error', data.error, 'error');
+                } catch (e) { Swal.fire('Error', 'Error de conexión', 'error'); }
+            }
+        }
+
+        // Close modal on background click
+        document.getElementById('createModal').addEventListener('click', e => {
+            if (e.target === document.getElementById('createModal')) document.getElementById('createModal').classList.add('hidden');
+        });
+    </script>
+</body>
+</html>

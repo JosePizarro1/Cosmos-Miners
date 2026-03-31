@@ -1,0 +1,204 @@
+{% extends "game/base.html" %}
+{% block title %}Alianzas Galácticas | Cosmos Miners{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-space text-white pb-20">
+    <!-- Header -->
+    <header class="px-6 py-6 border-b border-white/5 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <a href="/home/" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-accent hover:border-accent transition-all group">
+                    <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                </a>
+                <span class="font-extrabold tracking-widest text-lg bg-gradient-to-r from-green-400 to-emerald-600 bg-clip-text text-transparent uppercase">Alianzas</span>
+            </div>
+            
+            <button onclick="openCreateModal()" class="px-6 py-2 rounded-xl bg-green-500 text-black font-black text-xs uppercase tracking-widest hover:bg-green-400 transition-all shadow-lg shadow-green-500/20">
+                <i class="fas fa-plus mr-2"></i>Crear Alianza
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 mt-12">
+        <div class="text-center mb-16">
+            <h1 class="text-5xl font-black mb-4 bg-gradient-to-r from-green-400 via-white to-emerald-500 bg-clip-text text-transparent uppercase tracking-tight">Forja tu Destino</h1>
+            <p class="text-gray-400 max-w-2xl mx-auto">Únete a una coalición de exploradores para conquistar el cosmos. La unión hace la fuerza.</p>
+        </div>
+
+        {% if cooldown_msg %}
+        <div class="mb-8 p-4 rounded-2xl bg-orange-500/10 border border-orange-500/20 text-orange-400 text-center text-sm font-bold flex items-center justify-center gap-3">
+            <i class="fas fa-clock"></i> {{ cooldown_msg }}
+        </div>
+        {% endif %}
+
+        <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {% for a in alliances %}
+            <div class="glass-card rounded-[32px] p-6 group hover:border-green-500/30 transition-all duration-500 border border-white/5 relative overflow-hidden flex flex-col h-full bg-white/[0.02] backdrop-blur-xl">
+                <div class="absolute -top-12 -right-12 w-24 h-24 bg-green-500/5 rounded-full blur-2xl group-hover:bg-green-500/10 transition-all"></div>
+                
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden flex-shrink-0">
+                        {% if a.image %}
+                        <img src="{{ a.image.url }}" class="w-full h-full object-cover">
+                        {% else %}
+                        <i class="fa-solid fa-shield-halved text-2xl text-green-500/50"></i>
+                        {% endif %}
+                    </div>
+                    <div class="overflow-hidden">
+                        <h3 class="font-black text-xl text-white truncate uppercase">{{ a.name }}</h3>
+                        <p class="text-[10px] text-green-500 font-bold uppercase tracking-widest">Líder: {{ a.leader.username }}</p>
+                    </div>
+                </div>
+
+                <p class="text-sm text-gray-400 line-clamp-3 mb-6 flex-grow italic">"{{ a.description|default:'Sin descripción galáctica...' }}"</p>
+
+                <div class="flex items-center justify-between p-4 rounded-2xl bg-white/5 border border-white/10 mb-6">
+                    <div class="text-center flex-1 border-r border-white/10">
+                        <p class="text-[8px] text-gray-500 font-bold uppercase">Miembros</p>
+                        <p class="text-lg font-black text-white">{{ a.members_profiles.count }}/{{ a.max_members }}</p>
+                    </div>
+                    <div class="text-center flex-1">
+                        <p class="text-[8px] text-gray-500 font-bold uppercase">Creada</p>
+                        <p class="text-xs font-bold text-gray-400">{{ a.created_at|date:"d M Y" }}</p>
+                    </div>
+                </div>
+
+                <button onclick="requestJoin('{{ a.id }}', '{{ a.name|escapejs }}')" 
+                        class="w-full py-4 rounded-2xl bg-white/5 border border-white/10 hover:border-green-500 hover:bg-green-500/10 text-white font-black uppercase text-xs tracking-widest transition-all">
+                    Enviar Solicitud
+                </button>
+            </div>
+            {% empty %}
+            <div class="col-span-full py-20 text-center glass-card rounded-[40px] border border-dashed border-white/10">
+                <i class="fa-solid fa-ghost text-6xl text-gray-800 mb-6"></i>
+                <p class="text-gray-500 font-bold">El universo está vacío... ¡Crea la primera alianza!</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+
+<!-- Modal Crear Alianza -->
+<div id="createModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/90 backdrop-blur-xl p-6">
+    <div class="w-full max-w-xl bg-[#0a0a1a] rounded-[40px] border border-white/10 overflow-hidden shadow-2xl relative">
+        <div class="absolute inset-0 bg-gradient-to-br from-green-500/10 to-transparent pointer-events-none"></div>
+        
+        <div class="p-8 relative z-10">
+            <div class="flex justify-between items-center mb-8">
+                <h2 class="text-2xl font-black uppercase tracking-tight text-white">Fundar Alianza</h2>
+                <button onclick="closeCreateModal()" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-gray-400 hover:text-white transition-all">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="createAllianceForm" class="space-y-6">
+                {% csrf_token %}
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Nombre de la Alianza</label>
+                    <input type="text" name="name" required class="w-full px-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-green-500 transition-all" placeholder="Ej: Guardianes de la Galaxia">
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Descripción</label>
+                    <textarea name="description" rows="3" class="w-full px-6 py-4 rounded-2xl bg-white/5 border border-white/10 text-white focus:outline-none focus:border-green-500 transition-all" placeholder="Cuenta la historia de tu alianza..."></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 uppercase tracking-widest mb-2">Estandarte (Logo / GIF)</label>
+                    <div class="relative group">
+                        <input type="file" name="image" id="allianceImage" accept="image/*" class="absolute inset-0 opacity-0 cursor-pointer z-20">
+                        <div class="w-full py-8 border-2 border-dashed border-white/10 rounded-2xl bg-white/5 text-center group-hover:border-green-500/50 transition-all">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-600 mb-2 group-hover:text-green-500 group-hover:scale-110 transition-all"></i>
+                            <p class="text-xs text-gray-400 font-bold" id="fileName">Subir imagen o GIF (Max 2MB)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full py-5 rounded-2xl bg-green-500 text-black font-black uppercase tracking-widest hover:bg-green-400 transition-all shadow-xl shadow-green-500/20 active:scale-[0.98]">
+                    Fundar Alianza Galáctica
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openCreateModal() {
+        document.getElementById('createModal').classList.remove('hidden');
+        document.getElementById('createModal').classList.add('flex');
+    }
+    function closeCreateModal() {
+        document.getElementById('createModal').classList.add('hidden');
+        document.getElementById('createModal').classList.remove('flex');
+    }
+
+    document.getElementById('allianceImage').addEventListener('change', function(e) {
+        const fileName = e.target.files[0]?.name || "Subir imagen o GIF (Max 2MB)";
+        document.getElementById('fileName').innerText = fileName;
+    });
+
+    document.getElementById('createAllianceForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        Swal.fire({
+            title: 'Fundando...',
+            didOpen: () => Swal.showLoading(),
+            allowOutsideClick: false
+        });
+
+        try {
+            const resp = await fetch("/alliances/create/", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    "X-CSRFToken": "{{ csrf_token }}"
+                }
+            });
+            const data = await resp.json();
+            if (data.success) {
+                await Swal.fire({
+                    icon: 'success',
+                    title: '¡ALIANZA FUNDADA!',
+                    text: 'Tu legado comienza hoy.',
+                    confirmButtonColor: '#22c55e'
+                });
+                location.reload();
+            } else {
+                Swal.fire('Error', data.error, 'error');
+            }
+        } catch (err) {
+            Swal.fire('Error', 'Error de conexión', 'error');
+        }
+    });
+
+    async function requestJoin(id, name) {
+        const res = await Swal.fire({
+            title: '¿Solicitar Ingreso?',
+            text: `¿Quieres unirte a ${name}?`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: 'ENVIAR SOLICITUD',
+            confirmButtonColor: '#22c55e'
+        });
+
+        if (res.isConfirmed) {
+            Swal.fire({didOpen: () => Swal.showLoading()});
+            try {
+                const resp = await fetch(`/alliances/request/${id}/`, {
+                    method: "POST",
+                    headers: { "X-CSRFToken": "{{ csrf_token }}" }
+                });
+                const data = await resp.json();
+                if (data.success) {
+                    Swal.fire('¡Enviada!', data.message, 'success');
+                } else {
+                    Swal.fire('Error', data.error, 'error');
+                }
+            } catch (err) {
+                Swal.fire('Error', 'Error de conexión', 'error');
+            }
+        }
+    }
+</script>
+{% endblock %}

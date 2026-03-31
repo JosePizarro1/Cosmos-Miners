@@ -1,0 +1,305 @@
+{% extends "game/base.html" %}
+{% block title %}Regalos de Alianza | Cosmos Miners{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-space text-white pb-20">
+    <!-- Header -->
+    <header class="px-6 py-6 border-b border-white/5 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <a href="{% url 'alliances_view' %}" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-accent hover:border-accent transition-all group">
+                    <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                </a>
+                <div>
+                    <h1 class="text-xl font-black uppercase tracking-tight bg-gradient-to-r from-pink to-[#ffca28] bg-clip-text text-transparent">
+                        <i class="fas fa-gift text-pink mr-2"></i>Regalos de Alianza
+                    </h1>
+                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-widest">{{ alliance.name }} • Centro de Premios</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-6 mt-10">
+        
+        <!-- SECTION: MIS REGALOS PENDIENTES -->
+        {% if my_pending %}
+        <section class="mb-12 animate__animated animate__fadeIn">
+            <h2 class="text-sm font-black uppercase tracking-widest text-pink mb-6 flex items-center gap-2">
+                <i class="fas fa-star-burst"></i> ¡TIENES REGALOS PENDIENTES!
+                <span class="ml-auto bg-pink text-white px-2 py-0.5 rounded-full text-[10px] font-black">{{ my_pending|length }}</span>
+            </h2>
+
+            <div class="grid sm:grid-cols-2 gap-6">
+                {% for p in my_pending %}
+                <div class="bg-gradient-to-br from-pink/20 to-purple-900/40 border border-pink/30 rounded-[2rem] p-6 backdrop-blur-xl hover:scale-[1.02] transition-all group relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-pink/20 rounded-full blur-2xl group-hover:bg-pink/30 transition-all"></div>
+                    
+                    <div class="flex items-center gap-4 mb-4 relative z-10">
+                        <div class="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden shrink-0 shadow-lg shadow-pink/20 rotate-3 group-hover:rotate-0 transition-transform">
+                            {% if p.assignment.gift.image %}
+                            <img src="{{ p.assignment.gift.image.url }}" class="w-full h-full object-cover">
+                            {% else %}
+                            <i class="fas fa-gift text-pink text-2xl"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h3 class="font-black text-white text-lg tracking-tight">{{ p.assignment.gift.name }}</h3>
+                            <p class="text-[9px] text-pink/80 font-black uppercase tracking-widest">¡Ganaste este regalo!</p>
+                        </div>
+                    </div>
+
+                    <button onclick="claimGift({{ p.id }}, '{{ p.assignment.gift.name|escapejs }}', '{% if p.assignment.gift.image %}{{ p.assignment.gift.image.url }}{% endif %}')" 
+                            class="w-full py-4 rounded-xl bg-pink text-white font-black text-xs uppercase tracking-widest hover:brightness-110 active:scale-95 transition-all shadow-[0_0_20px_rgba(255,77,141,0.3)] relative z-10">
+                        <i class="fas fa-box-open mr-2"></i> RECLAMAR AHORA
+                    </button>
+                    <p class="text-center text-[8px] text-gray-500 mt-3 uppercase font-black tracking-widest">Sorteado el {{ p.won_at|date:"d/m/Y H:i" }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        <hr class="border-white/5 mb-12">
+        {% endif %}
+
+        <!-- SECTION: RAFFLE (LEADER ONLY) -->
+        {% if is_leader %}
+        <section class="mb-12">
+            <h2 class="text-sm font-black uppercase tracking-widest text-[#ffca28] mb-6 flex items-center gap-2">
+                <i class="fas fa-dice"></i> Gestionar Sorteos (Líder)
+                <span class="ml-auto bg-[#ffca28] text-space px-2 py-0.5 rounded-full text-[10px] font-black">{{ available|length }}</span>
+            </h2>
+
+            <div class="grid sm:grid-cols-2 gap-6">
+                {% for a in available %}
+                <div class="bg-card border border-white/10 rounded-[2rem] p-6 backdrop-blur-xl hover:border-[#ffca28]/30 transition-all group relative overflow-hidden">
+                    <div class="absolute -top-10 -right-10 w-32 h-32 bg-[#ffca28]/5 rounded-full blur-2xl group-hover:bg-[#ffca28]/10 transition-all"></div>
+                    
+                    <div class="flex items-center gap-4 mb-4 relative z-10">
+                        <div class="w-16 h-16 rounded-2xl bg-space/60 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                            {% if a.gift.image %}
+                            <img src="{{ a.gift.image.url }}" class="w-full h-full object-cover">
+                            {% else %}
+                            <i class="fas fa-gift text-pink text-2xl"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <h3 class="font-black text-white text-lg">{{ a.gift.name }}</h3>
+                            <p class="text-[9px] text-gray-500 italic">{{ a.gift.description|default:'Regalo misterioso...' }}</p>
+                        </div>
+                    </div>
+
+                    <button onclick="raffleGift({{ a.id }}, '{{ a.gift.name|escapejs }}')" 
+                            class="w-full py-3 rounded-xl bg-gradient-to-r from-[#ffca28] to-amber-600 text-space font-black text-[10px] uppercase tracking-widest hover:scale-[1.02] active:scale-95 transition-all shadow-lg shadow-yellow-500/20 relative z-10">
+                        <i class="fas fa-dice mr-2"></i> LANZAR SORTEO
+                    </button>
+                </div>
+                {% empty %}
+                <div class="sm:col-span-2 text-center py-10 bg-card/20 border border-dashed border-white/10 rounded-[2rem]">
+                    <p class="text-gray-500 text-[10px] font-bold uppercase">No hay más regalos para sortear</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- History -->
+        <section>
+            <h2 class="text-sm font-black uppercase tracking-widest text-gray-500 mb-6 flex items-center gap-2">
+                <i class="fas fa-trophy"></i> Historial de Ganadores
+            </h2>
+            <div class="grid gap-4 sm:grid-cols-2">
+                {% for w in history %}
+                <div class="bg-card/50 border border-white/5 rounded-2xl p-4 flex items-center justify-between group hover:border-white/10 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                            {% if w.is_claimed %}
+                            <i class="fas fa-check text-green-400 text-xs"></i>
+                            {% else %}
+                            <i class="fas fa-trophy text-yellow-500 text-xs"></i>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <p class="text-xs font-black text-white">
+                                <span class="text-accent">{{ w.winner.username }}</span> 
+                                <span class="text-gray-500 font-normal">ganó</span> {{ w.assignment.gift.name }}
+                            </p>
+                            <p class="text-[8px] text-gray-600 uppercase font-black tracking-widest mt-1">
+                                {{ w.won_at|timesince }} ago • 
+                                {% if w.is_claimed %}<span class="text-green-500/60">RECLAMADO</span>{% else %}<span class="text-yellow-500/60">PENDIENTE</span>{% endif %}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="sm:col-span-2 text-center py-10 bg-card/10 border border-dashed border-white/5 rounded-2xl">
+                    <p class="text-gray-600 text-[10px] font-bold uppercase tracking-widest">Aún no hay historia en esta alianza</p>
+                </div>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Opening Cinematic Modal (Inherited Style from store) -->
+<div id="openingModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-black/95 backdrop-blur-xl">
+    <div class="relative flex flex-col items-center w-full max-w-2xl px-6">
+        <div id="rayContainer" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-0 h-0 flex items-center justify-center opacity-0 transition-opacity duration-500">
+        </div>
+
+        <div id="openingPackWrapper" class="relative z-20 transition-all duration-700 flex items-center justify-center">
+             <img id="openingPackImg" src="" class="w-64 h-64 object-contain transition-all duration-300 hidden" />
+             <div id="openingPackIcon" class="w-64 h-64 rounded-full bg-white/5 flex items-center justify-center border border-white/10 hidden">
+                 <i class="fas fa-gift text-[8rem] text-pink/50"></i>
+             </div>
+             <div class="absolute inset-0 bg-pink/30 rounded-full blur-3xl opacity-0 transition-opacity duration-300 transform scale-150 -z-10" id="packGlow"></div>
+        </div>
+
+        <div id="rewardReveal" class="mt-4 w-full grid grid-cols-1 gap-4 z-30">
+        </div>
+
+        <button id="closeOpeningBtn" onclick="location.reload()" class="mt-12 px-10 py-4 rounded-2xl bg-white/10 hover:bg-pink/20 border border-white/20 text-white font-black uppercase tracking-widest hidden z-30 transition-all shadow-lg shadow-pink/10">
+             CERRAR Y CONTINUAR
+        </button>
+    </div>
+</div>
+
+<style>
+    @keyframes rays {
+      0% { transform: rotate(0deg) scale(0); opacity: 0; }
+      50% { opacity: 1; }
+      100% { transform: rotate(180deg) scale(2); opacity: 0; }
+    }
+    .ray {
+      position: absolute; top: 50%; left: 50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(circle, #ff4d8d 0%, transparent 70%);
+      clip-path: polygon(50% 50%, 45% 0, 55% 0);
+      transform-origin: center;
+      animation: rays 2s ease-out forwards;
+    }
+    @keyframes reward-pop {
+      0% { transform: scale(0.5) translateY(50px); opacity: 0; filter: blur(10px); }
+      100% { transform: scale(1) translateY(0); opacity: 1; filter: blur(0); }
+    }
+    .award-card { animation: reward-pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275) both; }
+    
+    @keyframes pack-vibrate {
+      0%, 100% { transform: scale(1) rotate(0); }
+      20% { transform: scale(1.1) rotate(-5deg); }
+      40% { transform: scale(1.1) rotate(5deg); }
+      60% { transform: scale(1.1) rotate(-5deg); }
+      80% { transform: scale(1.1) rotate(5deg); }
+    }
+    .animate-vibrate { animation: pack-vibrate 0.3s ease-in-out infinite; }
+</style>
+
+<script>
+    async function raffleGift(assignmentId, giftName) {
+        const res = await Swal.fire({
+            title: `¿LANZAR SORTEO?`,
+            html: `<p class="text-sm text-gray-300 px-4">Se elegirá un ganador al azar para <b class="text-white">${giftName}</b>. El ganador recibirá una notificación para reclamarlo.</p>`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonText: '¡LANZAR!',
+            confirmButtonColor: '#ffca28',
+            cancelButtonText: 'Ahora no',
+            background: '#0a0f28', color: '#fff'
+        });
+
+        if (res.isConfirmed) {
+            Swal.fire({ title: 'Sorteando...', html: '<div class="text-5xl animate-bounce">🎲</div>', showConfirmButton: false, background: '#0a0f28', color: '#fff', didOpen: () => Swal.showLoading()});
+            try {
+                const resp = await fetch(`/alliances/gifts/raffle/${assignmentId}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' }});
+                const data = await resp.json();
+                if (data.success) {
+                    await Swal.fire({
+                        title: '🎯 GANADOR ELEGIDO',
+                        html: `<p class="text-xl font-black text-yellow-400 mb-2">${data.winner}</p><p class="text-xs text-gray-500 uppercase">Ha ganado el sorteo de ${data.gift_name}</p>`,
+                        icon: 'success', background: '#0a0f28', color: '#fff'
+                    });
+                    location.reload();
+                } else { Swal.fire('Error', data.error, 'error'); }
+            } catch (e) { Swal.fire('Error', 'Conexión fallida', 'error'); }
+        }
+    }
+
+    async function claimGift(winId, giftName, giftImg) {
+        // Show opening modal
+        const modal = document.getElementById('openingModal');
+        const packImg = document.getElementById('openingPackImg');
+        const packIcon = document.getElementById('openingPackIcon');
+        const wrapper = document.getElementById('openingPackWrapper');
+        const glow = document.getElementById('packGlow');
+        const rewardReveal = document.getElementById('rewardReveal');
+        const rayCont = document.getElementById('rayContainer');
+        const closeBtn = document.getElementById('closeOpeningBtn');
+
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        rewardReveal.innerHTML = '';
+        closeBtn.classList.add('hidden');
+        
+        if (giftImg && giftImg !== '') {
+            packImg.src = giftImg;
+            packImg.classList.remove('hidden');
+            packIcon.classList.add('hidden');
+        } else {
+            packImg.classList.add('hidden');
+            packIcon.classList.remove('hidden');
+        }
+
+        // Phase 1: Vibration
+        wrapper.classList.add('animate-vibrate');
+        glow.classList.remove('opacity-0');
+
+        try {
+            const resp = await fetch(`/alliances/gifts/claim/${winId}/`, { method: 'POST', headers: { 'X-CSRFToken': '{{ csrf_token }}' }});
+            const data = await resp.json();
+
+            if (data.success) {
+                // Wait for dramatic effect
+                setTimeout(() => {
+                    wrapper.classList.remove('animate-vibrate');
+                    wrapper.classList.add('scale-0', 'opacity-0');
+                    rayCont.classList.remove('opacity-0');
+                    
+                    // Generate rays
+                    for(let i=0; i<12; i++) {
+                        const ray = document.createElement('div');
+                        ray.className = 'ray';
+                        ray.style.transform = `rotate(${i*30}deg) scale(0)`;
+                        rayCont.appendChild(ray);
+                    }
+
+                    // Show rewards
+                    setTimeout(() => {
+                        let html = '<div class="flex flex-col gap-3">';
+                        data.items.forEach((item, idx) => {
+                            html += `
+                                <div class="award-card bg-white/5 border border-white/10 rounded-2xl p-4 flex items-center gap-4 shadow-xl" style="animation-delay: ${idx*0.2}s">
+                                    <div class="w-16 h-16 rounded-xl bg-space/60 border border-white/10 flex items-center justify-center overflow-hidden shrink-0">
+                                        ${item.image ? `<img src="${item.image}" class="w-full h-full object-cover">` : `<i class="fas ${item.type == 'gold' ? 'fa-coins text-yellow-500' : 'fa-gem text-accent'} text-2xl"></i>`}
+                                    </div>
+                                    <div class="text-left">
+                                        <p class="text-[10px] text-gray-500 font-black uppercase tracking-widest">${item.type.toUpperCase()}</p>
+                                        <h4 class="text-lg font-black text-white leading-tight">${item.amount ? item.amount + ' ' : ''}${item.name}</h4>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                        rewardReveal.innerHTML = html;
+                        closeBtn.classList.remove('hidden');
+                    }, 800);
+                }, 1500);
+            } else {
+                modal.classList.add('hidden');
+                Swal.fire('Error', data.error, 'error');
+            }
+        } catch (e) {
+            modal.classList.add('hidden');
+            Swal.fire('Error', 'Conexión fallida', 'error');
+        }
+    }
+</script>
+{% endblock %}

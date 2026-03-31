@@ -57,6 +57,8 @@ def chests_list(request):
             "purchase_mineral_name": c.purchase_mineral.name if c.purchase_mineral else "",
             "purchase_mineral_qty": c.purchase_mineral_qty,
             "image_url": c.image.url if c.image else "",
+            "is_black_market": c.is_black_market,
+            "black_market_discount": c.black_market_discount,
             "rewards_per_open": c.rewards_per_open,
             "rewards": rewards
         })
@@ -95,6 +97,8 @@ def chest_create(request):
                 price=Decimal(price),
                 category=category,
                 is_in_store=is_in_store,
+                is_black_market=request.POST.get("is_black_market") in ["true", "on"],
+                black_market_discount=int(request.POST.get("black_market_discount") or 0),
                 rewards_per_open=int(rewards_per_open),
                 purchase_mineral_id=purchase_mineral_id if purchase_mineral_id else None,
                 purchase_mineral_qty=purchase_mineral_qty,
@@ -180,6 +184,9 @@ def chest_update(request, pk):
         purchase_mineral_id = request.POST.get("purchase_mineral_id")
         chest.purchase_mineral_id = purchase_mineral_id if purchase_mineral_id else None
         chest.purchase_mineral_qty = int(request.POST.get("purchase_mineral_qty") or 0)
+        
+        chest.is_black_market = request.POST.get("is_black_market") in ["true", "on"]
+        chest.black_market_discount = int(request.POST.get("black_market_discount") or 0)
         
         if request.FILES.get("image"):
             chest.image = request.FILES.get("image")

@@ -193,9 +193,14 @@
                         </div>
                         {% endif %}
 
-                        <a href="{% url 'collect_mining_trip' trip.id %}" class="block w-full text-center bg-accent py-4 rounded-3xl text-space font-black uppercase tracking-[0.2em] shadow-[0_10px_30px_rgba(0,224,255,0.2)] hover:scale-[1.02] active:scale-95 transition-all">
+                        <a href="{% url 'collect_mining_trip' trip.id %}" id="claimBtn_{{ trip.id }}" class="{% if trip.status == 'ongoing' %}hidden{% endif %} block w-full text-center bg-accent py-4 rounded-3xl text-space font-black uppercase tracking-[0.2em] shadow-[0_10px_30px_rgba(0,224,255,0.2)] hover:scale-[1.02] active:scale-95 transition-all">
                             RECLAMAR RECURSOS
                         </a>
+                        {% if trip.status == 'ongoing' %}
+                        <div id="waitMsg_{{ trip.id }}" class="w-full text-center bg-white/5 py-4 rounded-3xl text-gray-500 font-black uppercase tracking-[0.15em] text-[10px] border border-white/5">
+                            <i class="fas fa-hourglass-half mr-2 animate-pulse"></i> Expedición en progreso...
+                        </div>
+                        {% endif %}
                     </div>
                 {% empty %}
                     <div class="text-center py-20 bg-card border border-dashed border-white/10 rounded-[3rem] opacity-40">
@@ -368,6 +373,13 @@
                     timer.innerHTML = '<span class="text-green-400 font-black animate-pulse">¡DISPONIBLE!</span>';
                     if (progressBar) progressBar.style.width = '100%';
                     if (shuttleIcon) shuttleIcon.style.left = '100%';
+                    
+                    // Show claim button, hide waiting message
+                    const tripCard = timer.closest('.bg-card');
+                    const claimBtn = tripCard.querySelector('a[id^="claimBtn_"]');
+                    const waitMsg = tripCard.querySelector('div[id^="waitMsg_"]');
+                    if (claimBtn) claimBtn.classList.remove('hidden');
+                    if (waitMsg) waitMsg.classList.add('hidden');
                     return;
                 }
                 

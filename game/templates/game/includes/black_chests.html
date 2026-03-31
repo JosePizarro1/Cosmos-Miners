@@ -1,0 +1,56 @@
+<!-- Black Market Chests Section -->
+<div class="mb-20">
+    <h2 class="text-[10px] font-black uppercase tracking-[0.2em] text-pink mb-6 flex items-center gap-3">
+        Black Chests - Ofertas Exclusivas
+        <span class="flex-1 h-[1px] bg-pink/10"></span>
+    </h2>
+
+    {% if black_chests %}
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for chest in black_chests %}
+        <div class="relative glass-card rounded-[32px] p-6 flex flex-col items-center group overflow-hidden hover:border-pink/30 transition-all">
+            <!-- Discount Badge -->
+            {% if chest.black_market_discount > 0 %}
+            <div class="absolute -right-10 top-5 rotate-45 bg-pink text-black text-[9px] font-black px-12 py-1 uppercase shadow-lg">
+                -{{ chest.black_market_discount }}%
+            </div>
+            {% endif %}
+
+            <div class="w-32 h-32 mb-4 relative drop-shadow-[0_0_15px_rgba(255,77,141,0.2)]">
+                <img src="{{ chest.image.url }}" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500">
+            </div>
+
+            <div class="text-center w-full">
+                <h3 class="text-lg font-black uppercase tracking-tight mb-1 text-white">{{ chest.name }}</h3>
+                <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-4 italic">{{ chest.category.name|default:"Especial" }}</p>
+                
+                <div class="bg-black/40 rounded-2xl p-4 mb-6 border border-white/5">
+                    <p class="text-[9px] uppercase text-gray-500 font-black mb-1">Precio Especial</p>
+                    <div class="flex items-center justify-center gap-3">
+                        {% if chest.black_market_discount > 0 %}
+                        <span class="text-xs text-gray-500 line-through font-mono">{{ chest.price|floatformat:2 }}</span>
+                        {% endif %}
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-2xl font-mono font-black text-pink">{{ chest.discounted_price|floatformat:2 }}</span>
+                            <i class="fas fa-star text-gold text-xs"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <form action="{% url 'buy_chest' chest.id %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="w-full py-4 bg-black border border-pink/30 text-pink rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-pink hover:text-black transition-all shadow-xl shadow-pink/5">
+                        COMPRAR COFRE
+                    </button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="glass-card rounded-[32px] p-12 text-center border-dashed border-white/10">
+        <i class="fas fa-ghost text-4xl text-white/10 mb-4"></i>
+        <p class="text-gray-500 uppercase font-black text-xs tracking-widest">No hay cofres disponibles en el Mercado Negro en este momento.</p>
+    </div>
+    {% endif %}
+</div>

@@ -1,0 +1,106 @@
+{% extends "game/base.html" %}
+{% block title %}Dominios de {{ alliance.name }} | Mundos Conquistados{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-space text-white pb-20">
+    <!-- Header -->
+    <header class="px-6 py-6 border-b border-white/5 backdrop-blur-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-6">
+                <a href="{% url 'alliances_view' %}" class="w-10 h-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-gray-400 hover:text-accent hover:border-accent transition-all group">
+                    <i class="fas fa-arrow-left group-hover:-translate-x-1 transition-transform"></i>
+                </a>
+                <div class="flex flex-col">
+                    <h1 class="font-black tracking-widest text-lg bg-gradient-to-r from-green-400 to-emerald-500 bg-clip-text text-transparent uppercase flex items-center gap-2">
+                        <i class="fas fa-map-marked-alt text-green-500"></i> Mundos Conquistados
+                    </h1>
+                    <p class="text-[9px] text-gray-500 font-bold uppercase tracking-[0.2em]">Territorios anexados por {{ alliance.name }}</p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 mt-12">
+        <div class="text-center max-w-2xl mx-auto mb-16">
+            <h2 class="text-4xl font-black text-white mb-4 uppercase italic">Sectores bajo Control</h2>
+            <p class="text-gray-400 text-sm leading-relaxed">
+                Aquí se listan todos los planetas exclusivos que tu alianza ha logrado colonizar. Todos los miembros de la alianza tienen permiso de excavación en estos mundos.
+            </p>
+        </div>
+
+        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {% for ap in alliance_planets %}
+            <div class="glass-card rounded-[48px] border border-green-500/20 bg-green-500/[0.03] backdrop-blur-xl overflow-hidden group hover:border-green-500/40 transition-all duration-500 relative">
+                
+                <div class="absolute top-6 right-6 z-20 bg-green-500 text-black px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest shadow-xl shadow-green-500/40">
+                    ANEXADO
+                </div>
+
+                <!-- Image Area -->
+                <div class="h-64 relative overflow-hidden bg-black/40">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent z-10"></div>
+                    {% if ap.planet.image %}
+                    <img src="{{ ap.planet.image.url }}" class="w-full h-full object-contain p-8 group-hover:scale-110 transition-transform duration-700 relative z-0">
+                    {% else %}
+                    <div class="w-full h-full flex items-center justify-center text-white/5">
+                        <i class="fas fa-globe text-9xl"></i>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <!-- Content Area -->
+                <div class="p-8 space-y-6 pt-2">
+                    <div class="text-center">
+                        <h3 class="text-2xl font-black uppercase tracking-tighter text-white italic group-hover:text-green-400 transition-colors">{{ ap.planet.name }}</h3>
+                        <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-1">Colonizado el {{ ap.acquired_at|date:"d/m/Y" }}</p>
+                    </div>
+
+                    <div class="grid grid-cols-3 gap-3">
+                        <div class="bg-white/5 rounded-2xl p-3 border border-white/5 text-center">
+                            <p class="text-[8px] text-gray-600 font-black uppercase mb-1">Viaje</p>
+                            <p class="text-xs font-black text-accent">{{ ap.planet.travel_time_base }}h</p>
+                        </div>
+                        <div class="bg-white/5 rounded-2xl p-3 border border-white/5 text-center">
+                            <p class="text-[8px] text-gray-600 font-black uppercase mb-1">Éxito</p>
+                            <p class="text-xs font-black text-green-400">{{ ap.planet.success_rate_base }}%</p>
+                        </div>
+                        <div class="bg-white/5 rounded-2xl p-3 border border-white/5 text-center">
+                            <p class="text-[8px] text-gray-600 font-black uppercase mb-1">Points</p>
+                            <p class="text-xs font-black text-yellow-500">{{ ap.planet.puntos }}</p>
+                        </div>
+                    </div>
+
+                    <!-- Resources -->
+                    <div class="space-y-3">
+                        <p class="text-[9px] text-gray-500 font-black uppercase tracking-widest flex items-center justify-center gap-2">
+                            <span class="h-px w-8 bg-white/5 text-space"></span>
+                            Riqueza del Sector
+                            <span class="h-px w-8 bg-white/5 text-space"></span>
+                        </p>
+                        <div class="flex flex-wrap justify-center gap-2">
+                            {% for pm in ap.planet.produced_minerals.all %}
+                            <div class="bg-black/40 px-3 py-1.5 rounded-full border border-white/10 text-[9px] font-bold text-gray-400 flex items-center gap-2">
+                                <i class="fas fa-gem text-accent"></i> {{ pm.mineral.name }}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="pt-4">
+                        <a href="{% url 'prepare_trip' %}" class="w-full bg-white/5 hover:bg-green-500 text-gray-400 hover:text-black font-black py-4 rounded-[24px] text-center text-[10px] uppercase tracking-[0.25em] transition-all block border border-white/10 hover:border-green-500 hover:shadow-lg hover:shadow-green-500/20">
+                            INICIAR MISIÓN DE EXTRACCIÓN
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full py-20 text-center bg-white/[0.02] rounded-[48px] border border-dashed border-white/10">
+                <i class="fas fa-satellite text-6xl text-gray-800 mb-6"></i>
+                <h3 class="text-xl font-black uppercase text-gray-600">Vuestra Alianza aún no posee planetas</h3>
+                <p class="text-sm text-gray-700 mt-2">Pídele a tu líder que visite el Santuario Galáctico para expandir vuestros dominios.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </main>
+</div>
+{% endblock %}

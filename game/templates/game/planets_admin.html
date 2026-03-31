@@ -170,7 +170,7 @@
                                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-3 gap-2">
                                         <h3 class="text-xl font-black italic text-white uppercase tracking-tighter truncate w-full sm:w-auto">{{ p.name }}</h3>
                                         <div class="flex gap-2 self-start">
-                                            <button type="button" onclick="openEditPlanet('{{ p.id }}', '{{ p.name }}', '{{ p.travel_time_base }}', '{{ p.success_rate_base }}', '{{ p.puntos }}', '{% if p.image %}{{ p.image.url }}{% endif %}', '{{ p.is_free }}')" class="px-2.5 py-1.5 rounded bg-white/5 text-gray-200 text-sm hover:bg-white/10 hover:text-pink transition-colors">
+                                            <button type="button" onclick="openEditPlanet('{{ p.id }}', '{{ p.name|escapejs }}', '{{ p.travel_time_base }}', '{{ p.success_rate_base }}', '{{ p.puntos }}', '{% if p.image %}{{ p.image.url }}{% endif %}', '{{ p.is_free }}', '{{ p.is_alliance }}', '{{ p.price_gold }}', '{{ p.price_mineral.id|default:'' }}', '{{ p.price_mineral_quantity }}')" class="px-2.5 py-1.5 rounded bg-white/5 text-gray-200 text-sm hover:bg-white/10 hover:text-pink transition-colors">
                                                 <i class="fas fa-pen"></i>
                                             </button>
                                             <form method="POST" onsubmit="return confirm('¿Eliminar planeta?')">
@@ -313,42 +313,82 @@
                 <input type="hidden" name="action" value="add_planet">
                 
                 <div class="grid md:grid-cols-2 gap-6">
-                    <!-- Column 1: Image -->
-                    <div>
-                        <label class="block text-[10px] uppercase font-black text-gray-400 mb-3 tracking-widest">Avatar Planetario</label>
-                        <div class="image-preview border-pink/20 hover:border-pink/50 transition-colors" onclick="this.nextElementSibling.click()">
-                            <i class="fas fa-rocket text-3xl text-pink/20"></i>
-                            <img src="" class="hidden">
+                    <!-- Column 1: Image & Status -->
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-[10px] uppercase font-black text-gray-400 mb-3 tracking-widest text-center">Avatar Planetario</label>
+                            <div class="image-preview border-pink/20 hover:border-pink/50 transition-colors cursor-pointer" onclick="this.nextElementSibling.click()">
+                                <i class="fas fa-rocket text-3xl text-pink/20"></i>
+                                <img src="" class="hidden">
+                            </div>
+                            <input type="file" name="image" accept="image/*" class="hidden" onchange="previewImage(this)">
                         </div>
-                        <input type="file" name="image" accept="image/*" class="hidden" onchange="previewImage(this)">
+
+                        <div class="bg-space/60 p-4 rounded-2xl border border-white/5 space-y-4">
+                            <p class="text-[9px] uppercase font-black text-accent tracking-tighter italic mb-2">Configuración Especial</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="flex items-center gap-3 bg-black/40 p-3 rounded-xl border border-white/5 hover:border-pink/30 transition-all cursor-pointer">
+                                    <input type="checkbox" name="is_free" id="planetIsFree" class="w-5 h-5 accent-pink">
+                                    <span class="text-[10px] uppercase font-black text-gray-400 tracking-widest cursor-pointer">GRATIS</span>
+                                </label>
+                                <label class="flex items-center gap-3 bg-black/40 p-3 rounded-xl border border-white/5 hover:border-yellow-500/30 transition-all cursor-pointer">
+                                    <input type="checkbox" name="is_alliance" id="planetIsAlliance" class="w-5 h-5 accent-yellow-500">
+                                    <span class="text-[10px] uppercase font-black text-gray-400 tracking-widest cursor-pointer">ALIANZA</span>
+                                </label>
+                                <div class="grid grid-cols-2 gap-4 col-span-2">
+                                    <div>
+                                        <label class="block text-[9px] uppercase font-black text-gray-500 mb-2 tracking-widest">Precio en Oro</label>
+                                        <div class="relative">
+                                            <i class="fas fa-coins absolute left-4 top-1/2 -translate-y-1/2 text-yellow-500 text-xs"></i>
+                                            <input type="number" step="0.01" name="price_gold" value="0.00" class="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-3 focus:border-accent outline-none font-bold text-yellow-500 text-sm">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] uppercase font-black text-gray-500 mb-2 tracking-widest">Mineral Especial</label>
+                                        <select name="price_mineral" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-accent outline-none font-bold text-gray-400 text-xs">
+                                            <option value="">Ninguno (Solo Oro)</option>
+                                            {% for m in minerals %}
+                                            <option value="{{ m.id }}">{{ m.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-[9px] uppercase font-black text-gray-500 mb-2 tracking-widest">Cantidad de Mineral</label>
+                                        <input type="number" step="0.01" name="price_mineral_quantity" value="0" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-accent outline-none font-bold text-gray-300 text-xs text-center">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Column 2: Data -->
-                    <div class="space-y-4">
+                    <!-- Column 2: Core Data -->
+                    <div class="space-y-4 pt-6 md:pt-0">
                         <div>
                             <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Nombre del Mundo</label>
                             <input type="text" name="name" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-bold text-white uppercase italic">
                         </div>
                         
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Base (h)</label>
-                                <input type="number" name="travel_time" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-black text-accent text-center">
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="bg-space/40 p-4 rounded-2xl border border-white/5">
+                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Estadísticas de Vuelo</label>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="space-y-1">
+                                        <span class="text-[9px] text-gray-500 font-bold uppercase">Base (Horas)</span>
+                                        <input type="number" name="travel_time" required class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-pink outline-none font-black text-accent text-center text-sm">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <span class="text-[9px] text-gray-500 font-bold uppercase">Éxito (%)</span>
+                                        <input type="number" name="success_rate" required class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-pink outline-none font-black text-green-400 text-center text-sm">
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Éxito (%)</label>
-                                <input type="number" name="success_rate" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-black text-green-400 text-center">
-                            </div>
-                        </div>
 
-                        <div class="grid grid-cols-2 gap-4 items-end">
-                            <div>
-                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Puntos</label>
-                                <input type="number" name="puntos" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-black text-yellow-400 text-center" value="0">
-                            </div>
-                            <div class="flex items-center gap-2 pb-4">
-                                <input type="checkbox" name="is_free" id="planetIsFree" class="w-5 h-5 accent-pink">
-                                <label for="planetIsFree" class="text-[10px] uppercase font-black text-gray-400 tracking-widest">Gratis (Free)</label>
+                            <div class="bg-space/40 p-4 rounded-2xl border border-white/5">
+                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Puntos de Victoria</label>
+                                <div class="relative">
+                                    <i class="fas fa-star absolute left-4 top-1/2 -translate-y-1/2 text-yellow-400 text-xs"></i>
+                                    <input type="number" name="puntos" required class="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-3 focus:border-pink outline-none font-black text-yellow-400 text-sm" value="0">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -437,42 +477,82 @@
                 <input type="hidden" name="action" value="edit_planet">
                 <input type="hidden" name="planet_id" id="editPlanetId">
                 
-                <div class="grid grid-cols-2 gap-6">
-                    <!-- Column 1: Image -->
-                    <div>
-                        <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Nueva Imagen (opcional)</label>
-                        <div class="image-preview border-pink/20" onclick="this.nextElementSibling.click()">
-                            <img id="editPlanetImg" src="" class="object-contain w-full h-full">
+                <div class="grid md:grid-cols-2 gap-6">
+                    <!-- Column 1: Image & Status -->
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest text-center">Imagen del Planeta</label>
+                            <div class="image-preview border-pink/20 hover:border-pink/40 transition-colors cursor-pointer" onclick="this.nextElementSibling.click()">
+                                <img id="editPlanetImg" src="" class="object-contain w-full h-full">
+                            </div>
+                            <input type="file" name="image" accept="image/*" class="hidden" onchange="previewImage(this)">
                         </div>
-                        <input type="file" name="image" accept="image/*" class="hidden" onchange="previewImage(this)">
+
+                        <div class="bg-space/60 p-4 rounded-2xl border border-white/5 space-y-4">
+                            <p class="text-[9px] uppercase font-black text-accent tracking-tighter italic mb-2">Estado Territorial</p>
+                            <div class="grid grid-cols-2 gap-4">
+                                <label class="flex items-center gap-3 bg-black/40 p-3 rounded-xl border border-white/5 hover:border-pink/30 transition-all cursor-pointer">
+                                    <input type="checkbox" name="is_free" id="editPlanetIsFree" class="w-5 h-5 accent-pink">
+                                    <span class="text-[10px] uppercase font-black text-gray-400 tracking-widest cursor-pointer">GRATIS</span>
+                                </label>
+                                <label class="flex items-center gap-3 bg-black/40 p-3 rounded-xl border border-white/5 hover:border-yellow-500/30 transition-all cursor-pointer">
+                                    <input type="checkbox" name="is_alliance" id="editPlanetIsAlliance" class="w-5 h-5 accent-yellow-500">
+                                    <span class="text-[10px] uppercase font-black text-gray-400 tracking-widest cursor-pointer">ALIANZA</span>
+                                </label>
+                                <div class="grid grid-cols-2 gap-4 col-span-2">
+                                    <div>
+                                        <label class="block text-[9px] uppercase font-black text-gray-500 mb-2 tracking-widest">Precio Especial (Oro)</label>
+                                        <div class="relative">
+                                            <i class="fas fa-coins absolute left-4 top-1/2 -translate-y-1/2 text-yellow-500 text-xs"></i>
+                                            <input type="number" step="0.01" name="price_gold" id="editPlanetPrice" required class="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-3 focus:border-pink outline-none font-bold text-yellow-500 text-sm">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label class="block text-[9px] uppercase font-black text-gray-500 mb-2 tracking-widest">Mineral Especial</label>
+                                        <select name="price_mineral" id="editPlanetPriceMineral" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-pink outline-none font-bold text-gray-400 text-xs">
+                                            <option value="">Ninguno (Solo Oro)</option>
+                                            {% for m in minerals %}
+                                            <option value="{{ m.id }}">{{ m.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-[9px] uppercase font-black text-gray-500 mb-2 tracking-widest">Cantidad de Mineral</label>
+                                        <input type="number" step="0.01" name="price_mineral_quantity" id="editPlanetPriceMineralQty" class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-pink outline-none font-bold text-gray-300 text-xs text-center">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Column 2: Data -->
-                    <div class="space-y-4">
+                    <div class="space-y-4 pt-6 md:pt-0">
                         <div>
                             <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Nombre</label>
-                            <input type="text" name="name" id="editPlanetName" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-5 py-3 focus:border-pink outline-none">
+                            <input type="text" name="name" id="editPlanetName" required class="w-full bg-space border border-white/10 rounded-2xl px-5 py-3.5 focus:border-pink outline-none font-bold text-white uppercase italic">
                         </div>
                         
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Horas</label>
-                                <input type="number" name="travel_time" id="editPlanetTime" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-3 py-3 focus:border-pink outline-none text-center">
+                        <div class="grid grid-cols-1 gap-4">
+                            <div class="bg-space/40 p-4 rounded-2xl border border-white/5">
+                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Estadísticas</label>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="space-y-1">
+                                        <span class="text-[9px] text-gray-500 font-bold uppercase">Viaje (h)</span>
+                                        <input type="number" name="travel_time" id="editPlanetTime" required class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-pink outline-none font-black text-accent text-center text-sm">
+                                    </div>
+                                    <div class="space-y-1">
+                                        <span class="text-[9px] text-gray-500 font-bold uppercase">Éxito (%)</span>
+                                        <input type="number" name="success_rate" id="editPlanetSuccess" required class="w-full bg-black/40 border border-white/10 rounded-xl px-4 py-3 focus:border-pink outline-none font-black text-green-400 text-center text-sm">
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Éxito</label>
-                                <input type="number" name="success_rate" id="editPlanetSuccess" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-3 py-3 focus:border-pink outline-none text-center">
-                            </div>
-                        </div>
 
-                        <div class="grid grid-cols-2 gap-4 items-end">
-                            <div>
-                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Pts.</label>
-                                <input type="number" name="puntos" id="editPlanetPuntos" required class="w-full bg-space/60 border border-white/10 rounded-2xl px-3 py-3 focus:border-pink outline-none text-center">
-                            </div>
-                            <div class="flex items-center gap-2 pb-4">
-                                <input type="checkbox" name="is_free" id="editPlanetIsFree" class="w-5 h-5 accent-pink">
-                                <label for="editPlanetIsFree" class="text-[10px] uppercase font-black text-gray-400 tracking-widest">Gratis (Free)</label>
+                            <div class="bg-space/40 p-4 rounded-2xl border border-white/5">
+                                <label class="block text-[10px] uppercase font-black text-gray-400 mb-2 tracking-widest">Valorización</label>
+                                <div class="relative">
+                                    <i class="fas fa-star absolute left-4 top-1/2 -translate-y-1/2 text-yellow-400 text-xs"></i>
+                                    <input type="number" name="puntos" id="editPlanetPuntos" required class="w-full bg-black/40 border border-white/10 rounded-xl pl-10 pr-4 py-3 focus:border-pink outline-none font-black text-yellow-400 text-sm">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -540,13 +620,17 @@
             }
         }
 
-        function openEditPlanet(id, name, time, success, puntos, imgUrl, isFree) {
+        function openEditPlanet(id, name, time, success, puntos, imgUrl, isFree, isAlliance, price, minId, minQty) {
             document.getElementById('editPlanetId').value = id;
             document.getElementById('editPlanetName').value = name;
             document.getElementById('editPlanetTime').value = time;
             document.getElementById('editPlanetSuccess').value = success;
             document.getElementById('editPlanetPuntos').value = puntos;
             document.getElementById('editPlanetIsFree').checked = (isFree === 'True');
+            document.getElementById('editPlanetIsAlliance').checked = (isAlliance === 'True');
+            document.getElementById('editPlanetPrice').value = price;
+            document.getElementById('editPlanetPriceMineral').value = minId || '';
+            document.getElementById('editPlanetPriceMineralQty').value = minQty || 0;
             const img = document.getElementById('editPlanetImg');
             if (imgUrl) {
                 img.src = imgUrl;

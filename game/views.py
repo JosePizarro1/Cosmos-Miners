@@ -31,6 +31,127 @@ def home_view(request):
     })
 
 @login_required
+def market_view(request):
+    from .models_planets import UserMineral
+    from .models_market import MarketConfig, UserMarketStatus, MarketGlobalSettings
+    
+    # Get active configs grouped by category
+    configs = MarketConfig.objects.filter(is_active=True).select_related('mineral')
+    standard_configs = [c for c in configs if not c.is_black]
+    black_configs = [c for c in configs if c.is_black]
+    
+    # Get user balances
+    balances = {um.mineral_id: um.amount for um in UserMineral.objects.filter(user=request.user)}
+    
+    # Attach data for template
+    for c in configs:
+        c.user_balance = balances.get(c.mineral_id, 0)
+        
+    # User market status (cooldowns)
+    status, _ = UserMarketStatus.objects.get_or_create(user=request.user)
+    market_settings = MarketGlobalSettings.get_settings()
+
+    # Black Market Chests
+    from .models_cofres import Chest
+    black_chests = Chest.objects.filter(is_black_market=True, is_in_store=True)
+    for chest in black_chests:
+        if chest.black_market_discount > 0:
+            chest.discounted_price = chest.price * (Decimal('1') - (Decimal(str(chest.black_market_discount)) / Decimal('100')))
+        else:
+            chest.discounted_price = chest.price
+
+    return render(request, "game/market.html", {
+        "standard_configs": standard_configs,
+        "black_configs": black_configs,
+        "black_chests": black_chests,
+        "market_status": status,
+        "market_settings": market_settings,
+        "now": timezone.now()
+    })
+
+@require_POST
+@csrf_protect
+@login_required
+def sell_mineral_market(request):
+    from .models_planets import UserMineral
+    from .models_market import MarketConfig, UserMarketStatus, MarketGlobalSettings
+    try:
+        category = request.POST.get('category') # 'standard' or 'black'
+        is_black_request = (category == 'black')
+        
+        # Parse mineral amounts from POST (format: mineral_id: amount)
+        amounts_data = request.POST.getlist('amounts[]') # Expecting strings like "10:100"
+        
+        if not amounts_data:
+            return JsonResponse({"error": "No has seleccionado minerales"}, status=400)
+
+        with transaction.atomic():
+            status, _ = UserMarketStatus.objects.select_for_update().get_or_create(user=request.user)
+            global_settings = MarketGlobalSettings.get_settings()
+            now = timezone.now()
+            
+            # Check cooldown
+            if is_black_request:
+                if status.black_cooldown_until and now < status.black_cooldown_until:
+                    return JsonResponse({"error": "El mercado Black está en cooldown"}, status=400)
+            else:
+                if status.standard_cooldown_until and now < status.standard_cooldown_until:
+                    return JsonResponse({"error": "El mercado estándar está en cooldown"}, status=400)
+
+            total_gold_reward = Decimal('0.00')
+            processed_any = False
+            
+            for entry in amounts_data:
+                mid_str, amnt_str = entry.split(':')
+                mid = int(mid_str)
+                amnt = int(amnt_str)
+                
+                if amnt <= 0: continue
+                
+                # Verify config and category
+                config = MarketConfig.objects.filter(mineral_id=mid, is_black=is_black_request, is_active=True).first()
+                if not config: continue
+                
+                # Check and deduct mineral
+                user_min = UserMineral.objects.select_for_update().get(user=request.user, mineral_id=mid)
+                if user_min.amount < amnt:
+                    return JsonResponse({"error": f"Saldo insuficiente de {config.mineral.name}"}, status=400)
+                
+                user_min.amount -= amnt
+                user_min.save()
+                
+                total_gold_reward += Decimal(amnt) * config.gold_multiplier
+                processed_any = True
+            
+            if not processed_any:
+                return JsonResponse({"error": "No se procesó ningún mineral válido"}, status=400)
+            
+            # Give Reward
+            profile = Profile.objects.select_for_update().get(user=request.user)
+            if is_black_request:
+                profile.black_gold += total_gold_reward
+                # BLACK SALE LOGIC: Resets STANDARD Cooldown to max
+                status.standard_cooldown_until = now + timezone.timedelta(hours=global_settings.standard_cooldown_hours)
+                # Apply Black Cooldown
+                status.black_cooldown_until = now + timezone.timedelta(hours=global_settings.black_cooldown_hours)
+            else:
+                profile.cosmos_gold += total_gold_reward
+                # Apply Standard Cooldown
+                status.standard_cooldown_until = now + timezone.timedelta(hours=global_settings.standard_cooldown_hours)
+            
+            profile.save()
+            status.save()
+            
+            return JsonResponse({
+                "success": True, 
+                "reward": float(total_gold_reward),
+                "category": category
+            })
+            
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+@login_required
 def chests_public_view(request):
     from .models import OilCentralType
     from .models_packs import StorePack

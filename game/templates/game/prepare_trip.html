@@ -361,13 +361,29 @@
             </h2>
             <div class="space-y-4 mb-6">
                 {% for p in planets %}
-                <div class="asset-card planet-card relative bg-card border-2 border-white/10 p-5 rounded-[2rem]"
+                <div class="asset-card planet-card relative bg-card border-2 border-white/10 p-5 rounded-[2rem] {% if p.is_alliance and alliance_busy %}opacity-40 pointer-events-none grayscale{% endif %}"
                     data-id="{{ p.id }}" data-type="planet" data-travel="{{ p.travel_time_base }}"
                     data-success="{{ p.success_rate_base }}" data-puntos="{{ p.puntos }}"
                     data-free="{{ p.is_free|yesno:'True,False' }}"
                     data-image="{% if p.image %}{{ p.image.url }}{% endif %}"
+                    data-alliance="{{ p.is_alliance|yesno:'True,False' }}"
                     data-minerals='[{% for pm in p.produced_minerals.all %}{"name":"{{ pm.mineral.name }}","min":{{ pm.min_amount }},"max":{{ pm.max_amount }}}{% if not forloop.last %},{% endif %}{% endfor %}]'
                     onclick="selectAsset(this, 'planet')">
+                    
+                    {% if p.is_alliance %}
+                    <div class="absolute -top-3 -right-3 z-20 bg-yellow-500 text-space px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest shadow-xl shadow-yellow-500/20 flex items-center gap-1 border border-yellow-400">
+                        <i class="fas fa-shield-halved"></i> Alianza
+                    </div>
+                    {% endif %}
+                    
+                    {% if p.is_alliance and alliance_busy %}
+                    <div class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-space/60 backdrop-blur-[2px] rounded-[2rem]">
+                        <div class="bg-yellow-500 text-space px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl">
+                            <i class="fas fa-clock mr-1"></i> Expedición en Curso
+                        </div>
+                        <p class="text-[8px] text-yellow-500/70 font-bold uppercase mt-2 text-center px-4">Solo una misión de alianza permitida a la vez</p>
+                    </div>
+                    {% endif %}
                     <div class="flex items-center gap-4">
                         {% if p.image %}
                         <img src="{{ p.image.url }}" class="w-16 h-16 rounded-2xl object-cover border border-white/10">
@@ -577,6 +593,9 @@
             assets.forEach(card => {
                 const type = card.dataset.type;
                 if (type === 'miner') return; // Miner selection sets the mode
+
+                // Alliance planets are exempt from free/paid filter
+                if (type === 'planet' && card.dataset.alliance === 'True') return;
 
                 if (card.dataset.free !== mode) {
                     card.classList.add('opacity-20', 'pointer-events-none', 'grayscale');

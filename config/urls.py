@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.urls import path
 from django.conf import settings
 from django.conf.urls.static import static
-from game.views import login_view, login_page, register, register_view, home_view, chests_public_view, buy_chest, open_chest, profile_view, profile_update, create_withdrawal, process_withdrawal, withdrawals_admin_view, admin_dashboard_view, admin_dashboard_stats, miners_admin_view, miners_admin_stats, miner_types_list, miner_type_create, miner_type_update, miner_type_toggle, user_miners_list, user_miner_create, user_miner_delete, miners_view, logout_view, rankings_view, registration_rewards_admin_view, registration_rewards_list_api, registration_reward_create_api, registration_reward_update_api, registration_reward_delete_api, registration_reward_toggle_api
+from game.views import login_view, login_page, register, register_view, home_view, chests_public_view, buy_chest, open_chest, profile_view, profile_update, create_withdrawal, process_withdrawal, withdrawals_admin_view, admin_dashboard_view, admin_dashboard_stats, miners_admin_view, miners_admin_stats, miner_types_list, miner_type_create, miner_type_update, miner_type_toggle, user_miners_list, user_miner_create, user_miner_delete, miners_view, logout_view, rankings_view, registration_rewards_admin_view, registration_rewards_list_api, registration_reward_create_api, registration_reward_update_api, registration_reward_delete_api, registration_reward_toggle_api, market_view, sell_mineral_market
 from game.views_transports import transports_admin_view, transports_admin_stats, transport_types_list, transport_type_create, transport_type_update, transport_type_toggle, user_transports_list, user_transport_create, user_transport_delete, transports_view
 from game.views_tools import tools_admin_view, tools_admin_stats, tool_types_list, tool_type_create, tool_type_update, tool_type_toggle, user_tools_list, user_tool_create, user_tool_delete, tools_view
 from game.views_chests import (
@@ -44,6 +44,21 @@ from game.views_packs import (
 from game.views_blessings import (
     blessings_admin_view, blessing_create, blessing_update, blessing_delete,
     static_blessing_update, claim_blessing, farm_dynamic_blessing, my_blessings_view
+)
+from game.views_alliances import (
+    alliances_view, create_alliance, request_join_alliance, handle_request,
+    leave_alliance, nominate_right_hand, nominate_captain, expel_member, alliance_admin_dashboard,
+    alliance_admin_update, alliance_admin_global_update, alliance_admin_reset_cooldowns,
+    alliance_planets_list, alliance_planets_store, alliance_buy_planet
+)
+from game.views_gifts import (
+    gifts_admin, gift_create, gift_delete, gift_assign,
+    alliance_gifts_page, alliance_raffle_gift, alliance_claim_gift
+)
+from game.views_market import (
+    market_admin_view, market_configs_list, market_config_create,
+    market_config_update, market_exchanges_list, market_exchange_delete,
+    market_settings_update
 )
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -194,6 +209,45 @@ urlpatterns = [
     path("blessings/claim/<str:blessing_type>/<int:blessing_id>/", claim_blessing, name="claim_blessing"),
     path("blessings/farm/<int:pk>/", farm_dynamic_blessing, name="farm_blessing"),
     path("my-blessings/", my_blessings_view, name="my_blessings"),
+
+    # Alliances
+    path("alliances/", alliances_view, name="alliances_view"),
+    path("alliances/create/", create_alliance, name="create_alliance"),
+    path("alliances/request/<int:alliance_id>/", request_join_alliance, name="request_join_alliance"),
+    path("alliances/request/handle/<int:request_id>/", handle_request, name="handle_request"),
+    path("alliances/leave/", leave_alliance, name="leave_alliance"),
+    path("alliances/nominate/<int:target_user_id>/", nominate_right_hand, name="nominate_right_hand"),
+    path("alliances/nominate-captain/<int:target_user_id>/", nominate_captain, name="nominate_captain"),
+    path("alliances/expel/<int:target_user_id>/", expel_member, name="expel_member"),
+    
+    # Alliances Admin
+    path("dashboard/alliances/", alliance_admin_dashboard, name="alliances_admin"),
+    path("dashboard/alliances/update/<int:alliance_id>/", alliance_admin_update, name="alliance_admin_update"),
+    path("dashboard/alliances/global-update/", alliance_admin_global_update, name="alliance_admin_global_update"),
+    path("dashboard/alliances/reset-cooldowns/", alliance_admin_reset_cooldowns, name="alliance_admin_reset_cooldowns"),
+    path("alliances/planets/", alliance_planets_list, name="alliance_planets_list"),
+    path("alliances/store/", alliance_planets_store, name="alliance_planets_store"),
+    path("alliances/buy-planet/<int:planet_id>/", alliance_buy_planet, name="alliance_buy_planet"),
+
+    # Alliance Gifts
+    path("dashboard/gifts/", gifts_admin, name="gifts_admin"),
+    path("dashboard/gifts/create/", gift_create, name="gift_create"),
+    path("dashboard/gifts/delete/<int:gift_id>/", gift_delete, name="gift_delete"),
+    path("dashboard/gifts/assign/", gift_assign, name="gift_assign"),
+    path("alliances/gifts/", alliance_gifts_page, name="alliance_gifts_page"),
+    path("alliances/gifts/raffle/<int:assignment_id>/", alliance_raffle_gift, name="alliance_raffle_gift"),
+    path("alliances/gifts/claim/<int:win_id>/", alliance_claim_gift, name="alliance_claim_gift"),
+    path("market/", market_view, name="market"),
+    path("market/sell/", sell_mineral_market, name="sell_mineral_market"),
+
+    # Admin Market (Mercadoo)
+    path("dashboard/market/", market_admin_view, name="market_admin_view"),
+    path("dashboard/market/configs/", market_configs_list, name="market_configs_list"),
+    path("dashboard/market/create/", market_config_create, name="market_config_create"),
+    path("dashboard/market/update/<int:pk>/", market_config_update, name="market_config_update"),
+    path("dashboard/market/settings/update/", market_settings_update, name="market_settings_update"),
+    path("dashboard/market/exchanges/", market_exchanges_list, name="market_exchanges_list"),
+    path("dashboard/market/exchange/delete/<int:pk>/", market_exchange_delete, name="market_exchange_delete"),
 ]
 
 if settings.DEBUG:

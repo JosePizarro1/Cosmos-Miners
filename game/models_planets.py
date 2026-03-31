@@ -24,6 +24,10 @@ class Planet(models.Model):
     puntos = models.PositiveIntegerField(default=0, help_text="Puntos máximos ganados por viaje exitoso")
     is_active = models.BooleanField(default=True)
     is_free = models.BooleanField(default=False)
+    is_alliance = models.BooleanField(default=False, help_text="¿Es un planeta exclusivo de alianzas?")
+    price_gold = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), help_text="Precio en Cosmos Gold")
+    price_mineral = models.ForeignKey(Mineral, on_delete=models.SET_NULL, null=True, blank=True, help_text="Mineral especial para adquirir planeta")
+    price_mineral_quantity = models.FloatField(default=0, help_text="Cantidad del mineral especial")
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
