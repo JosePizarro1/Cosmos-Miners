@@ -585,15 +585,63 @@
       {% if user_chests %}
       <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {% for uc in user_chests %}
+        {% if uc.chest.is_black_market %}
+        <!-- BLACK MARKET DESIGN -->
+        <div class="bg-black/80 rounded-[32px] p-8 group hover:border-pink/60 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden flex flex-col h-full border border-pink/20 shadow-[0_0_30px_rgba(255,77,141,0.1)]">
+          <div class="absolute -top-24 -right-24 w-48 h-48 bg-pink/10 rounded-full blur-3xl group-hover:bg-pink/20 transition-colors"></div>
+          <div class="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-pink/40 to-transparent transform scale-x-0 group-hover:scale-x-100 transition-transform duration-700"></div>
+
+          <div class="relative z-10 flex flex-col h-full text-center">
+            <div class="flex justify-between items-start mb-6">
+              <div class="flex flex-col items-start gap-1">
+                <span class="text-[9px] font-black bg-pink text-black px-3 py-1 rounded-full uppercase tracking-tighter shadow-[0_0_10px_rgba(255,77,141,0.5)]">
+                  BLACK MARKET
+                </span>
+                <span class="text-[8px] uppercase text-gray-500 font-bold ml-1 tracking-widest">{{ uc.chest.category.name }}</span>
+              </div>
+              <span class="text-[9px] text-pink/40 font-mono">#{{ uc.id }}</span>
+            </div>
+
+            <div class="mb-8 flex-1 flex flex-col items-center">
+              <div class="relative">
+                <div class="absolute inset-0 bg-pink/30 rounded-full blur-2xl group-hover:blur-3xl transition-all opacity-50"></div>
+                {% if uc.chest.image %}
+                <div class="relative w-32 h-32 flex items-center justify-center p-2">
+                    <img src="{{ uc.chest.image.url }}" alt="{{ uc.chest.name }}"
+                      class="relative w-full h-full object-contain animate-float group-hover:scale-110 transition-transform duration-700 drop-shadow-[0_0_15px_rgba(255,77,141,0.3)]">
+                </div>
+                {% else %}
+                <div class="relative w-32 h-32 rounded-full bg-white/5 flex items-center justify-center border border-white/10 shadow-inner">
+                  <i class="fas fa-box text-5xl text-pink/40"></i>
+                </div>
+                {% endif %}
+              </div>
+
+              <h3 class="mt-6 font-black text-xl group-hover:text-pink transition-colors uppercase tracking-tight text-white italic">EDICIÓN BLACK</h3>
+              <p class="text-xs font-bold text-gray-400 uppercase tracking-tighter">{{ uc.chest.name }}</p>
+              <p class="mt-2 text-[9px] text-gray-600 font-bold uppercase italic">Adquirido: {{ uc.obtained_at|date:"d/m/Y" }}</p>
+            </div>
+
+            <div class="mt-auto pt-4">
+              <button
+                class="btn-open w-full py-4 rounded-2xl bg-black border border-pink/40 text-pink font-black uppercase text-[10px] tracking-widest hover:bg-pink hover:text-black transition-all shadow-xl shadow-pink/5"
+                data-id="{{ uc.id }}" data-name="{{ uc.chest.name }}">
+                ABRIR EDICIÓN BLACK
+              </button>
+            </div>
+          </div>
+        </div>
+        {% else %}
+        <!-- STANDARD DESIGN -->
         <div
-          class="glass-card rounded-[32px] p-8 group hover:border-pink/40 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden flex flex-col h-full border-pink/10">
+          class="glass-card rounded-[32px] p-8 group hover:border-accent/40 transition-all duration-500 hover:-translate-y-3 relative overflow-hidden flex flex-col h-full border-white/5">
           <div
-            class="absolute -top-24 -right-24 w-48 h-48 bg-pink/5 rounded-full blur-3xl group-hover:bg-pink/15 transition-colors">
+            class="absolute -top-24 -right-24 w-48 h-48 bg-accent/5 rounded-full blur-3xl group-hover:bg-accent/15 transition-colors">
           </div>
 
           <div class="relative z-10 flex flex-col h-full text-center">
             <div class="flex justify-between items-start mb-6">
-              <span class="text-[10px] font-black bg-pink/10 border border-pink/20 px-3 py-1 rounded-full text-pink uppercase tracking-tighter">
+              <span class="text-[10px] font-black bg-accent/10 border border-accent/20 px-3 py-1 rounded-full text-accent uppercase tracking-tighter">
                 {{ uc.chest.category.name }}
               </span>
               <span class="text-[9px] text-gray-500 font-mono">#{{ uc.id }}</span>
@@ -601,7 +649,7 @@
 
             <div class="mb-8 flex-1 flex flex-col items-center">
               <div class="relative">
-                <div class="absolute inset-0 bg-pink/20 rounded-full blur-2xl group-hover:blur-3xl transition-all">
+                <div class="absolute inset-0 bg-accent/10 rounded-full blur-2xl group-hover:blur-3xl transition-all">
                 </div>
                 {% if uc.chest.image %}
                 <img src="{{ uc.chest.image.url }}" alt="{{ uc.chest.name }}"
@@ -609,24 +657,26 @@
                 {% else %}
                 <div
                   class="relative w-32 h-32 rounded-full bg-white/5 flex items-center justify-center border border-white/10">
-                  <i class="fas fa-box text-5xl text-pink/20"></i>
+                  <i class="fas fa-box text-5xl text-accent/20"></i>
                 </div>
                 {% endif %}
               </div>
 
-              <h3 class="mt-6 font-black text-xl group-hover:text-pink transition-colors uppercase tracking-tight">{{ uc.chest.name }}</h3>
-              <p class="mt-2 text-[10px] text-gray-500">Adquirido el {{ uc.obtained_at|date:"d/m/Y" }}</p>
+              <h3 class="mt-6 font-black text-xl group-hover:text-accent transition-colors uppercase tracking-tight">{{ uc.chest.name }}</h3>
+              <p class="mt-2 text-[10px] text-gray-500 font-bold uppercase tracking-widest leading-none">Cofre Estándar</p>
+              <p class="mt-1 text-[9px] text-gray-600">Obtenido: {{ uc.obtained_at|date:"d/m/Y" }}</p>
             </div>
 
             <div class="mt-auto pt-4">
               <button
-                class="btn-open w-full py-4 rounded-2xl bg-gradient-to-r from-pink to-purple-600 text-white font-black uppercase text-[10px] tracking-widest hover:brightness-110 active:scale-[0.98] transition-all"
+                class="btn-open w-full py-4 rounded-2xl bg-gradient-to-r from-accent to-blueglow text-black font-black uppercase text-[10px] tracking-widest hover:brightness-110 active:scale-[0.98] transition-all shadow-lg shadow-accent/10"
                 data-id="{{ uc.id }}" data-name="{{ uc.chest.name }}">
                 Abrir Cofre
               </button>
             </div>
           </div>
         </div>
+        {% endif %}
         {% endfor %}
       </div>
       {% else %}

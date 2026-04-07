@@ -9,14 +9,16 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {% for chest in black_chests %}
         <div class="relative glass-card rounded-[32px] p-6 flex flex-col items-center group overflow-hidden hover:border-pink/30 transition-all">
-            <!-- Discount Badge -->
+            <!-- Discount Badge - High Visibility Neon -->
             {% if chest.black_market_discount > 0 %}
-            <div class="absolute -right-10 top-5 rotate-45 bg-pink text-black text-[9px] font-black px-12 py-1 uppercase shadow-lg">
-                -{{ chest.black_market_discount }}%
+            <div class="absolute top-4 left-4 z-20">
+                <div class="bg-pink text-black text-[10px] font-black px-3 py-1 rounded-full shadow-[0_0_15px_rgba(255,77,141,0.5)] animate-pulse uppercase tracking-tighter">
+                    -{{ chest.black_market_discount }}% DCTO
+                </div>
             </div>
             {% endif %}
 
-            <div class="w-32 h-32 mb-4 relative drop-shadow-[0_0_15px_rgba(255,77,141,0.2)]">
+            <div class="w-32 h-32 mb-4 relative drop-shadow-[0_0_15px_rgba(255,77,141,0.3)]">
                 <img src="{{ chest.image.url }}" class="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500">
             </div>
 
@@ -24,25 +26,41 @@
                 <h3 class="text-lg font-black uppercase tracking-tight mb-1 text-white">{{ chest.name }}</h3>
                 <p class="text-gray-500 text-[10px] uppercase font-bold tracking-widest mb-4 italic">{{ chest.category.name|default:"Especial" }}</p>
                 
-                <div class="bg-black/40 rounded-2xl p-4 mb-6 border border-white/5">
-                    <p class="text-[9px] uppercase text-gray-500 font-black mb-1">Precio Especial</p>
-                    <div class="flex items-center justify-center gap-3">
+                <div class="bg-black/60 rounded-2xl p-4 mb-6 border border-pink/20 relative overflow-hidden shadow-inner">
+                    <div class="absolute top-0 left-0 w-full h-0.5 bg-gradient-to-r from-transparent via-pink/60 to-transparent"></div>
+                    
+                    <div class="flex flex-col gap-1.5">
                         {% if chest.black_market_discount > 0 %}
-                        <span class="text-xs text-gray-500 line-through font-mono">{{ chest.price|floatformat:2 }}</span>
-                        {% endif %}
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-2xl font-mono font-black text-pink">{{ chest.discounted_price|floatformat:2 }}</span>
-                            <i class="fas fa-star text-gold text-xs"></i>
+                        <div class="flex justify-between items-center px-1">
+                            <span class="text-[8px] uppercase font-black text-gray-500 opacity-60">Precio Original</span>
+                            <span class="text-xs text-gray-500 line-through font-mono decoration-pink/40">{{ chest.price|floatformat:2 }} <i class="fas fa-clover text-[8px] opacity-20"></i></span>
                         </div>
+                        
+                        <!-- Main Discounted Price Row -->
+                        <div class="flex flex-col items-center py-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-3xl font-mono font-black text-pink drop-shadow-[0_0_8px_rgba(255,77,141,0.4)]">{{ chest.discounted_price|floatformat:2 }}</span>
+                                <i class="fas fa-clover text-pink text-xs animate-pulse"></i>
+                            </div>
+                            <div class="bg-pink/10 px-3 py-0.5 rounded-full mt-1">
+                                <span class="text-[7px] font-black text-pink uppercase tracking-widest">Ahorras {{ chest.black_market_discount }}%</span>
+                            </div>
+                        </div>
+                        {% else %}
+                        <div class="flex flex-col items-center py-2">
+                            <div class="flex items-center gap-2">
+                                <span class="text-3xl font-mono font-black text-pink">{{ chest.price|floatformat:2 }}</span>
+                                <i class="fas fa-clover text-pink text-xs"></i>
+                            </div>
+                        </div>
+                        {% endif %}
                     </div>
                 </div>
 
-                <form action="{% url 'buy_chest' chest.id %}" method="POST">
-                    {% csrf_token %}
-                    <button type="submit" class="w-full py-4 bg-black border border-pink/30 text-pink rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-pink hover:text-black transition-all shadow-xl shadow-pink/5">
-                        COMPRAR COFRE
-                    </button>
-                </form>
+                <button onclick="buyBlackChest({{ chest.id }}, '{{ chest.name|escapejs }}', {{ chest.discounted_price|stringformat:'.2f' }})" 
+                        class="w-full py-4 bg-black border border-pink/30 text-pink rounded-xl font-black uppercase tracking-widest text-[10px] hover:bg-pink hover:text-black transition-all shadow-xl shadow-pink/5 active:scale-95">
+                    COMPRAR COFRE
+                </button>
             </div>
         </div>
         {% endfor %}
@@ -54,3 +72,69 @@
     </div>
     {% endif %}
 </div>
+
+<script>
+async function buyBlackChest(chestId, chestName, price) {
+    const confirm = await Swal.fire({
+        title: '¿Confirmar Compra?',
+        html: `¿Deseas adquirir <b>${chestName}</b> por <span class="text-pink font-mono">${price} BlackGOLD</span>?`,
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'SÍ, COMPRAR',
+        cancelButtonText: 'CANCELAR',
+        confirmButtonColor: '#ff4d8d',
+        background: '#05050f',
+        color: '#fff'
+    });
+
+    if (confirm.isConfirmed) {
+        Swal.fire({
+            title: 'Procesando...',
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        try {
+            const csrftoken = (document.cookie.match('(^|;)\\s*csrftoken\\s*=\\s*([^;]+)') || [])[2] || '';
+            const response = await fetch(`/chests/buy/${chestId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            const data = await response.json();
+            if (data.success) {
+                Swal.fire({
+                    icon: 'success',
+                    title: '¡Compra Exitosa!',
+                    text: `Has adquirido ${chestName}.`,
+                    background: '#05050f',
+                    color: '#fff',
+                    timer: 2000,
+                    showConfirmButton: false
+                }).then(() => {
+                    location.reload();
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: data.error,
+                    background: '#05050f',
+                    color: '#fff'
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error de Red',
+                text: 'No se pudo completar la transacción.',
+                background: '#05050f',
+                color: '#fff'
+            });
+        }
+    }
+}
+</script>

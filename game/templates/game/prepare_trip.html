@@ -356,26 +356,109 @@
 
         <!-- STEP 4: PLANETS -->
         <div id="step4" class="hidden animate__animated animate__fadeIn animate__faster">
-            <h2 class="text-sm uppercase font-black text-pink mb-4 tracking-[0.2em] pl-1 flex items-center gap-2">
+            <h2 class="text-sm uppercase font-black text-pink mb-2 tracking-[0.2em] pl-1 flex items-center gap-2">
                 <i class="fas fa-globe"></i> Destino Planetario
             </h2>
+            
+            <!-- Ranking Info (New) -->
+            <div class="mb-6 bg-card border border-white/5 rounded-2xl p-4 flex items-center gap-3 animate__animated animate__fadeIn">
+                <div class="w-10 h-10 rounded-xl bg-yellow-500/10 flex items-center justify-center border border-yellow-500/20">
+                    <i class="fas fa-trophy text-yellow-500"></i>
+                </div>
+                <div class="flex-1">
+                    <p class="text-[8px] uppercase font-black text-gray-500 tracking-widest leading-none mb-1">Destino de Puntos</p>
+                    <div class="flex flex-wrap gap-1">
+                        {% for season in active_seasons %}
+                        <span class="text-[9px] font-black text-white bg-white/5 px-2 py-0.5 rounded border border-white/10 uppercase tracking-tighter">{{ season.name }}</span>
+                        {% empty %}
+                        <span class="text-[9px] font-bold text-gray-600">SIN RANKINGS ACTIVOS ESTA SEMANA</span>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
             <div class="space-y-4 mb-6">
                 {% for p in planets %}
-                <div class="asset-card planet-card relative bg-card border-2 border-white/10 p-5 rounded-[2rem] {% if p.is_alliance and alliance_busy %}opacity-40 pointer-events-none grayscale{% endif %}"
+                {% if not p.requirement_met and not p.is_free %}
+                {# LOCKED PLANET — rendered as non-interactive with standalone eye button #}
+                <div class="relative">
+                    <div class="planet-card relative bg-card border-2 border-white/10 p-5 rounded-[2rem] opacity-50 grayscale pointer-events-none select-none">
+                        {% if p.is_free %}
+                        <div class="absolute -top-3 -left-3 z-20 bg-accent text-space px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest shadow-xl shadow-accent/20 flex items-center gap-1 border border-accent/40">
+                            <i class="fas fa-certificate"></i> MODO GRATUITO
+                        </div>
+                        {% endif %}
+                        {% if p.is_alliance %}
+                        <div class="absolute -top-3 -right-3 z-20 bg-yellow-500 text-space px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest shadow-xl shadow-yellow-500/20 flex items-center gap-1 border border-yellow-400">
+                            <i class="fas fa-shield-halved"></i> Alianza
+                        </div>
+                        {% endif %}
+                        <div class="flex items-center gap-4">
+                            {% if p.image %}
+                            <img src="{{ p.image.url }}" class="w-16 h-16 rounded-2xl object-cover border border-white/10">
+                            {% else %}
+                            <div class="w-16 h-16 rounded-2xl bg-space/60 border border-pink/20 flex items-center justify-center">
+                                <i class="fas fa-globe text-pink/40 text-2xl"></i>
+                            </div>
+                            {% endif %}
+                            <div class="flex-1">
+                                <h3 class="font-black text-white text-lg">{{ p.name }}</h3>
+                            </div>
+                        </div>
+                        <div class="mt-4 grid grid-cols-3 gap-2">
+                            <div class="bg-space/40 rounded-xl px-2 py-2 flex flex-col items-center border border-white/5 text-center">
+                                <span class="text-[8px] text-gray-500 uppercase font-black leading-none mb-1">Vuelo</span>
+                                <span class="text-xs font-black text-accent leading-none">{{ p.travel_time_base }}h</span>
+                            </div>
+                            <div class="bg-space/40 rounded-xl px-2 py-2 flex flex-col items-center border border-white/5 text-center">
+                                <span class="text-[8px] text-gray-500 uppercase font-black leading-none mb-1">Éxito</span>
+                                <span class="text-xs font-black text-green-400 leading-none">{{ p.success_rate_base }}%</span>
+                            </div>
+                            <div class="bg-space/40 rounded-xl px-2 py-2 flex flex-col items-center border border-white/5 text-center">
+                                <span class="text-[8px] text-gray-500 uppercase font-black leading-none mb-1">Puntos</span>
+                                <span class="text-xs font-black text-yellow-400 leading-none"><i class="fas fa-star text-[10px]"></i> {{ p.puntos }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Standalone eye button completely outside the locked card -->
+                    <button type="button"
+                        onclick="showRequirements('{{ p.name|escapejs }}', {{ p.required_miners }}, {{ p.required_tools }}, {{ p.required_transports }}, {{ user_miner_total }}, {{ user_tool_total }}, {{ user_transport_total }})"
+                        class="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-[2rem] z-10 cursor-pointer group"
+                        style="pointer-events: all; background: transparent;">
+                        <div class="bg-gray-900/90 border border-white/20 px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-300 shadow-2xl flex items-center gap-2">
+                            <i class="fas fa-lock"></i> MUNDO BLOQUEADO
+                        </div>
+                        <div class="relative w-12 h-12 rounded-full bg-pink/20 border border-pink/40 flex items-center justify-center text-pink group-hover:bg-pink/40 transition-all shadow-lg shadow-pink/20">
+                            <i class="fas fa-eye text-sm relative z-10"></i>
+                            <span class="absolute inset-0 rounded-full animate-ping bg-pink/30" style="pointer-events:none"></span>
+                        </div>
+                        <span class="text-[8px] text-pink/70 font-bold uppercase tracking-widest">Ver requisitos</span>
+                    </button>
+                </div>
+
+                {% else %}
+                {# UNLOCKED / FREE PLANET #}
+                <div class="asset-card planet-card relative bg-card border-2 {% if p.is_free %}border-accent/40{% else %}border-white/10{% endif %} p-5 rounded-[2rem] {% if p.is_alliance and alliance_busy %}opacity-40 pointer-events-none grayscale{% endif %}"
                     data-id="{{ p.id }}" data-type="planet" data-travel="{{ p.travel_time_base }}"
                     data-success="{{ p.success_rate_base }}" data-puntos="{{ p.puntos }}"
                     data-free="{{ p.is_free|yesno:'True,False' }}"
                     data-image="{% if p.image %}{{ p.image.url }}{% endif %}"
                     data-alliance="{{ p.is_alliance|yesno:'True,False' }}"
+                    data-locked="False"
                     data-minerals='[{% for pm in p.produced_minerals.all %}{"name":"{{ pm.mineral.name }}","min":{{ pm.min_amount }},"max":{{ pm.max_amount }}}{% if not forloop.last %},{% endif %}{% endfor %}]'
                     onclick="selectAsset(this, 'planet')">
-                    
+
+                    {% if p.is_free %}
+                    <div class="absolute -top-3 -left-3 z-20 bg-accent text-space px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest shadow-xl shadow-accent/20 flex items-center gap-1 border border-accent/40">
+                        <i class="fas fa-certificate"></i> MODO GRATUITO
+                    </div>
+                    {% endif %}
+
                     {% if p.is_alliance %}
                     <div class="absolute -top-3 -right-3 z-20 bg-yellow-500 text-space px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest shadow-xl shadow-yellow-500/20 flex items-center gap-1 border border-yellow-400">
                         <i class="fas fa-shield-halved"></i> Alianza
                     </div>
                     {% endif %}
-                    
+
                     {% if p.is_alliance and alliance_busy %}
                     <div class="absolute inset-0 z-30 flex flex-col items-center justify-center bg-space/60 backdrop-blur-[2px] rounded-[2rem]">
                         <div class="bg-yellow-500 text-space px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-2xl">
@@ -384,20 +467,34 @@
                         <p class="text-[8px] text-yellow-500/70 font-bold uppercase mt-2 text-center px-4">Solo una misión de alianza permitida a la vez</p>
                     </div>
                     {% endif %}
+
                     <div class="flex items-center gap-4">
                         {% if p.image %}
                         <img src="{{ p.image.url }}" class="w-16 h-16 rounded-2xl object-cover border border-white/10">
                         {% else %}
                         <div
-                            class="w-16 h-16 rounded-2xl bg-space/60 border border-pink/20 flex items-center justify-center">
-                            <i class="fas fa-globe text-pink/40 text-2xl"></i>
+                            class="w-16 h-16 rounded-2xl bg-space/60 border {% if p.is_free %}border-accent/20{% else %}border-pink/20{% endif %} flex items-center justify-center">
+                            <i class="fas fa-globe {% if p.is_free %}text-accent/40{% else %}text-pink/40{% endif %} text-2xl"></i>
                         </div>
                         {% endif %}
                         <div class="flex-1">
                             <h3 class="font-black text-white text-lg">{{ p.name }}</h3>
+                            {% if not p.is_free %}
+                            <div class="flex gap-2 mt-0.5">
+                                <span class="text-[8px] font-bold {% if user_miner_total >= p.required_miners %}text-green-500{% else %}text-gray-500{% endif %}">
+                                    <i class="fas fa-user-ninja mr-0.5"></i> {{ user_miner_total }}/{{ p.required_miners }}
+                                </span>
+                                <span class="text-[8px] font-bold {% if user_tool_total >= p.required_tools %}text-green-500{% else %}text-gray-500{% endif %}">
+                                    <i class="fas fa-tools mr-0.5"></i> {{ user_tool_total }}/{{ p.required_tools }}
+                                </span>
+                                <span class="text-[8px] font-bold {% if user_transport_total >= p.required_transports %}text-green-500{% else %}text-gray-500{% endif %}">
+                                    <i class="fas fa-truck-fast mr-0.5"></i> {{ user_transport_total }}/{{ p.required_transports }}
+                                </span>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
-                    <div class="mt-4 grid grid-cols-3 gap-2">
+                    <div class="mt-4 grid grid-cols-1 sm:grid-cols-3 gap-2">
                         <div
                             class="bg-space/40 rounded-xl px-2 py-2 flex flex-col items-center justify-center border border-white/5 text-center">
                             <span class="text-[8px] text-gray-500 uppercase font-black leading-none mb-1">Viaje</span>
@@ -415,16 +512,18 @@
                         </div>
                     </div>
                     <!-- Planet Minerals -->
-                    {% for pm in p.produced_minerals.all %}
-                    <div
-                        class="mt-2 bg-space/30 rounded-xl px-4 py-2 flex justify-between items-center border border-white/5">
-                        <span class="text-[9px] text-gray-400 uppercase font-bold flex items-center gap-1">
-                            <i class="fas fa-gem text-accent/30 text-[8px]"></i> {{ pm.mineral.name }}
-                        </span>
-                        <span class="text-[10px] font-black text-gold">{{ pm.min_amount }} - {{ pm.max_amount }}</span>
+                    <div class="mt-2 grid grid-cols-1 gap-1">
+                        {% for pm in p.produced_minerals.all %}
+                        <div class="bg-space/30 rounded-xl px-4 py-2 flex justify-between items-center border border-white/5">
+                            <span class="text-[9px] text-gray-400 uppercase font-bold flex items-center gap-1">
+                                <i class="fas fa-gem text-accent/30 text-[8px]"></i> {{ pm.mineral.name }}
+                            </span>
+                            <span class="text-[10px] font-black text-gold">{{ pm.min_amount }} - {{ pm.max_amount }}</span>
+                        </div>
+                        {% endfor %}
                     </div>
-                    {% endfor %}
                 </div>
+                {% endif %}
                 {% empty %}
                 <div class="text-center py-12 bg-card/30 border border-dashed border-white/10 rounded-3xl">
                     <i class="fas fa-globe text-3xl text-gray-600 mb-3"></i>
@@ -477,6 +576,27 @@
             </div>
         </div>
 
+        <!-- REQUIREMENTS MODAL -->
+        <div id="reqModal" class="fixed inset-0 z-[200] hidden items-center justify-center p-6 bg-space/80 backdrop-blur-md">
+            <div class="glass-modal border border-pink/20 w-full max-w-xs rounded-[2.5rem] p-7 shadow-2xl relative animate__animated animate__zoomIn animate__faster">
+                <button onclick="closeReqModal()" class="absolute top-5 right-5 text-gray-500 hover:text-white transition-colors">
+                    <i class="fas fa-times text-lg"></i>
+                </button>
+                <div class="flex items-center gap-3 mb-5">
+                    <div class="w-10 h-10 rounded-full bg-pink/10 border border-pink/30 flex items-center justify-center">
+                        <i class="fas fa-lock text-pink text-sm"></i>
+                    </div>
+                    <div>
+                        <p class="text-[8px] uppercase font-black text-gray-500 tracking-widest">Mundo Bloqueado</p>
+                        <h3 id="reqPlanetName" class="text-base font-black text-white uppercase italic tracking-tighter"></h3>
+                    </div>
+                </div>
+                <p class="text-[9px] uppercase font-black text-gray-500 tracking-widest mb-3">Necesitas en total:</p>
+                <div id="reqList" class="space-y-2"></div>
+                <p class="text-[8px] text-gray-600 font-bold text-center mt-5">Adquiere más activos para desbloquear este mundo</p>
+            </div>
+        </div>
+
         <!-- CONFIRMATION MODAL -->
         <div id="confirmModal"
             class="fixed inset-0 z-[100] hidden items-center justify-center p-6 bg-space/80 backdrop-blur-md">
@@ -518,6 +638,48 @@
         const selectionData = { attempts: 0, multiplier: 1, bonus: 0, speed: 100, pointsMultiplier: 1, minerSeason: null };
         const userSeasons = {{ user_seasons|safe }};
         const blessingBonus = {{ blessing_bonus|default:0 }};
+
+        function handlePlanetClick(card) {
+            if (card.dataset.locked === 'True') return; // blocked — eye button handles it
+            selectAsset(card, 'planet');
+        }
+
+        function showRequirements(name, reqMiners, reqTools, reqTransports, hasMiners, hasTools, hasTransports) {
+            document.getElementById('reqPlanetName').textContent = name;
+            var items = [
+                { icon: 'fa-user-ninja', label: 'Mineros', req: reqMiners, has: hasMiners },
+                { icon: 'fa-tools',      label: 'Herramientas', req: reqTools, has: hasTools },
+                { icon: 'fa-truck-fast', label: 'Transportes', req: reqTransports, has: hasTransports }
+            ];
+            var html = '';
+            items.forEach(function(item) {
+                var met = item.has >= item.req;
+                var color = met ? 'text-green-400 border-green-500/20 bg-green-500/5' : 'text-red-400 border-red-500/20 bg-red-500/5';
+                var icon  = met ? 'fa-check-circle text-green-400' : 'fa-times-circle text-red-400';
+                html += '<div class="flex items-center justify-between px-4 py-3 rounded-xl border ' + color + '">' +
+                            '<div class="flex items-center gap-2">' +
+                                '<i class="fas ' + item.icon + ' text-xs"></i>' +
+                                '<span class="text-xs font-bold">' + item.label + '</span>' +
+                            '</div>' +
+                            '<div class="flex items-center gap-2">' +
+                                '<span class="text-xs font-black">' + item.has + ' / ' + item.req + '</span>' +
+                                '<i class="fas ' + icon + ' text-xs"></i>' +
+                            '</div>' +
+                        '</div>';
+            });
+            document.getElementById('reqList').innerHTML = html;
+            var modal = document.getElementById('reqModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeReqModal() {
+            var modal = document.getElementById('reqModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = 'auto';
+        }
 
         function selectAsset(card, type) {
             // Remove selection from siblings

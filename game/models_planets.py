@@ -28,6 +28,12 @@ class Planet(models.Model):
     price_gold = models.DecimalField(max_digits=12, decimal_places=2, default=Decimal('0.00'), help_text="Precio en Cosmos Gold")
     price_mineral = models.ForeignKey(Mineral, on_delete=models.SET_NULL, null=True, blank=True, help_text="Mineral especial para adquirir planeta")
     price_mineral_quantity = models.FloatField(default=0, help_text="Cantidad del mineral especial")
+    
+    # Requirements to unlock (Inventory-based)
+    required_miners = models.PositiveIntegerField(default=0, help_text="Mineros totales necesarios en inventario")
+    required_tools = models.PositiveIntegerField(default=0, help_text="Herramientas totales necesarias en inventario")
+    required_transports = models.PositiveIntegerField(default=0, help_text="Transportes totales necesarios en inventario")
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

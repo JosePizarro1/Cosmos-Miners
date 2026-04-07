@@ -237,7 +237,7 @@ urlpatterns = [
     path("alliances/gifts/", alliance_gifts_page, name="alliance_gifts_page"),
     path("alliances/gifts/raffle/<int:assignment_id>/", alliance_raffle_gift, name="alliance_raffle_gift"),
     path("alliances/gifts/claim/<int:win_id>/", alliance_claim_gift, name="alliance_claim_gift"),
-    path("market/", market_view, name="market"),
+    path("market/", market_view, name="market_view"),
     path("market/sell/", sell_mineral_market, name="sell_mineral_market"),
 
     # Admin Market (Mercadoo)

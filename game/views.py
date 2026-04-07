@@ -157,7 +157,7 @@ def chests_public_view(request):
     from .models_packs import StorePack
     from .models_blessings import Blessing, StaticBlessing, UserBlessingClaim
     
-    chests = Chest.objects.filter(is_in_store=True).select_related("category").prefetch_related("rewards")
+    chests = Chest.objects.filter(is_in_store=True, is_black_market=False).select_related("category").prefetch_related("rewards")
     oil_centrals = OilCentralType.objects.filter(is_active=True)
     profile, _ = Profile.objects.get_or_create(user=request.user)
     user_chests = UserChest.objects.filter(owner=profile, opened=False).select_related("chest")
@@ -202,9 +202,19 @@ def buy_chest(request, chest_id):
             # Refresh profile with lock
             profile = Profile.objects.select_for_update().get(id=profile.id)
             
-            if chest.purchase_mineral:
+            if chest.is_black_market:
+                # Black Market logic: uses black_gold and applies discount
+                discount = Decimal(str(chest.black_market_discount)) / Decimal('100')
+                final_price = chest.price * (Decimal('1') - discount)
+                
+                if profile.black_gold < final_price:
+                    return JsonResponse({"error": "No tienes suficiente BlackGOLD"}, status=400)
+                
+                profile.black_gold -= final_price
+                profile.save()
+            elif chest.purchase_mineral:
+                # Standard mineral purchase
                 req_qty = chest.purchase_mineral_qty
-                # Use UserMineral to deduct mineral balance
                 user_mineral = UserMineral.objects.select_for_update().filter(user=request.user, mineral=chest.purchase_mineral).first()
                 if not user_mineral or user_mineral.amount < req_qty:
                     return JsonResponse({"error": f"No tienes suficiente {chest.purchase_mineral.name} ({req_qty} requeridos)"}, status=400)
@@ -212,6 +222,7 @@ def buy_chest(request, chest_id):
                 user_mineral.amount -= req_qty
                 user_mineral.save()
             else:
+                # Standard gold purchase
                 if profile.cosmos_gold < chest.price:
                     return JsonResponse({"error": "No tienes suficiente Cosmos Gold"}, status=400)
                     

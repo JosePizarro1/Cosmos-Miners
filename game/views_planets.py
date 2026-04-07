@@ -42,7 +42,11 @@ def planets_admin(request):
             price_gold = request.POST.get('price_gold', 0)
             price_mineral_id = request.POST.get('price_mineral')
             price_mineral_qty = request.POST.get('price_mineral_quantity', 0)
+            required_miners = request.POST.get('required_miners', 0)
+            required_tools = request.POST.get('required_tools', 0)
+            required_transports = request.POST.get('required_transports', 0)
             image = request.FILES.get('image')
+
             Planet.objects.create(
                 name=name,
                 travel_time_base=time,
@@ -53,6 +57,9 @@ def planets_admin(request):
                 price_gold=price_gold,
                 price_mineral_id=price_mineral_id if price_mineral_id else None,
                 price_mineral_quantity=price_mineral_qty if price_mineral_qty else 0,
+                required_miners=required_miners if required_miners else 0,
+                required_tools=required_tools if required_tools else 0,
+                required_transports=required_transports if required_transports else 0,
                 image=image
             )
             messages.success(request, f"Planeta {name} creado.")
@@ -88,6 +95,10 @@ def planets_admin(request):
             p_mineral_id = request.POST.get('price_mineral')
             planet.price_mineral_id = p_mineral_id if p_mineral_id else None
             planet.price_mineral_quantity = request.POST.get('price_mineral_quantity', 0) or 0
+            
+            planet.required_miners = request.POST.get('required_miners', 0) or 0
+            planet.required_tools = request.POST.get('required_tools', 0) or 0
+            planet.required_transports = request.POST.get('required_transports', 0) or 0
             
             if request.FILES.get('image'):
                 planet.image = request.FILES.get('image')
@@ -209,8 +220,23 @@ def prepare_trip(request):
         season__end_date__gte=now_dt
     ).values_list('season_id', flat=True))
 
+    # Determine lock status for each planet
+    user_miner_total = UserMiner.objects.filter(owner=profile).count()
+    user_tool_total = UserTool.objects.filter(owner=profile).count()
+    user_transport_total = UserTransport.objects.filter(owner=profile).count()
+
+    for p in planets:
+        p.requirement_met = True
+        if not p.is_free and not p.is_alliance:
+            if p.required_miners > user_miner_total:   p.requirement_met = False
+            if p.required_tools > user_tool_total:     p.requirement_met = False
+            if p.required_transports > user_transport_total: p.requirement_met = False
+
+    # Get active rankings info
+    from .models_rankings import Season
+    active_seasons = Season.objects.filter(start_date__lte=now_dt, end_date__gte=now_dt)
+
     # Calculate total victory bonus from active blessings
-    # We only sum static blessings as per user request ("las que creamos a codigo")
     blessing_bonus = 0.0
     from .models_blessings import UserBlessingClaim
     claims = UserBlessingClaim.objects.filter(user=request.user, static_blessing__isnull=False)
@@ -223,9 +249,13 @@ def prepare_trip(request):
         'transports': transports,
         'planets': planets,
         'user_seasons': user_seasons,
+        'active_seasons': active_seasons, # Pass for ranking info
         'blessing_bonus': blessing_bonus,
         'alliance_busy': alliance_busy,
         'now': now_dt,
+        'user_miner_total': user_miner_total,
+        'user_tool_total': user_tool_total,
+        'user_transport_total': user_transport_total,
     })
 
 @login_required
